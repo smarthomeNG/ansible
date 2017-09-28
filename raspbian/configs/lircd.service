@@ -1,0 +1,18 @@
+[Unit]
+Documentation=man:lircd(8)
+Documentation=http://lirc.org/html/configure.html
+Description=Flexible IR remote input/output application support
+Wants=lircd-setup.service
+After=network.target lircd-setup.service
+
+[Service]
+Type=simple
+; EnvironmentFile=/etc/lirc/lircd.conf.d/devinput.lircd.conf
+ExecStart=/usr/sbin/lircd --nodaemon -O /etc/lirc/lirc_options.conf
+PIDFile=/var/run/lirc/lircd.pid
+; User=root
+; ExecStartPre=/bin/mkdir -p /var/run/lirc
+; ExecStartPre=/bin/chmod 777 /var/run/lirc
+
+[Install]
+WantedBy=multi-user.target

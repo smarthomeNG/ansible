@@ -1,0 +1,12 @@
+[Unit]
+Description=Squeezelite Player
+After=network.target
+
+[Service]
+ExecStart=/etc/squeezelite.sh
+TimeoutStartSec=5
+TimeoutStopSec=5
+User=root
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,75 @@
+# plugin.yaml
+
+# Der BackendServer stellt eine Übersicht zur Laufzeit dar und liefert Informationen ähnlich wie das CLI Plugin
+# Der Zugriff erfolgt über http://<IP oder Name des SmartHomeNG Servers bzw. ip>:<port>
+# port wird als Attribut weiter unten definiert
+# das Passwort ist zunächst im Klartext anzugeben. In neueren Versionen wird es eine Funktion im Backend geben,
+# die aus einem gegebenen Passwort einen Hash erzeugt. Wenn user oder password fehlen gibt es keine Abfrage
+BackendServer:
+    class_name: BackendServer
+    class_path: plugins.backend
+    # ip: xxx.xxx.xxx.xxx
+    port: 8383
+    updates_allowed: 'True'
+    threads: 8
+    user: admin
+    password: xxxx
+    language: de
+
+# KNX Verbindung via knxd
+knx:
+    class_name: KNX
+    class_path: plugins.knx
+    host: 127.0.0.1
+    port: 6720
+    # send_time: 600 # update date/time every 600 seconds, default none
+    # time_ga: 1/1/1 # default none
+    # date_ga: 1/1/2 # default none
+
+# Bereitstellung eines Websockets zur Kommunikation zwischen SmartVISU und SmartHomeNG
+visu:
+    class_name: WebSocket
+    class_path: plugins.visu_websocket
+    # ip: 0.0.0.0
+    # port: 2424
+    # tls: no
+    wsproto: 4
+    acl: rw
+
+# Autogenerierung von Webseiten für SmartVISU
+smartvisu:
+    class_name: SmartVisu
+    class_path: plugins.visu_smartvisu
+    # '"neue" Linux Versionen (z.B. Debian > 8.x, Ubuntu > 14.x)'
+    smartvisu_dir: /var/www/html/smartVISU
+
+    # nur \"alte\" Linux-Variationen
+    # smartvisu_dir: /var/www/smartVISU
+    # generate_pages: True
+    # handle_widgets: True
+    # overwrite_templates: Yes
+    # visu_style: blk
+
+# Command Line Interface
+# wichtig für Funktionsprüfungen solange keine Visu zur Verfügung steht
+cli:
+    class_name: CLI
+    class_path: plugins.cli
+    ip: 0.0.0.0
+    update: 'True'
+
+# alter SQL-Treiber
+# [sql]
+# class_name: SQL
+# class_path: plugins.sqlite
+# SQL-Treiber, unterstützt auch die SmartVISU 2.8/2.9
+# dazu muß im websocket plugin zwingend die Protokollversion 4 eingetragen sein
+
+sql:
+    class_name: SQL
+    class_path: plugins.sqlite_visu2_8
+
+# Onewire Plugin
+# [ow]
+# class_name: OneWire
+# class_path: plugins.onewire

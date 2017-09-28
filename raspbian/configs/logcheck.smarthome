@@ -1,0 +1,10 @@
+^[0-9\-]{10}[ :0-9]{9}[,0-9]{0,4} DEBUG
+^[0-9\-]{10}[ :0-9]{9}[,0-9]{0,4} INFO
+^[0-9\-]{10}[ :0-9]{9}[,0-9]{0,4} WARNING\s(.*)problem reading cache
+^[0-9\-]{10}[ :0-9]{9}[,0-9]{0,4} WARNING(.*)IMAP(.*)object is not subscriptable
+^[0-9\-]{10}[ :0-9]{9}[,0-9]{0,4} ERROR(.*)IMAP: problem parsing message
+^[0-9\-]{10}[ :0-9]{9}[,0-9]{0,4} ERROR(.*)No route to host
+(.*)TypeError: 'NoneType' object is not subscriptable(.*)
+^[0-9\-]{10}[ :0-9]{9}[,0-9]{0,4} ERROR(.*)horizon
+^[0-9\-]{10}[ :0-9]{9}[,0-9]{0,4} WARNING\s\Main(.*)CLI: You should set a password for this plugin.
+^[0-9\-]{10}[ :0-9]{9}[,0-9]{0,4} ERROR(.*)Needing more worker threads than the specified maximum

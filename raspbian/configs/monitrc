@@ -1,0 +1,163 @@
+set daemon 90
+   with start delay 90
+
+set logfile /var/log/monit.log
+set mailserver
+    localhost
+    PORT 25
+    with timeout 15 seconds
+
+set mail-format {      from: Monit SmarthomeNG <monit@localhost> }
+
+set alert monit@localhost only on { timeout }
+set httpd port 2812 and
+allow 10.0.0.0/8
+allow localhost
+
+#EKEYDECODER
+#check process ekeydecoder with pidfile /var/run/ekeydecoder_daemon.pid
+# start program "/etc/init.d/ekeydecoder start" as uid "root" and gid "root"
+# stop program "/etc/init.d/ekeydecoder stop" as uid "root" and gid "root"
+# restart program "/etc/init.d/ekeydecoder restart" as uid "root" and gid "root" 
+# if 30 restarts within 45 cycles then unmonitor
+ 
+#SUSV
+#check process susvd with pidfile /var/run/susvd.pid
+# start program "/opt/susvd/susvd start"
+# stop program "/opt/susvd/susvd stop"
+# restart program "/opt/susvd/susvd restart"
+# if 10 restarts within 15 cycles then unmonitor
+
+# Avahi daemon
+ check process avahi with pidfile /var/run/avahi-daemon/pid
+   group system
+   start program = "/bin/systemctl start avahi-daemon"
+   stop  program = "/bin/systemctl stop avahi-daemon"
+   restart  program = "/bin/systemctl restart avahi-daemon"
+   if failed host 127.0.0.1 port 5353 type udp then restart
+   if 5 restarts within 5 cycles then timeout
+   depends on avahi_bin
+   depends on avahi_rc
+
+ check file avahi_bin with path /usr/sbin/avahi-daemon
+   group system
+   if failed permission 755 then unmonitor
+   if failed uid root then unmonitor
+   if failed gid root then unmonitor
+
+ check file avahi_rc with path /etc/init.d/avahi-daemon
+   group system
+   if failed permission 755 then unmonitor
+   if failed uid root then unmonitor
+   if failed gid root then unmonitor
+   
+#CRON
+check process cron with pidfile /var/run/crond.pid
+   group system
+   depends on cron_rc
+   start program = "/bin/systemctl start cron"
+   stop  program = "/bin/systemctl stop cron"
+   restart program = "/bin/systemctl restart cron"
+   if 10 restarts within 15 cycles then unmonitor
+   depends on cron_bin
+   depends on cron_rc
+
+ check file cron_bin with path /usr/sbin/cron
+   group system
+   if failed permission 755 then unmonitor
+   if failed uid root then unmonitor
+   if failed gid root then unmonitor
+
+ check file cron_rc with path /etc/init.d/cron
+   group system
+   if failed permission 755 then unmonitor
+   if failed uid root then unmonitor
+   if failed gid root then unmonitor
+
+#NFS
+check process NFS matching "nfsd"
+  	start program = "/bin/systemctl start nfs-kernel-server"
+  	stop program  = "/bin/systemctl stop nfs-kernel-server"
+	restart program = "/bin/systemctl restart nfs-kernel-server"
+  	if failed host 127.0.0.1 port 2049 type tcp for 2 cycles then restart
+  	if 10 restarts within 15 cycles then unmonitor
+
+#UDEV
+check process udev matching "systemd-udevd"
+ start program "/bin/systemctl start udev"
+ stop program "/bin/systemctl stop udev"
+ restart program "/bin/systemctl restart udev"
+ if 20 restarts within 45 cycles then unmonitor
+
+#KNXD
+check process knxd matching "knxd"
+ start program "/bin/systemctl start knxd"
+ stop program "/bin/systemctl stop knxd"
+ restart program "/bin/systemctl restart knxd"
+ if 20 restarts within 45 cycles then unmonitor
+ 
+#EXIM
+#check process exim4 with pidfile /var/run/exim4/exim.pid
+#   group exim
+#   start program = "/bin/systemctl start exim4"
+#   stop program = "/bin/systemctl stop exim4"
+#   restart program = "/bin/systemctl restart exim4"
+#   if 20 restarts within 50 cycles then unmonitor
+#   depends on exim_init
+ 
+# check file exim_init with path /etc/init.d/exim4
+#   group exim
+#   if failed checksum then unmonitor
+#   if failed permission 755 then unmonitor
+#   if failed uid root then unmonitor
+#   if failed gid root then unmonitor
+ 
+   
+#WWW
+check process apache2 with pidfile /var/run/apache2/apache2.pid
+ start program = "/bin/systemctl start apache2"
+ stop program = "/bin/systemctl stop apache2"
+ restart program = "/bin/systemctl restart apache2"
+ if failed host 127.0.0.1 port 80 protocol http
+ and request "/monittoken" with timeout 10 seconds then restart
+ if 15 restarts within 25 cycles then unmonitor
+ 
+#RADIUS
+#check process freeradius with pidfile /var/run/freeradius/freeradius.pid
+# start program = "/bin/systemctl start freeradius"
+# stop program = "/bin/systemctl stop freeradius"
+# restart program = "/bin/systemctl restart freeradius"
+# if failed host 127.0.0.1 port 1812 type udp protocol radius secret "SECRET" then alert
+# if 15 restarts within 25 cycles then unmonitor
+ 
+#SMARTHOME
+check process smarthome with pidfile /usr/local/smarthome/var/run/smarthome.pid
+ start program "/bin/systemctl start smarthome"
+ stop program "/bin/systemctl stop smarthome"
+ restart program "/bin/systemctl restart smarthome"
+ if 20 restarts within 45 cycles then unmonitor
+
+#LIRC
+#check process lirc with pidfile /var/run/lirc/lircd.pid
+# start program "/bin/systemctl start lircd"
+# stop program "/bin/systemctl stop lircd"
+# restart program "/bin/systemctl restart lircd"
+# if 20 restarts within 45 cycles then unmonitor
+
+#WATCHDOG
+#check process watchdog with pidfile /var/run/watchdog.pid
+# start program "/bin/systemctl start watchdog"
+# stop program "/bin/systemctl start watchdog"
+# restart program "/bin/systemctl restart watchdog"
+# if 20 restarts within 45 cycles then unmonitor
+ 
+#System
+check system localhost
+ group system
+ if loadavg (1min) > 20 then alert
+ if loadavg (5min) > 40 then alert
+ if memory usage > 75% then alert
+ if swap usage > 35% then alert
+ if cpu usage (user) > 85% then alert
+ if cpu usage (system) > 75% then alert
+ if cpu usage (wait) > 65% then alert
