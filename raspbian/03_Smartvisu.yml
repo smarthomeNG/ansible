@@ -1,0 +1,116 @@
+---
+- name: Install Smartvisu
+  hosts: public
+  remote_user: root
+  become_user: root
+  become: true
+
+  vars:
+    apachepackages:
+      ["libawl-php",
+      "php7.0-curl",
+      "php7.0",
+      "php7.0-json",
+      "libapache2-mod-php7.0",
+      "libmcrypt4",
+      "php7.0-xml",
+      "apache2"]
+
+    smartvisupath: /var/www/html/smartVISU
+    smartvisupath2: /var/www/html/smartVISU2.9
+    htmlpath: /var/www/html
+    
+  tasks:
+  - name: Install Apache and Co
+    apt:
+      name: "{{ item }}"
+      state: latest
+      update_cache: yes
+    with_items: "{{ apachepackages }}"
+    register: apt  
+  - debug: var=apt
+
+  - name: Install git
+    apt: name=git force=no state=latest
+    register: git  
+  - debug: var=git
+
+  - name: Install mbstring
+    apt: name=php-mbstring force=no state=latest install_recommends=yes
+    register: git  
+  - debug: var=git
+
+  - name: Git Smartvisu develop
+    git:
+      repo: 'https://github.com/Martin-Gleiss/smartvisu'
+      dest: "{{ smartvisupath2 }}"
+      version: develop
+    register: git  
+  - debug: var=git
+
+  - name: Git Smartvisu master
+    git:
+      repo: 'https://github.com/Martin-Gleiss/smartvisu'
+      dest: "{{ smartvisupath }}"
+      version: master
+    register: git  
+  - debug: var=git
+
+  - name: ignore perm2
+    command: git config core.fileMode false chdir=/var/www/html/smartVISU
+
+  - name: ignore perm29
+    command: git config core.fileMode false chdir=/var/www/html/smartVISU2.9
+
+  - name: flexible-quad
+    unarchive:
+      src: configs/flexible-quad.tar
+      dest: /var/www/html/smartVISU2.9/pages/
+    register: quad  
+  - debug: var=quad
+
+  - name: Change Owner
+    file:
+      path: "{{ htmlpath }}"
+      owner: www-data
+      group: www-data
+      mode: 0775
+      recurse: yes
+      state: directory
+
+  - name: change server
+    lineinfile:
+      path: /etc/apache2/apache2.conf      
+      line: 'ServerName SmartHomeNG.local.com'
+      state: present
+      insertbefore: BOF
+
+  - name: create phpinfo
+    blockinfile:
+      mode: 0644
+      owner: www-data
+      group: www-data
+      create: yes
+      path: /var/www/html/phpinfo.php
+      block: |
+        <?php
+        // Show all information, defaults to INFO_ALL
+        phpinfo();
+        ?>    
+
+  - name: enable mbstring
+    command: 'phpenmod mbstring'
+    register: mbstring
+  - debug: var=mbstring
+
+
+  - name: check server
+    command: 'apachectl configtest'
+    register: apachecheck
+  - debug: var=apachecheck
+
+  - name: Enable PHP7
+    command: a2enmod php7.0
+    register: a2enconf
+  - debug: var=a2enconf
+

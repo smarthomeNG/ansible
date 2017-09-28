@@ -1,0 +1,126 @@
+---
+- name: Install Logcheck
+  hosts: public
+  remote_user: root
+  become_user: root
+  become: true
+
+    
+  tasks:  
+  - name: Install logcheck
+    apt: name=logcheck force=no state=latest install_recommends=yes
+    register: apt  
+  - debug: var=apt
+
+  - name: Add User
+    user:
+      name: smarthome
+      groups: logcheck, Debian-exim
+      append: yes
+
+  - name: Copy logtail
+    copy:
+      src: executables/logtail
+      dest: /usr/sbin/
+      owner: root
+      group: logcheck
+      mode: 0755
+
+  - name: Copy logtail2
+    copy:
+      src: executables/logtail
+      dest: /usr/sbin/logtail2
+      owner: root
+      group: logcheck
+      mode: 0755
+
+  - name: change finger
+    command: "chfn -f 'SmarthomeNG' logcheck"
+    ignore_errors: yes
+
+  - name: Copy logfiles
+    copy:
+      src: configs/logcheck.logfiles
+      dest: /etc/logcheck/logcheck.logfiles
+      owner: root
+      group: logcheck
+      mode: 0644
+
+  - name: Copy Logcheck sh
+    copy:
+      src: configs/logcheck.smarthome
+      dest: /etc/logcheck/ignore.d.server/smarthome
+      owner: root
+      group: logcheck
+      mode: 0644
+
+  - name: Logcheck Radius
+    blockinfile:
+      path: /etc/logcheck/ignore.d.server/radius
+      create: yes
+      owner: root
+      group: logcheck
+      mode: 0644
+      block: |
+        ^\w{3}(.*)[0-9]{1,2}\s[:0-9]{8}\s[._[:alnum:]-]+\s:\sAuth(.*)OK
+        ^\w{3}(.*)[0-9]{1,2}\s[:0-9]{8}\s[._[:alnum:]-]+\s:\sInfo
+
+  - name: Logcheck Exim4
+    lineinfile:
+      path: /etc/logcheck/ignore.d.server/exim4
+      line: '^[0-9]{4}\-[0-9]{1,2}\-[0-9]{1,2}\s+[:0-9]{8}\s+[-[:alnum:]]+ [=-]> (.*)OK\s+,\s+completed'
+
+  - name: Logcheck Apache2
+    blockinfile:
+      path: /etc/logcheck/ignore.d.server/apache2
+      create: yes
+      owner: root
+      group: logcheck
+      mode: 0644
+      block: |
+        ^\[\w{3}\s+\w{3}\s+[0-9]{1,2}\s+[:.0-9]{15}\s+[0-9]{4}\]\s+\[(.*)\:notice\]\s+\[pid(.*)\](.*)\:\s+Graceful restart
+        ^\[\w{3}\s+\w{3}\s+[0-9]{1,2}\s+[:.0-9]{15}\s+[0-9]{4}\]\s+\[(.*)\:notice\]\s+\[pid(.*)\](.*)\:(.*)resuming normal
+        ^\[\w{3}\s+\w{3}\s+[0-9]{1,2}\s+[:.0-9]{15}\s+[0-9]{4}\]\s+\[(.*)\:notice\]\s+\[pid(.*)\](.*)\:\s+Command line: '/usr/sbin/apache2'
+
+  - name: Logcheck Apache2
+    blockinfile:
+      path: /etc/logcheck/ignore.d.server/monit
+      create: yes
+      owner: root
+      group: logcheck
+      mode: 0644
+      block: |
+        ^\[\w{3,4}\s+\w{3}\s+[0-9]{1,2}\s+[:0-9]{8}\]\s+info
+        Reinitializing Monit
+
+  - name: Copy Logcheck auth
+    copy:
+      src: configs/logcheck.auth
+      dest: /etc/logcheck/ignore.d.server/auth
+      owner: root
+      group: logcheck
+      mode: 0644
+
+  - name: Copy Logcheck syslog
+    copy:
+      src: configs/logcheck.syslog
+      dest: /etc/logcheck/ignore.d.server/syslog 
+      owner: root
+      group: logcheck
+      mode: 0644
+
+  - name: Copy Logcheck lirc
+    copy:
+      src: configs/logcheck.lirc
+      dest: /etc/logcheck/ignore.d.server/lirc
+      owner: root
+      group: logcheck
+      mode: 0644
+
+  - name: change prio
+    replace: 
+      destfile: /etc/cron.d/logcheck
+      regexp: "nice" 
+      replace: "ionice -c3 nice" 
+    ignore_errors: yes
+

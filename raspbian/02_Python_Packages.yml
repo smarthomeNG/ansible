@@ -1,0 +1,114 @@
+---
+- name: Install Python PIP
+  hosts: public
+  remote_user: root
+  become_user: root
+  become: true
+
+  vars:
+    pythonremove:
+      ["python3-keyring",
+      "python3-pyasn1",
+      "python3-keyrings.alt",
+      "python3-wheel",
+      "python3-setuptools",
+      "python3-yaml"
+      ]
+
+
+  tasks:
+  - name: remove apt
+    apt:
+      name: "{{ item }}"
+      state: absent
+      autoremove: yes
+      autoclean: yes
+      purge: yes
+    with_items: "{{ pythonremove }}"
+    register: apt  
+    ignore_errors: yes
+  - debug: var=apt
+
+  - name: Add src
+    replace: 
+      destfile: /etc/apt/sources.list 
+      regexp: "^#deb-src" 
+      replace: "deb-src" 
+    ignore_errors: yes
+
+  - name: Fix
+    command: 'apt-get -f -y install'
+    register: fix
+  - debug: var=fix
+
+  - name: Install PIP3
+    apt:
+      name: python3-pip
+      state: latest
+      install_recommends: yes
+    register: pip3
+  - debug: msg='PIP3 Installation "{{ pip3 }}"'
+  
+  - name: Install PIP
+    apt:
+      name: python-pip
+      state: latest
+      install_recommends: yes
+    register: pip
+  - debug: msg='PIP Installation "{{ pip }}"'
+
+  - name: Install Yolk3k
+    pip: name=yolk3k executable=pip3
+    register: yolk3k
+  - debug: msg='YOLK3K Installation "{{ yolk3k }}"'
+
+  - name: Install GPIO
+    pip: name=RPi.GPIO executable=pip3
+    register: GPIO
+  - debug: msg='GPIO Installation "{{ GPIO }}"'
+
+  - name: Install Requests
+    pip: name=requests executable=pip3
+    register: requests
+  - debug: msg='requests Installation "{{ requests }}"'
+
+  - name: Install pymodbus
+    pip: name=pymodbus executable=pip3
+    register: pymodbus
+  - debug: msg='pymodbus Installation "{{ pymodbus }}"'
+
+  - name: Install pymysql
+    pip: name=pymysql executable=pip3
+    register: pymysql
+  - debug: msg='pymysql Installation "{{ pymysql }}"'
+
+  - name: Install wheel
+    pip: name=wheel executable=pip3
+    register: wheel
+  - debug: msg='wheel Installation "{{ wheel }}"'
+
+  - name: Install libffi-dev
+    apt:
+      name: libffi-dev
+      state: latest
+      install_recommends: no
+    register: libffi
+  - debug: msg='libffi Installation "{{ libffi }}"'
+
+  - name: Install libssl-dev
+    apt:
+      name: libssl-dev
+      state: latest
+      install_recommends: no
+    register: libssl
+  - debug: msg='libssl Installation "{{ libssl }}"'
+
+  - name: Install awake
+    pip: name=awake executable=pip3
+    register: awake
+  - debug: msg='awake Installation "{{ awake }}"'
+
+  - name: Install setuptools
+    pip: name=setuptools executable=pip3
+    register: setuptools
+  - debug: msg='setuptools Installation "{{ setuptools }}"'

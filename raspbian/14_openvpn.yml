@@ -1,0 +1,71 @@
+---
+- name: Install OpenVPN
+  hosts: public
+  remote_user: root
+  become_user: root
+  become: true
+  
+  tasks:
+  
+  - name: Install openvpn
+    apt: name=openvpn force=no state=latest install_recommends=yes
+    register: apt  
+  - debug: var=apt
+
+  - name: Install easyrsa
+    apt: name=easy-rsa force=no state=latest install_recommends=no
+    register: apt  
+  - debug: var=apt
+
+  - name: Copy easyrsa
+    command: 'cp /usr/share/easy-rsa /etc/openvpn/easy-rsa -R'
+    register: rsa  
+  - debug: var=rsa
+        
+  - name: Copy config
+    copy:
+      src: configs/openvpn.conf
+      dest: /etc/openvpn/server.conf
+      mode: 0644
+
+  - name: ip4
+    replace: 
+      destfile: /etc/sysctl.conf
+      regexp: "^#net.ipv4.ip_forward=1" 
+      replace: "net.ipv4.ip_forward=1" 
+    ignore_errors: yes
+
+  - name: store sysctl
+    shell: "sysctl -p"
+    register: sysctl
+  - debug: var=sysctl
+
+  - name: Install iptables
+    apt: name=iptables-persistent force=no state=latest
+    register: apt  
+  - debug: var=apt
+
+  - name: iptables script
+    blockinfile:
+      path: /usr/local/bin/iptables_openvpn.sh
+      mode: 0777
+      owner: smarthome
+      group: smarthome
+      create: yes
+      block: |
+        #!/bin/bash
+        iptables -t filter -F
+        iptables -t nat -F
+        iptables -A FORWARD -m state --state RELATED,ESTABLISHED -j ACCEPT
+        iptables -A FORWARD -i tun0 -j ACCEPT
+        iptables -A FORWARD -j REJECT
+        iptables -t nat -A POSTROUTING -s '10.8.0.0/24' -j MASQUERADE
+        iptables-save > /etc/iptables/rules.v4
+
+  - name: run iptables
+    shell: "/usr/local/bin/iptables_openvpn.sh"
+    register: iptables  
+  - debug: var=iptables
+
+  - name: disable openvpn
+    systemd: enabled=no name=openvpn.service

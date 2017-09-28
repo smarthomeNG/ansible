@@ -1,0 +1,68 @@
+---
+- name: Install lirc
+  hosts: public
+  remote_user: root
+  become_user: root
+  become: true
+                           
+  tasks:
+  - name: Install lirc
+    apt: name=lirc force=no state=latest
+    register: lirc  
+  - debug: var=lirc
+
+  - name: reload
+    command: 'systemctl daemon-reload'
+    
+  - name: Copy devinput
+    copy:
+      src: configs/devinput.lircd.conf
+      dest: /etc/lirc/lircd.conf.d/
+      owner: root
+      group: root
+      mode: 0644
+
+  - name: Copy options
+    copy:
+      src: configs/lirc_options.conf
+      dest: /etc/lirc/
+      owner: root
+      group: root
+      mode: 0644
+
+  - name: Copy service
+    copy:
+      src: configs/lircd.service
+      dest: /lib/systemd/system/lircd.service
+      owner: root
+      group: root
+      mode: 0644
+
+  - name: Stop lirc
+    systemd: state=stopped name=lircd.service
+
+  - name: Restart Socket
+    systemd: state=restarted name=lircd.socket
+    notify: disable_socket
+
+  - name: Restart Service
+    systemd: state=restarted name=lircd.service
+    notify: disable_service
+
+  - name: disable lircd-setup
+    systemd: enabled=no name=lircd-setup.service    
+  - name: disable lircmd
+    systemd: enabled=no name=lircmd.service    
+  - name: disable lircd-uinput
+    systemd: enabled=no name=lircd-uinput.service    
+  - name: disable irexec
+    systemd: enabled=no name=irexec.service    
+
+
+  handlers:
+  - name: disable_service
+    systemd: enabled=no name=lircd.service    
+
+  - name: disable_socket
+    systemd: enabled=no name=lircd.socket
+

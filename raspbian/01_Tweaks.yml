@@ -1,0 +1,417 @@
+---
+- name: Tweaks
+  hosts: public
+  remote_user: root
+  become_user: root
+  become: true
+
+
+      
+  tasks:
+  - name: Update Cache
+    apt: update_cache=yes
+
+  - name: Safe aptitude upgrade
+    apt: upgrade=safe
+    register: apt
+  - debug: var=apt
+
+  - name: Upgrade Dist
+    apt: upgrade=dist
+    register: apt
+  - debug: var=apt
+
+  - name: Install telnet
+    apt:
+      name: telnet
+      state: latest
+    register: telnet
+  - debug: var=telnet
+
+  - name: Install tcpdump
+    apt:
+      name: tcpdump
+      state: latest
+    register: tcpdump
+  - debug: var=tcpdump
+
+  - name: Install unzip
+    apt: name=unzip force=no state=latest
+    register: apt  
+  - debug: var=apt
+
+  - name: Install screen
+    apt:
+      name: screen
+      state: latest
+    register: screen
+  - debug: var=screen
+
+  - name: Install checkinstall
+    apt:
+      name: checkinstall
+      state: latest
+    register: checkinstall
+  - debug: var=checkinstall
+
+  - name: Install rpiupdate
+    apt:
+      name: rpi-update
+      state: latest
+    register: rpiupdate
+  - debug: var=rpiupdate
+
+  - name: set timezone to Central Europe
+    timezone:
+      name: Europe/Vienna
+      
+  - name: install english locale
+    locale_gen:
+      name: en_GB.UTF-8
+      state: present
+
+  - name: install locale
+    locale_gen:
+      name: de_DE.UTF-8
+      state: present
+
+  - name: Set locale
+    command: 'update-locale LANG=de_DE.UTF-8'
+    register: locale
+  - debug: var=locale
+
+  - name: Tastatur
+    replace: 
+      destfile: /etc/default/keyboard
+      regexp: '"gb"'
+      replace: '"de"' 
+    ignore_errors: yes
+  
+  - name: Make ssh dir
+    file: 
+      path: /home/pi/.ssh
+      state: directory
+      owner: pi
+      group: pi
+      mode: 0600
+
+  - name: tweak ssh
+    blockinfile:
+      path: /etc/ssh/ssh_config
+      block: |
+            ServerAliveInterval 60
+            ControlMaster auto
+            ControlPath ~/.ssh/ssh_mux_%h_%p_%r
+            ControlPersist 448h
+
+  - name: Make ssh root dir
+    file:
+      path: /root/.ssh
+      state: directory
+      owner: root
+      group: root
+      mode: 0600
+
+  - name: Permit empty ssh
+    replace: 
+      destfile: /etc/ssh/sshd_config
+      regexp: "^#PermitEmptyPasswords no" 
+      replace: "PermitEmptyPasswords yes" 
+    ignore_errors: yes
+
+  - name: Permit root ssh
+    replace: 
+      destfile: /etc/ssh/sshd_config
+      regexp: "^#PermitRootLogin(.*)" 
+      replace: "PermitRootLogin yes" 
+    ignore_errors: yes
+
+  - name: Securetty
+    lineinfile:
+      path: /etc/securetty
+      insertafter: '^console'
+      line: 'ssh'
+
+  - name: getty AMA
+    systemd: masked=yes name=serial-getty@ttyAMA0.service
+    register: getty
+  - debug: var=getty
+
+  - name: getty S0
+    systemd: masked=yes name=serial-getty@ttyS0.service
+    register: getty
+  - debug: var=getty
+        
+  - name: Restart sshd
+    systemd: state=restarted name=ssh
+
+  - name: Enable sshd
+    systemd: enabled=yes name=ssh.service
+    register: sshd
+  - debug: var=sshd
+          
+  - name: Pi dialout
+    user:
+      name: pi
+      groups: sudo, i2c, adm, audio, video, plugdev, input, netdev, spi, gpio, dialout 
+      append: yes
+
+  - name: cmdline tty
+    replace: 
+      destfile: /boot/cmdline.txt
+      regexp: "console=serial0,115200 " 
+      replace: "" 
+    ignore_errors: yes
+
+  - name: cmdline root
+    replace: 
+      destfile: /boot/cmdline.txt
+      regexp: "root=PARTUUID=[0-9]*[-][0-9]* +" 
+      replace: "root=/dev/mmcblk0p2 " 
+    ignore_errors: yes
+
+  - name: Test for entry
+    command: 'grep "rootdelay=5 consoleblank=0" /boot/cmdline.txt'
+    register: test_grep1
+    ignore_errors: yes
+
+  - name: cmdline add
+    lineinfile: 
+      path: /boot/cmdline.txt
+      backrefs: True
+      state: present
+      regexp: '(.*)$'
+      line: '\1 rootdelay=5 consoleblank=0'
+    when: test_grep1.stdout == ""
+
+  - name: edit config
+    blockinfile:
+      path: /boot/config.txt
+      block: |
+        hdmi_safe=1
+        disable_overscan=1
+        hdmi_force_hotplug=1
+        #hdmi_drive=2
+        config_hdmi_boost=4
+        sdtv_mode=2
+        dtoverlay=lirc-rpi
+        enable_uart=1
+        #dtparam=watchdog=on
+
+  - name: Test for entry
+    shell: grep "^i2c-bcm2708" /etc/modules
+    register: test_grep2
+    ignore_errors: yes
+
+  - name: Modules bcm
+    lineinfile:
+      path: /etc/modules
+      insertafter: EOF
+      line: 'i2c-bcm2708'
+    when: test_grep2.stdout == ""
+
+  - name: Root Password to root
+    user:
+      name: root
+      shell: /bin/bash
+      update_password: always
+      password: $6$VVOVNwyHjK4u$yia53qHOkybIY1u9umm5pThwAeV0OPt5N0WTZnWhqPMygdWHvibStfgngOqWVQmhSi30Szn9tLNn/zjkiwl.11   
+
+  - name: Create sh Group
+    group:
+      name: smarthome
+      state: present
+
+  - name: udev tty
+    blockinfile:
+      path: /etc/udev/rules.d/99-dev.rules
+      create: yes
+      mode: 0644
+      owner: root
+      group: root
+      block: |
+        KERNEL=="ttyS0", OWNER="root", GROUP="dialout", MODE="0660"
+
+  - name: cronjob
+    cron:
+      name: udev
+      user: root
+      special_time: reboot
+      job: 'udevadm trigger'
+      cron_file: udev
+
+  - name: Create sh User
+    user:
+      name: smarthome
+      shell: /bin/bash
+      groups: smarthome
+      append: no
+      update_password: always
+      password: ""
+      comment: 'SmarthomeNG User'
+
+  - name: Add groups
+    user:
+      name: smarthome
+      groups: www-data, sudo, i2c, adm, audio, video, plugdev, input, netdev, spi, gpio, dialout, root, tty, users
+      append: yes
+
+  - name: Make ssh dir
+    file: 
+      path: /home/smarthome/.ssh
+      state: directory
+      owner: smarthome
+      group: smarthome
+      mode: 0600
+
+  - name: ssh warning
+    file:
+      path: /etc/profile.d/sshpwd.sh
+      state: absent
+
+  - name: Install fakehwclock
+    apt: name=fake-hwclock force=no state=latest
+    register: fakehwclock  
+  - debug: var=fakehwclock
+
+  - name: restart fakehwclock
+    systemd: state=restarted name=fake-hwclock.service
+    notify: enable_fake-hwclock 
+
+  - name: chmod rsyslog conf
+    file:
+      path: /etc/rsyslog.conf
+      state: touch
+      owner: smarthome
+      group: smarthome
+      mode: 0755
+
+  - name: hostname public
+    command: 'hostnamectl set-hostname SmartHomeNG'
+    ignore_errors: yes
+
+  - name: hosts public
+    replace: 
+      destfile: /etc/hosts
+      regexp: "^127.0.[0-1].1\traspberrypi" 
+      replace: "127.0.0.1\tSmartHomeNG" 
+    ignore_errors: yes
+
+  - name: Colorize
+    get_url:
+      url: http://www.fam.tuwien.ac.at/~schamane/_/_media/bash:mycolorize-r.sh
+      dest: /usr/local/bin/colorize
+      mode: 0777
+    register: colorize  
+  - debug: var=colorize
+
+  - name: Copy colorbash
+    copy:
+      src: executables/colorbash.sh
+      dest: /etc/profile.d/
+      owner: root
+      group: root
+      mode: 0777
+
+  - name: Copy tweakbash
+    copy:
+      src: executables/tweakbash.sh
+      dest: /etc/profile.d/
+      owner: root
+      group: root
+      mode: 0777
+
+  - name: unalias ls pi
+    replace: 
+      destfile: /home/pi/.bashrc
+      regexp: "^\\s*[^#]alias ls='ls --color=auto'" 
+      replace: "#alias ls='ls --color=auto'" 
+    ignore_errors: yes
+  - name: unalias egrep pi
+    replace: 
+      destfile: /home/pi/.bashrc
+      regexp: "^\\s*[^#]alias egrep='egrep --color=auto'" 
+      replace: "#alias egrep='egrep --color=auto'" 
+    ignore_errors: yes
+
+  - name: unalias ls sh
+    replace: 
+      destfile: /home/smarthome/.bashrc
+      regexp: "^\\s*[^#]alias ls='ls --color=auto'" 
+      replace: "#alias ls='ls --color=auto'" 
+    ignore_errors: yes
+  - name: unalias egrep sh
+    replace: 
+      destfile: /home/smarthome/.bashrc
+      regexp: "^\\s*[^#]alias egrep='egrep --color=auto'" 
+      replace: "#alias egrep='egrep --color=auto'" 
+    ignore_errors: yes
+
+  - name: comment PS1 sh
+    replace: 
+      destfile: /home/smarthome/.bashrc
+      regexp: "^\\s*[^#]PS1=" 
+      replace: ": #PS1=" 
+    ignore_errors: yes
+ 
+  - name: comment PS1 pi
+    replace: 
+      destfile: /home/pi/.bashrc
+      regexp: "^\\s*[^#]PS1=" 
+      replace: ": #PS1=" 
+    ignore_errors: yes
+
+  - name: cron log
+    replace: 
+      destfile: /etc/rsyslog.conf
+      regexp: "^#cron." 
+      replace: "cron." 
+    ignore_errors: yes
+
+  - name: cron log2
+    replace: 
+      destfile: /etc/rsyslog.conf
+      regexp: "^*.*;auth,authpriv.none" 
+      replace: "*.*;auth,authpriv.none;cron.none" 
+    ignore_errors: yes
+    register: cronlog
+  - debug: var=cronlog 
+  
+  - name: sudoers
+    lineinfile:
+      path: /etc/sudoers.d/010_smarthome-nopasswd
+      create: yes
+      line: 'smarthome ALL=(ALL) NOPASSWD: ALL'
+
+  - name: Copy cleanbash
+    copy:
+      src: executables/cleanbash.sh
+      dest: /usr/local/bin/
+      mode: 0777
+      owner: smarthome
+      group: smarthome
+
+  - name: disable systemslice
+    blockinfile:
+      path: /etc/rsyslog.d/ignore-systemd-session-slice.conf
+      create: yes
+      block: |
+        if $programname == "systemd" and ($msg contains "Starting Session" or $msg contains "Started Session" or $msg contains "session closed" or $msg contains "session opened" or $msg contains "Created slice" or $msg contains "Starting user-" or $msg contains "Starting User Slice of" or $msg contains "Startup" or $msg contains "Removed session" or $msg contains "New session" or $msg contains "Removed slice User Slice of" or $msg contains "Stopping User Slice of") then stop
+        if $programname == "systemd-logind" and ($msg contains "Starting Session" or $msg contains "Started Session" or $msg contains "session closed" or $msg contains "session opened" or $msg contains "Created slice" or $msg contains "Starting user-" or $msg contains "Starting User Slice of" or $msg contains "Removed session"  or $msg contains "New session" or $msg contains "Removed slice User Slice of" or $msg contains "Stopping User Slice of") then stop     
+    notify: rsyslog
+    
+  - name: systemd-timesyncd
+    systemd: enabled=yes name=systemd-timesyncd.service
+    register: systemd-timesyncd
+  - debug: var=systemd-timesyncd 
+       
+  handlers:
+  - name: enable_fake-hwclock 
+    systemd: enabled=yes name=fake-hwclock.service
+    register: enable_fake-hwclock 
+  - debug: var=enable_fake-hwclock 
+
+  - name: rsyslog
+    systemd: state=restarted name=rsyslog.service
+    register: rsyslog
+  - debug: var=rsyslog    

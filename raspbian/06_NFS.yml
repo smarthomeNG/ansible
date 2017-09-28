@@ -1,0 +1,92 @@
+---
+- name: Install NFS
+  hosts: public
+  remote_user: root
+  become_user: root
+  become: true
+
+  vars:
+    new: '10/24'
+    
+  tasks:  
+  - name: Install NFS
+    apt: name=nfs-kernel-server force=no state=latest
+    register: apt  
+  - debug: var=apt
+
+  - name: Create hosts file
+    file: path=/etc/exports state=touch
+
+  - name: clear exports
+    lineinfile: dest=/etc/exports state=absent regexp='(.*)'
+
+  - name: Set IP
+    set_fact:
+      IP: "{{ ansible_default_ipv4.address }}"
+
+  - name: Update IP range
+    set_fact:
+      NewIP: "{{ IP.split('.')[0] }}.{{ IP.split('.')[1] }}.{{ IP.split('.')[2] }}.{{ new }}"
+    register: newip
+  - debug: var=newip
+
+  - name: smarthomeuid
+    shell: id smarthome | awk -F"[=(]" '{printf "%1s",$2}'
+    register: smarthomeuid
+  - debug: var=smarthomeuid.stdout
+
+  - name: smarthomegid
+    shell: id smarthome|grep "^uid"|awk -F"[=(]" '{printf "%1s",$4}'
+    register: smarthomegid
+  - debug: var=smarthomegid.stdout
+  
+  - name: wwwuid
+    shell: id www-data|grep "^uid"|awk -F"[=(]" '{printf "%1s",$2}'
+    register: wwwuid
+
+  - name: wwwgid
+    shell: id www-data|grep "^uid"|awk -F"[=(]" '{printf "%1s",$4}'
+    register: wwwgid
+
+  - name: update exports
+    lineinfile: dest=/etc/exports
+      line='{{item}}'
+    with_items:
+      - '/usr/local/smarthome {{ NewIP }}(no_subtree_check,rw,async,no_wdelay,crossmnt,insecure,no_root_squash,sec=sys,all_squash,anonuid={{ smarthomeuid.stdout }},anongid={{ smarthomegid.stdout }})'
+      - '/var/log {{ NewIP }}(no_subtree_check,rw,async,no_wdelay,crossmnt,insecure,no_root_squash,sec=sys,all_squash,anonuid=0,anongid=0)'
+      - '/var/www/html {{ NewIP }}(no_subtree_check,rw,async,no_wdelay,crossmnt,insecure,no_root_squash,sec=sys,all_squash,anonuid={{ wwwuid.stdout }},anongid={{ wwwgid.stdout }})'
+
+  - name: chmod conf
+    file:
+      path: /etc/exports
+      state: touch
+      owner: smarthome
+      group: smarthome
+      mode: 0755
+          
+  - name: exportfs
+    command: "exportfs -ra"
+    ignore_errors: yes
+    register: exportfs
+    notify: Restart nfs-kernel
+  - debug: var=exportfs
+
+  - name: rpcbind
+    command: rpcbind
+    ignore_errors: yes
+    register: rpcbind
+  - debug: var=rpcbind
+
+  - name: Enable rpcbind
+    systemd: enabled=yes name=rpcbind
+
+  - name: disable nfs
+    systemd: enabled=no name=nfs-kernel-server
+    when: "'public' in group_names"
+        
+  handlers:
+  - name: Restart nfs-kernel
+    systemd: state=restarted name=nfs-kernel-server
+    register: nfs-kernel
+  - debug: var=nfs-kernel
+

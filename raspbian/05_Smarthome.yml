@@ -1,0 +1,146 @@
+---
+- name: Install SmarthomeNG
+  hosts: public
+  remote_user: root
+  become_user: root
+  become: true
+
+  tasks:
+  - name: Create Group
+    group:
+      name: smarthome
+      state: present
+
+  - name: Create User
+    user:
+      name: smarthome
+      shell: /bin/bash
+      groups: smarthome 
+      append: no
+      update_password: always
+      password: ""
+      comment: 'SmarthomeNG User'
+
+  - name: Groups
+    user:
+      name: smarthome
+      shell: /bin/bash
+      groups: www-data, sudo, i2c, adm, audio, video, plugdev, input, netdev, spi, gpio, dialout
+      append: yes
+
+  - name: Install dialog
+    apt: name=dialog force=no state=latest
+    register: apt  
+  - debug: var=apt
+
+  - name: Git SmarthomeNG
+    git:
+      repo: 'git://github.com/smarthomeNG/smarthome.git'
+      dest: /usr/local/smarthome
+      version: master
+      recursive: yes
+    register: git  
+    ignore_errors: yes
+  - debug: var=git
+
+  - name: Git Plugins
+    git:
+      repo: 'git://github.com/smarthomeNG/plugins.git'
+      dest: /usr/local/smarthome/plugins
+      clone: no
+      update: yes
+      version: master
+
+  - name: plugins ignore perm
+    command: git config core.fileMode false chdir=/usr/local/smarthome/plugins
+
+  - name: sh ignore perm
+    command: git config core.fileMode false chdir=/usr/local/smarthome/
+    
+  - name: Create logic yaml
+    file:
+      path: /usr/local/smarthome/etc/logic.yaml
+      state: touch
+      owner: smarthome
+      group: smarthome
+      mode: 0755
+
+  - name: Copy smarthome yaml
+    copy: 
+      remote_src: True 
+      src: /usr/local/smarthome/etc/smarthome.yaml.default
+      dest: /usr/local/smarthome/etc/smarthome.yaml
+
+  - name: Copy plugin yaml
+    copy: 
+      src: configs/smarthome_plugin.yaml
+      dest: /usr/local/smarthome/etc/plugin.yaml
+
+  - name: Install requirements
+    pip: requirements=/usr/local/smarthome/requirements/all.txt executable=pip3
+    become: true
+    become_user: root
+
+  - name: Install ruamel
+    pip: name=ruamel.yaml executable=pip3
+    become: true
+    become_user: root
+
+  - name: Install pymysql
+    pip: name=pymysql executable=pip3
+    become: true
+    become_user: root
+
+  - name: List Modules
+    command: "yolk --list"
+    register: yolk  
+    ignore_errors: yes
+  - debug: var=yolk
+
+  - name: Create Service
+    copy: 
+      dest: /lib/systemd/system/smarthome.service
+      src: configs/smarthome.service
+  
+  - name: Git Autoblind
+    git:
+      repo: 'https://github.com/i-am-offline/smarthome.plugin.autoblind.git'
+      dest: /usr/local/smarthome/plugins/autoblind
+      version: develop
+    register: autoblind 
+    ignore_errors: yes
+  - debug: var=autoblind
+
+  - name: Install rlwrap
+    apt:
+      name: rlwrap
+      state: latest
+    register: rlwrap
+  - debug: var=rlwrap
+ 
+  - name: Update Modules
+    command: "yolk --upgrade"
+    register: yolk  
+    ignore_errors: yes
+  - debug: var=yolk
+
+  - name: Change Owner
+    file:
+      path: /usr/local/smarthome
+      owner: smarthome
+      group: smarthome
+      mode: 0775
+      recurse: yes
+      state: directory
+      
+  - name: Restart smarthome service
+    systemd: state=restarted name=smarthome.service
+    register: smarthome_service
+    notify: enable_service
+   
+  handlers:
+  - name: enable_service
+    systemd: enabled=yes name=smarthome.service
+    register: enable_smarthome
+  - debug: var=enable_smarthome
+

@@ -1,0 +1,111 @@
+---
+- name: Install SQL
+  hosts: public
+  remote_user: root
+  become_user: root
+  become: true
+
+  tasks:
+  - name: Install mysql server
+    apt: name=mysql-server force=no state=latest install_recommends=yes update_cache=yes
+    register: apt  
+  - debug: var=apt
+
+  - name: Install mysql client
+    apt: name=mysql-client force=no state=latest install_recommends=yes
+    register: apt  
+    notify: mysql
+  - debug: var=apt
+
+  - name: Stop sql
+    systemd: state=stopped name=mysql
+
+  - name: mysql init
+    blockinfile:
+      path: "/root/mysqlinit"
+      create: yes
+      block: |
+        DELETE FROM user WHERE USER = 'root' AND HOST = 'localhost';
+        CREATE USER 'root'@'%' IDENTIFIED BY 'smarthome';
+        GRANT ALL PRIVILEGES ON *.* TO 'root'@'%' WITH GRANT OPTION;
+        CREATE DATABASE smarthome;
+        CREATE USER 'smarthome'@'localhost' IDENTIFIED BY 'smarthome';
+        GRANT ALL PRIVILEGES ON smarthome.* TO 'smarthome'@'localhost' WITH GRANT OPTION;
+        CREATE USER 'smarthome'@'%' IDENTIFIED BY 'smarthome';
+        GRANT ALL PRIVILEGES ON smarthome.* TO 'smarthome'@'%' WITH GRANT OPTION;
+        FLUSH PRIVILEGES;
+    ignore_errors: yes
+
+  - name: mysql smarthome
+    shell: "mysql -uroot -proot mysql < /root/mysqlinit"
+    async: 10
+    poll: 0
+
+  - name: Restart sql
+    systemd: state=restarted name=mysql
+
+  - name: Install phpmyadmin
+    apt:
+      name: phpmyadmin
+      state: latest
+    register: phpmyadmin
+  - debug: var=phpmyadmin
+
+  - name: symlink
+    file:
+      src: /etc/phpmyadmin/apache.conf
+      dest: /etc/apache2/conf-available/phpmyadmin.conf
+      owner: root
+      group: www-data
+      state: link
+
+  - name: exec
+    replace: 
+      destfile: /etc/php/7.0/apache2/php.ini
+      regexp: "^max_execution_time = (.*)" 
+      replace: "max_execution_time = 9999" 
+    ignore_errors: yes
+
+  - name: memory
+    replace: 
+      destfile: /etc/php/7.0/apache2/php.ini
+      regexp: "^memory_limit = (.*)" 
+      replace: "memory_limit = 512M" 
+    ignore_errors: yes
+
+  - name: size
+    replace: 
+      destfile: /etc/php/7.0/apache2/php.ini
+      regexp: "^upload_max_filesize = (.*)" 
+      replace: "upload_max_filesize = 400M" 
+    ignore_errors: yes
+
+  - name: postsize
+    replace: 
+      destfile: /etc/php/7.0/apache2/php.ini
+      regexp: "^post_max_size = (.*)" 
+      replace: "post_max_size = 400M" 
+    ignore_errors: yes
+    
+  - name: mysqli
+    replace: 
+      destfile: /etc/php/7.0/apache2/php.ini
+      regexp: "^;mysqli.allow_local_infile = On" 
+      replace: "mysqli.allow_local_infile = On" 
+    ignore_errors: yes
+    notify: Restart apache
+    
+  - name: Enable phpmyadmin
+    command: a2enconf phpmyadmin.conf
+    register: a2enconf
+  - debug: var=a2enconf 
+    
+ 
+  handlers:
+  - name: Restart apache
+    systemd: state=restarted name=apache2
+
+  - name: mysql
+    systemd: enabled=no name=mysql.service
+    register: mysql
+  - debug: var=mysql

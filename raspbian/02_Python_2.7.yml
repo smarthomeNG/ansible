@@ -1,0 +1,156 @@
+---
+- name: Install Python 2.7
+  hosts: public
+  remote_user: root
+  become_user: root
+
+  vars:
+    buildessentials:
+      ["tk-dev",
+      "build-essential",
+      "checkinstall",
+      "libncurses5-dev",
+      "libncursesw5-dev",
+      "libreadline6-dev",
+      "libgdbm-dev",
+      "libsqlite3-dev",
+      "libssl-dev",
+      "libbz2-dev",
+      "libexpat1-dev",
+      "liblzma-dev",
+      "zlib1g-dev",
+      "linux-libc-dev"]
+
+
+  tasks:
+  - name: Install Buildessentials
+    apt:
+      name: "{{ item }}"
+      state: latest
+      update_cache: yes
+      install_recommends: yes
+    with_items: "{{ buildessentials }}"
+    register: apt  
+  - debug: var=apt
+
+  - name: Find out Linux Kernel
+    shell: uname -r
+    register: linuxheader
+  - debug: var=linuxheader
+
+  - name: Install Linux Headers
+    apt: name="linux-headers-{{linuxheader.stdout}}" state=latest
+    ignore_errors: yes
+    register: apt  
+  - debug: var=apt
+
+  - name: Add src
+    replace: 
+      destfile: /etc/apt/sources.list 
+      regexp: "^#deb-src" 
+      replace: "deb-src" 
+    ignore_errors: yes
+    
+  - name: Install git
+    apt: name=git force=no state=latest
+    register: git  
+  - debug: var=git
+
+  - name: Fix
+    command: 'apt-get -f -y install'
+    register: fix
+  - debug: var=fix
+
+  - name: Update Cache
+    apt: update_cache=yes
+
+  - name: Safe aptitude upgrade
+    apt: upgrade=safe
+    register: apt  
+  - debug: var=apt
+  
+  - name: Upgrade Dist
+    apt: upgrade=dist
+    register: apt
+  - debug: var=apt
+
+  - stat: path=/etc/deb-files/python_2.7.9-1_armhf.deb
+    register: python27deb
+  
+  - name: Download Python2.7
+    get_url:
+      url: https://www.python.org/ftp/python/2.7.9/Python-2.7.9.tgz
+      dest: /root
+      mode: 0777
+    register: download  
+    when: not python27deb.stat.exists
+  - debug: var=download
+
+  - stat: path=/root/Python-2.7.9.tgz
+    register: python27tgz
+    
+  - name: Extract Python2.7
+    unarchive:
+      src: /root/Python-2.7.9.tgz
+      dest: /root/ 
+      remote_src: true  
+    register: extract  
+    when: python27tgz.stat.exists
+  - debug: var=extract
+
+  - name: Remove tgz2.7
+    file: path=/root/Python-2.7.9.tgz state=absent
+    when: python27tgz.stat.exists
+
+  - stat: path=/root/Python-2.7.9/
+    register: python27dir
+      
+  - name: Running ./configure for Python2.7
+    command: '"{{ item }}" chdir=/root/Python-2.7.9/'
+    with_items:
+      - ./configure
+    register: configure  
+    when: python27dir.stat.exists
+  - debug: var=configure
+
+  - name: Running "make" for Python2.7
+    command: '"{{ item }}" chdir=/root/Python-2.7.9/'
+    with_items:
+      - make
+    register: make  
+    when: python27dir.stat.exists
+  - debug: var=make
+
+  - name: Create Python2.7 deb
+    command: "checkinstall -D --install=no --fstrans=no --default"
+    args:
+      chdir: /root/Python-2.7.9/
+    register: checkinstall  
+    ignore_errors: yes
+    when: python27dir.stat.exists
+  - debug: var=checkinstall
+
+  - name: Make deb dir
+    file: path=/etc/deb-files state=directory
+
+  - name: Copy deb file Python2.7
+    copy: remote_src=True src=/root/Python-2.7.9/python_2.7.9-1_armhf.deb dest=/etc/deb-files
+    when: python27dir.stat.exists
+  - name: Delete Python dir
+    file: path=/root/Python-2.7.9/ state=absent
+    when: python27dir.stat.exists
+
+  - name: Install Python 2.7
+    apt:
+      deb: /etc/deb-files/python_2.7.9-1_armhf.deb
+      state: present
+    register: python27
+  - debug: msg='Python2.7 Installation "{{ python27 }}"'
+  
+  - name: Install PIP
+    apt:
+      name: python-pip
+      state: latest
+      install_recommends: yes
+    register: pip
+  - debug: msg='PIP Installation "{{ pip }}"'
