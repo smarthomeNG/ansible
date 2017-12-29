@@ -1,0 +1,110 @@
+---
+- name: Install Syncthing
+  hosts: public
+  remote_user: root
+  become_user: root
+  become: true
+
+  vars:
+    apache_mods:
+      ["proxy",
+      "proxy_http",
+      "lbmethod_byrequests",
+      "proxy_ajp",
+      "rewrite",
+      "deflate",
+      "headers",
+      "proxy_balancer",
+      "proxy_connect",
+      "proxy_html"
+      ]
+
+  tasks:
+  - name: apt-key
+    apt_key:
+      url: https://syncthing.net/release-key.txt
+      state: present
+    register: apt
+  - debug: var=apt
+
+  - name: syncthing source
+    lineinfile:
+      destfile: /etc/apt/sources.list.d/syncthing.list
+      create: yes
+      line: "deb https://apt.syncthing.net/ syncthing stable"
+
+  - name: Install syncthing
+    apt: name=syncthing force=no state=latest update_cache=yes
+    register: apt
+  - debug: var=apt
+
+  - name: user syncthing
+    user:
+      name: syncthing
+      groups: smarthome, www-data, mysql
+      append: yes
+
+  - name: smarthome rights
+    file:
+      path: /usr/local/smarthome
+      mode: 0775
+      recurse: yes
+      state: directory
+
+  - name: mysql rights
+    file:
+      path: /var/lib/mysql/smarthome
+      mode: 0770
+      recurse: yes
+      owner: mysql
+      group: smarthome
+      state: directory
+
+  - name: Install inotify-tools
+    apt: name=inotify-tools force=no state=latest update_cache=yes
+    register: apt
+  - debug: var=apt
+
+  - name: Disable syncthing
+    systemd: enabled=no name=syncthing@syncthing.service
+
+  - name: create directory
+    file:
+      path: /home/syncthing/.config/syncthing/
+      state: directory
+      mode: 0755
+      owner: syncthing
+      group: syncthing
+
+  - name: Restart syncthing
+    systemd: state=restarted name=syncthing@syncthing.service
+
+  - name: Install libs
+    apt: name=libxml2-dev force=no state=latest update_cache=yes
+
+  - name: Activate modules
+    apache2_module:
+      name: "{{ item }}"
+      state: present
+    with_items: "{{ apache_mods }}"
+
+  - name: Copy conf
+    copy:
+      src: configs/apache_syncthing.conf
+      dest: /etc/apache2/sites-enabled/000-syncthing.conf
+      owner: smarthome
+      group: www-data
+
+  - name: logfile
+    blockinfile:
+      path: "/etc/rsyslog.d/syncthing.conf"
+      create: yes
+      block: |
+        if $programname == 'syncthing' then {
+          action(type="omfile" file="/var/log/syncthing.log")
+          stop
+        }
+    ignore_errors: yes
+
+  - name: Restart apache service
+    systemd: state=restarted name=apache2.service

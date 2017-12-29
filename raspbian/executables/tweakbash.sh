@@ -20,8 +20,8 @@ PATH=$PATH:/usr/lib/knxd:/opt/susvd
 
  etail() { tail -f "$1" -n 400 | e | colorize yellow '.*[Ww][Aa][Rr][Nn].*' purple '.*[Ee][Rr][Rr][Oo][Rr].*' purple '.*[Ff][Aa][Ii][Ll].*' red '.*[Cc][Rr][Ii][Tt][Ii][Cc][Aa][Ll].*' red '.*[Ff][Aa][Tt][Aa][Ll].*' ;}
  ecat() { cat "$1" | e | colorize yellow '.*[Ww][Aa][Rr][Nn].*' purple '.*[Ee][Rr][Rr][Oo][Rr].*' purple '.*[Ff][Aa][Ii][Ll].*' red '.*[Cc][Rr][Ii][Tt][Ii][Cc][Aa][Ll].*' red '.*[Ff][Aa][Tt][Aa][Ll].*' ;}
-  
- alias sh.log="tail -f -n 300 /usr/local/smarthome/var/log/smarthome.log | colorize yellow '.*[Ww][Aa][Rr][Nn][Ii][Nn][Gg].*' purple '.*[Ee][Rr][Rr][Oo][Rr].*' purple '.*[Ff][Aa][Ii][Ll].*' red '.*[Cc][Rr][Ii][Tt][Ii][Cc][Aa][Ll].*' red '.*[Ff][Aa][Tt][Aa][Ll].*' green '.*[Ii][Nn][Ff][Oo].*' "
+
+ alias sh.log="tail -f -n 300 /usr/local/smarthome/var/log/smarthome.log | colorize green  '.*[Ii][Nn][Ff][Oo].*' yellow '.*[Ww][Aa][Rr][Nn][Ii][Nn][Gg].*' purple '.*[Ee][Rr][Rr][Oo][Rr].*' purple '.*[Ff][Aa][Ii][Ll].*' red '.*[Cc][Rr][Ii][Tt][Ii][Cc][Aa][Ll].*' red '.*[Ff][Aa][Tt][Aa][Ll].*' green '.*[Ii][Nn][Ff][Oo].*' "
  alias sh.error="tail -f -n 1000 /usr/local/smarthome/var/log/smarthome.log | e | colorize yellow '.*[[Ww][Aa][Rr][Nn][Ii][Nn][Gg].*' purple '.*[Ee][Rr][Rr][Oo][Rr].*' purple '.*[Ff][Aa][Ii][Ll].*' red '.*[Cc][Rr][Ii][Tt][Ii][Cc][Aa][Ll].*' red '.*[Ff][Aa][Tt][Aa][Ll].*' green '.*[Ii][Nn][Ff][Oo].*' "
 
 
@@ -62,9 +62,9 @@ echo "$(tput setaf 2)
 SmartHome Raspi running for: ${UPTIME}
 $(tput sgr0)"
 if [ -e /var/log/firstboot.log ]; then
-	if (( $(date +%s) - $(stat -L --format %Y /var/log/firstboot.log) < (5*60) )); then 
-		echo "$(tput setaf 2)Welcome to Smarthome Image 2.0. At your first boot these changes were made:"
-		cat /var/log/firstboot.log
+	if (( $(date +%s) - $(stat -L --format %Y /var/log/firstboot.log) < (5*60) )); then
+		echo "$(tput setaf 2)Welcome to Smarthome Image 2.1.1. At your first boot these changes were made:"
+		echo "$(</var/log/firstboot.log)"
 		echo "$(tput sgr0)"
 	fi
 fi

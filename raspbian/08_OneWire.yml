@@ -1,0 +1,30 @@
+---
+- name: Install OneWire
+  hosts: all
+  remote_user: root
+  become_user: root
+  become: true
+
+  tasks:
+  - name: Install owserver
+    apt: name=owserver force=no state=latest
+
+  - name: Install owhttpd
+    apt: name=owhttpd force=no state=latest
+
+  - name: Copy conf
+    copy:
+      src: configs/owfs.conf
+      dest: /etc/
+      mode: 0755
+      owner: smarthome
+      group: smarthome
+
+  - name: Restart onewire
+    systemd: state=restarted name=owserver
+
+  - name: disable onewire
+    systemd: enabled=no name=owserver.service
+
+  - name: disable owhttpd
+    systemd: enabled=no name=owhttpd.service

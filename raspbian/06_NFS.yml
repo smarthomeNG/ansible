@@ -1,17 +1,17 @@
 ---
 - name: Install NFS
-  hosts: public
+  hosts: all
   remote_user: root
   become_user: root
   become: true
 
   vars:
-    new: '10/24'
-    
-  tasks:  
+    new: '0/24'
+
+  tasks:
   - name: Install NFS
     apt: name=nfs-kernel-server force=no state=latest
-    register: apt  
+    register: apt
   - debug: var=apt
 
   - name: Create hosts file
@@ -39,7 +39,7 @@
     shell: id smarthome|grep "^uid"|awk -F"[=(]" '{printf "%1s",$4}'
     register: smarthomegid
   - debug: var=smarthomegid.stdout
-  
+
   - name: wwwuid
     shell: id www-data|grep "^uid"|awk -F"[=(]" '{printf "%1s",$2}'
     register: wwwuid
@@ -52,9 +52,12 @@
     lineinfile: dest=/etc/exports
       line='{{item}}'
     with_items:
-      - '/usr/local/smarthome {{ NewIP }}(no_subtree_check,rw,async,no_wdelay,crossmnt,insecure,no_root_squash,sec=sys,all_squash,anonuid={{ smarthomeuid.stdout }},anongid={{ smarthomegid.stdout }})'
-      - '/var/log {{ NewIP }}(no_subtree_check,rw,async,no_wdelay,crossmnt,insecure,no_root_squash,sec=sys,all_squash,anonuid=0,anongid=0)'
-      - '/var/www/html {{ NewIP }}(no_subtree_check,rw,async,no_wdelay,crossmnt,insecure,no_root_squash,sec=sys,all_squash,anonuid={{ wwwuid.stdout }},anongid={{ wwwgid.stdout }})'
+      - '/usr/local/smarthome {{ NewIP }}(no_subtree_check,rw,async,no_wdelay,crossmnt,insecure,no_root_squash,sec=sys,all_squash,anonuid={{ smarthomeuid.stdout }},anongid={{ smarthomegid.stdout }}) 10.8.0.0/24(no_subtree_check,rw,async,no_wdelay,crossmnt,insecure,no_root_squash,sec=sys,all_squash,anonuid={{ smarthomeuid.stdout }},anongid={{ smarthomegid.stdout }})'
+      - '/var/log {{ NewIP }}(no_subtree_check,rw,async,no_wdelay,crossmnt,insecure,no_root_squash,sec=sys,all_squash,anonuid=0,anongid=0) 10.8.0.0/24(no_subtree_check,rw,async,no_wdelay,crossmnt,insecure,no_root_squash,sec=sys,all_squash,anonuid=0,anongid=0)'
+      - '/var/www/html/smartVISU {{ NewIP }}(no_subtree_check,rw,async,no_wdelay,crossmnt,insecure,no_root_squash,sec=sys,all_squash,anonuid={{ smarthomeuid.stdout }},anongid={{ wwwgid.stdout }}) 10.8.0.0/24(no_subtree_check,rw,async,no_wdelay,crossmnt,insecure,no_root_squash,sec=sys,all_squash,anonuid={{ smarthomeuid.stdout }},anongid={{ wwwgid.stdout }})'
+      - '/var/www/html/smartVISU2.9 {{ NewIP }}(no_subtree_check,rw,async,no_wdelay,crossmnt,insecure,no_root_squash,sec=sys,all_squash,anonuid={{ smarthomeuid.stdout }},anongid={{ wwwgid.stdout }}) 10.8.0.0/24(no_subtree_check,rw,async,no_wdelay,crossmnt,insecure,no_root_squash,sec=sys,all_squash,anonuid={{ smarthomeuid.stdout }},anongid={{ wwwgid.stdout }})'
+      - '/var/www/html {{ NewIP }}(no_subtree_check,rw,async,no_wdelay,crossmnt,insecure,no_root_squash,sec=sys,all_squash,anonuid={{ wwwuid.stdout }},anongid={{ wwwgid.stdout }}) 10.8.0.0/24(no_subtree_check,rw,async,no_wdelay,crossmnt,insecure,no_root_squash,sec=sys,all_squash,anonuid={{ wwwuid.stdout }},anongid={{ wwwgid.stdout }})'
+      - '/home/smarthome {{ NewIP }}(no_subtree_check,rw,async,no_wdelay,crossmnt,insecure,no_root_squash,sec=sys,all_squash,anonuid={{ smarthomeuid.stdout }},anongid={{ smarthomegid.stdout }}) 10.8.0.0/24(no_subtree_check,rw,async,no_wdelay,crossmnt,insecure,no_root_squash,sec=sys,all_squash,anonuid={{ smarthomeuid.stdout }},anongid={{ smarthomegid.stdout }})'
 
   - name: chmod conf
     file:
@@ -63,7 +66,7 @@
       owner: smarthome
       group: smarthome
       mode: 0755
-          
+
   - name: exportfs
     command: "exportfs -ra"
     ignore_errors: yes
@@ -71,22 +74,15 @@
     notify: Restart nfs-kernel
   - debug: var=exportfs
 
-  - name: rpcbind
-    command: rpcbind
-    ignore_errors: yes
-    register: rpcbind
-  - debug: var=rpcbind
-
   - name: Enable rpcbind
     systemd: enabled=yes name=rpcbind
 
   - name: disable nfs
     systemd: enabled=no name=nfs-kernel-server
     when: "'public' in group_names"
-        
+
   handlers:
   - name: Restart nfs-kernel
     systemd: state=restarted name=nfs-kernel-server
     register: nfs-kernel
   - debug: var=nfs-kernel
-

@@ -1,0 +1,59 @@
+---
+- name: Install Exim4
+  hosts: all
+  remote_user: root
+  become_user: root
+  become: true
+
+
+  tasks:
+  - name: Install exim4
+    apt: name=exim4 force=no state=latest
+
+  - name: Copy config
+    copy:
+      src: configs/update-exim4.conf.conf
+      dest: /etc/exim4/
+      owner: root
+      group: root
+      mode: 0644
+
+  - name: edit mailadresses
+    blockinfile:
+      path: /etc/email-addresses
+      block: |
+        root: mail@domain.com
+        logcheck: mail@domain.com
+        smarthome: mail@domain.com
+    notify: exim4
+
+  - name: change finger
+    command: "chfn -f 'SmartHomeNG' root"
+    ignore_errors: yes
+
+  - name: mailalias
+    lineinfile:
+      destfile: /etc/aliases
+      line: "root: smarthome"
+      insertafter: EOF
+
+  - name: del mailname
+    file:
+      path: /etc/mailname
+      state: absent
+
+  - name: exim4 mailname
+    lineinfile:
+      destfile: /etc/mailname
+      create: yes
+      line: "SmartHomeNG"
+    ignore_errors: yes
+
+  - name: Restart exim4
+    systemd: state=restarted name=exim4
+
+  handlers:
+  - name: exim4
+    systemd: enabled=no name=exim4
+    register: exim4
+  - debug: var=exim4

@@ -1,6 +1,6 @@
 ---
 - name: Install Smartvisu
-  hosts: public
+  hosts: all
   remote_user: root
   become_user: root
   become: true
@@ -19,7 +19,7 @@
     smartvisupath: /var/www/html/smartVISU
     smartvisupath2: /var/www/html/smartVISU2.9
     htmlpath: /var/www/html
-    
+
   tasks:
   - name: Install Apache and Co
     apt:
@@ -27,17 +27,17 @@
       state: latest
       update_cache: yes
     with_items: "{{ apachepackages }}"
-    register: apt  
+    register: apt
   - debug: var=apt
 
   - name: Install git
     apt: name=git force=no state=latest
-    register: git  
+    register: git
   - debug: var=git
 
   - name: Install mbstring
     apt: name=php-mbstring force=no state=latest install_recommends=yes
-    register: git  
+    register: git
   - debug: var=git
 
   - name: Git Smartvisu develop
@@ -45,7 +45,7 @@
       repo: 'https://github.com/Martin-Gleiss/smartvisu'
       dest: "{{ smartvisupath2 }}"
       version: develop
-    register: git  
+    register: git
   - debug: var=git
 
   - name: Git Smartvisu master
@@ -53,7 +53,7 @@
       repo: 'https://github.com/Martin-Gleiss/smartvisu'
       dest: "{{ smartvisupath }}"
       version: master
-    register: git  
+    register: git
   - debug: var=git
 
   - name: ignore perm2
@@ -66,13 +66,23 @@
     unarchive:
       src: configs/flexible-quad.tar
       dest: /var/www/html/smartVISU2.9/pages/
-    register: quad  
+    register: quad
   - debug: var=quad
+
+  - name: Copy cover
+    copy:
+      src: private/cover_empty.jpg
+      dest: /var/www/html/smartVISU2.9/pics
+      mode: 0660
+      owner: smarthome
+      group: www-data
+    register: config
+  - debug: var=config
 
   - name: Change Owner
     file:
       path: "{{ htmlpath }}"
-      owner: www-data
+      owner: smarthome
       group: www-data
       mode: 0775
       recurse: yes
@@ -80,8 +90,8 @@
 
   - name: change server
     lineinfile:
-      path: /etc/apache2/apache2.conf      
-      line: 'ServerName SmartHomeNG.local.com'
+      path: /etc/apache2/apache2.conf
+      line: 'ServerName SmartHomeNG.local'
       state: present
       insertbefore: BOF
 
@@ -96,21 +106,37 @@
         <?php
         // Show all information, defaults to INFO_ALL
         phpinfo();
-        ?>    
+        ?>
 
   - name: enable mbstring
     command: 'phpenmod mbstring'
     register: mbstring
   - debug: var=mbstring
 
-
   - name: check server
     command: 'apachectl configtest'
     register: apachecheck
   - debug: var=apachecheck
+
+  - name: Copy conf
+    copy:
+      src: configs/apache_smartvisu.conf
+      dest: /etc/apache2/sites-enabled/000-smartvisu.conf
+      owner: smarthome
+      group: www-data
+
+  - name: Remove apache default
+    file: path=/etc/apache2/sites-enabled/000-default.conf state=absent
 
   - name: Enable PHP7
     command: a2enmod php7.0
     register: a2enconf
   - debug: var=a2enconf
 
+  - name: Enable Rewrite
+    command: a2enmod rewrite
+    register: rewrite
+  - debug: var=rewrite
+
+  - name: Restart apache service
+    systemd: state=restarted name=apache2.service

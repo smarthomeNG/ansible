@@ -1,4 +1,4 @@
 Raspbian Playbooks
 
-all playbooks used for the Raspbian Image 2.0 (+ additional Python playbooks)
-Configs and executables included.
+all playbooks used for the Raspbian Image 2.x (+ additional Python playbooks)
+Configs, packages and executables included.

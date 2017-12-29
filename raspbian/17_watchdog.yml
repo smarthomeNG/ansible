@@ -1,0 +1,48 @@
+---
+- name: Install watchdog
+  hosts: all
+  remote_user: root
+  become_user: root
+  become: true
+
+  tasks:
+
+  - name: Install watchdog
+    apt: name=watchdog force=no state=latest install_recommends=no
+
+  - name: edit config
+    blockinfile:
+      path: /etc/watchdog.conf
+      block: |
+        watchdog-device = /dev/watchdog
+        max-load-1 = 40
+        max-load-5 = 20
+        file = /var/log/syslog
+        min-memory = 1
+        watchdog-timeout = 10
+        interval = 4
+        pidfile = /run/rsyslogd.pid
+
+  - name: module
+    replace:
+      destfile: /etc/default/watchdog
+      regexp: '^watchdog_module="none"'
+      replace: 'watchdog_module="bcm2835_wdt"'
+    ignore_errors: yes
+
+  - name: keepalive
+    replace:
+      destfile: /etc/default/watchdog
+      regexp: '^run_wd_keepalive=1'
+      replace: 'run_wd_keepalive=0'
+    ignore_errors: yes
+
+  - name: nowayout
+    lineinfile:
+      path: /etc/modprobe.d/bcm2835_wdt.conf
+      create: yes
+      insertafter: EOF
+      line: 'options bcm2835_wdt nowayout=1'
+
+  - name: disbale
+    systemd: enabled=no name=watchdog.service
