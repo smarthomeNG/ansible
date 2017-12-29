@@ -1,0 +1,156 @@
+---
+- name: Install InfluxDB
+  hosts: public
+  remote_user: root
+  become_user: root
+  become: true
+
+  vars:
+    dashboards: [
+          {
+            "name": "smarthome",
+            "file": "./configs/influxdb.json",
+            "dash_name": "Smarthome"
+          }
+        ]
+
+  tasks:
+  - name: Install
+    apt:
+      name: influxdb
+      state: latest
+
+  - name: Install python
+    pip:
+      name: influxdb
+      executable: pip3
+
+  - name: Install client
+    apt:
+      name: influxdb-client
+      state: latest
+
+  - name: conf
+    blockinfile:
+      path: "/etc/influxdb/influxdb.conf"
+      block: |
+        [[udp]]
+        enabled = true
+        bind-address = ":8089"
+        database = "smarthome"
+
+  - name: Restart influxdb
+    systemd: state=restarted name=influxdb.service
+    notify: disable_influx
+
+  - name: influx init
+    lineinfile:
+      path: "/root/influx"
+      create: yes
+      line: CREATE DATABASE smarthome
+    ignore_errors: yes
+
+  - name: logfile
+    blockinfile:
+      path: "/etc/rsyslog.d/influxdb.conf"
+      create: yes
+      block: |
+        if $programname == 'influxd' then {
+          action(type="omfile" file="/var/log/influxd.log")
+          stop
+        }
+    ignore_errors: yes
+
+  - name: Create db
+    shell: "influx < influx.txt"
+    async: 40
+    poll: 0
+
+  - name: Delete init
+    file: path=/root/influx state=absent
+
+  - name: Download Grafana
+    get_url:
+      url: https://github.com/fg2it/grafana-on-raspberry/releases/download/v4.6.2/grafana_4.6.2_armhf.deb
+      dest: /root/grafana.deb
+      mode: 0755
+    when: "inventory_hostname == 'wz'"
+
+  - name: Install Grafana
+    apt:
+      deb: /root/grafana.deb
+    when: "inventory_hostname == 'wz'"
+
+  - name: Delete deb
+    file: path=/root/grafana.deb state=absent
+    when: "inventory_hostname == 'wz'"
+
+  - name: logfile
+    blockinfile:
+      path: "/etc/rsyslog.d/grafana.conf"
+      create: yes
+      block: |
+        if $programname == 'grafana-server' then {
+          action(type="omfile" file="/var/log/grafana/grafana.log")
+          stop
+        }
+    ignore_errors: yes
+    when: "inventory_hostname == 'wz'"
+
+  - name: Restart Grafana
+    systemd: state=restarted name=grafana-server.service
+    notify: disable_grafana
+    when: "inventory_hostname == 'wz'"
+
+  - name: datasource1
+    uri:
+      url: http://localhost:3000/api/datasources/name/smarthome
+      user: admin
+      password: admin
+      force_basic_auth: yes
+    register: grafana_influxdb
+    failed_when: false
+    changed_when: false
+    when: "inventory_hostname == 'wz'"
+  - debug: var=grafana_influxdb
+
+  - name: datasource2
+    uri:
+      url: http://localhost:3000/api/datasources
+      method: POST
+      user: admin
+      password: admin
+      body:
+        name: "smarthome"
+        type: "influxdb"
+        url: "http://localhost:8086"
+        access: "proxy"
+        user: root
+        password: root
+        database: "smarthome"
+        isDefault: true
+      force_basic_auth: yes
+      status_code: 201
+      body_format: json
+    when: "grafana_influxdb.status == 404 and inventory_hostname == 'wz'"
+    ignore_errors: yes
+
+  - name: dashboard
+    uri:
+      url: http://localhost:3000/api/dashboards/db
+      method: POST
+      user: "admin"
+      password: "admin"
+      body: "{{ lookup('template', item.file) }}"
+      status_code: 200
+      body_format: json
+      force_basic_auth: yes
+      HEADER_Content-Type: "application/json"
+    with_items: "{{ dashboards }}"
+    when: "inventory_hostname == 'wz'"
+
+  handlers:
+  - name: disable_influx
+    systemd: enabled=no name=influxdb.service
+  - name: disable_grafana
+    systemd: enabled=no name=grafana-server.service

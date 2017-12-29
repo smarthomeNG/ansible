@@ -7,3 +7,6 @@
 ^\w{3}(.*)[0-9]{1,2}\s[:0-9]{8}\s[._[:alnum:]-]+\sdropbear\[[0-9]+\]\:\sPremature
 ^\w{3}(.*)[0-9]{1,2}\s[:0-9]{8}\s[._[:alnum:]-]+\sdropbear\[[0-9]+\]\:(.*)Idle [Tt]imeout
 ^\w{3}(.*)[0-9]{1,2}\s[:0-9]{8}\s[._[:alnum:]-]+\sdropbear\[[0-9]+\]\:(.*)Disconnect received
+^\w{3}(.*)[0-9]{1,2}\s[:0-9]{8}\s[._[:alnum:]-]+\ssshd\[[0-9]+\]\:(.*)Disconnect received
+^\w{3}(.*)[0-9]{1,2}\s[:0-9]{8}\s[._[:alnum:]-]+\ssshd\[[0-9]+\]\:(.*)Connection closed by
+^\w{3}(.*)[0-9]{1,2}\s[:0-9]{8}\s[._[:alnum:]-]+\ssshd\[[0-9]+\]\:(.*)Connection reset by

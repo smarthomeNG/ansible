@@ -1,0 +1,72 @@
+---
+- name: Install SQL xtrabackup
+  hosts: all
+  remote_user: root
+  become_user: root
+  become: true
+
+  tasks:
+  - name: Copy deb
+    copy:
+      src: packages/xtrabackup_2.4.9-1_armhf.deb
+      dest: /etc/deb-files/
+
+  - name: Install xtrabackup
+    apt:
+      deb: /etc/deb-files/xtrabackup_2.4.9-1_armhf.deb
+
+  - name: Install pyxtrabackup
+    pip:
+      name: pyxtrabackup
+      executable: pip3
+    become: true
+    become_user: root
+
+  - name: Copy script1
+    copy:
+      src: executables/mysql_backup.sh
+      dest: /usr/local/bin/
+      mode: 0775
+      owner: mysql
+      group: mysql
+
+  - name: Copy script2
+    copy:
+      src: executables/mysql_restore.sh
+      dest: /usr/local/bin/
+      mode: 0775
+      owner: mysql
+      group: mysql
+
+  - name: Links
+    file:
+      src: '/usr/local/xtrabackup/bin/{{ item.src }}'
+      dest: '{{ item.dest }}'
+      state: link
+    with_items:
+      - { src: 'innobackupex', dest: '/usr/local/bin/innobackupex' }
+      - { src: 'xtrabackup', dest: '/usr/local/bin/xtrabackup' }
+
+  - name: Copy cron
+    copy:
+      src: executables/cron_mysqlbackup
+      dest: /etc/cron.hourly/mysql_backup
+      mode: 0755
+      owner: mysql
+      group: mysql
+
+  - name: backupdir
+    file:
+      dest: /var/backups/mysql
+      owner: mysql
+      group: mysql
+      mode: 0770
+      state: directory
+
+  - name: configxtra
+    blockinfile:
+      path: "/etc/mysql/debian.cnf"
+      block: |
+        [xtrabackup]
+        target_dir = /data/backups/mysql/
+    ignore_errors: yes

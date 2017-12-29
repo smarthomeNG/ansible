@@ -1,0 +1,15 @@
+[Unit]
+Description=Homebridge
+After=syslog.target network-online.target
+
+[Service]
+Type=simple
+User=smarthome
+EnvironmentFile=/home/smarthome/.homebridge/config.json
+ExecStart=/usr/bin/homebridge $HOMEBRIDGE_OPTS
+Restart=on-failure
+RestartSec=10
+KillMode=process
+
+[Install]
+WantedBy=multi-user.target

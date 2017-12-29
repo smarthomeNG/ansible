@@ -1,0 +1,33 @@
+---
+- name: Install Arduino
+  hosts: public
+  remote_user: root
+  become_user: root
+  become: true
+
+  vars:
+    pythonpackages:
+      ["configobj",
+      "jinja2",
+      "glob2"
+      ]
+
+
+  tasks:
+  - name: Install ino
+    pip: name=ino executable=pip
+
+  - name: arduino-mk
+    apt: name=arduino-mk force=no state=latest update_cache=yes
+
+  - name: Install packages
+    pip:
+      name: "{{ item }}"
+      executable: pip
+    with_items: "{{ pythonpackages }}"
+
+  - name: del RobotControl
+    file:
+      path: /usr/share/arduino/libraries/Robot_Control
+      state: absent
+    when: "inventory_hostname == 'wz' or inventory_hostname == 'keller'"

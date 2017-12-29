@@ -1,6 +1,6 @@
 ---
 - name: Install KNXD
-  hosts: public
+  hosts: all
   remote_user: root
   become_user: root
   become: true
@@ -27,65 +27,21 @@
       update_cache: yes
       install_recommends: yes
     with_items: "{{ knxd }}"
-    register: apt  
-  - debug: var=apt
-
-  - name: Git KNXD
-    git:
-      repo: 'https://github.com/knxd/knxd.git'
-      dest: /root/knxd
-      version: master
-    register: git  
-  - debug: var=git
-
-  - name: get_libfmt
-    command: "./get_libfmt"
-    args:
-      chdir: /root/knxd/tools/
-    register: get_libfmt  
-    ignore_errors: yes
-  - debug: var=get_libfmt
-
-  - name: Build KNXD
-    command: "dpkg-buildpackage -b -uc"
-    args:
-      chdir: /root/knxd/
 
   - name: Create deb-files directory
     file: path=/etc/deb-files/ state=directory mode=0755
 
-  - name: List knxd deb files
-    shell: ls knxd*.deb
-    args:
-      chdir: /root/
-    register: knxd_files
-
-  - name: List additional knxd
-    shell: ls knxd*.*
-    args:
-      chdir: /root/
-    register: knxd_add_files
-    
   - name: Copy deb files
-    copy: 
-      remote_src: True 
-      src: "/root/{{ item }}"
+    copy:
+      src: "{{ item }}"
       dest: /etc/deb-files/
-    with_items: "{{ knxd_files.stdout_lines }}"
-    
-  - name: Delete knxd dir
-    file: path=/root/knxd/ state=absent
-  - name: Delete knxd.deb files
-    file: path="/root/{{ item }}" state=absent
-    with_items: "{{ knxd_files.stdout_lines }}"
-  - name: Delete knxd additional files
-    file: path="/root/{{ item }}" state=absent
-    with_items: "{{ knxd_add_files.stdout_lines }}"
+    with_fileglob:
+      - /packages/knxd*
 
   - name: Install knxd
     apt: deb="/etc/deb-files/{{ item.1 }}" force=yes state=present
     with_indexed_items: "{{ knxd_files.stdout_lines }}"
-    register: knxd  
+    register: knxd
   - debug: var=knxd
 
   - name: clear conf
@@ -132,21 +88,16 @@
   - name: Restart knxd socket
     systemd: state=restarted name=knxd.socket
     register: knxd_socket
-    notify: enable_socket
-  - debug: var=knxd_socket
 
   - name: Restart knxd service
     systemd: state=restarted name=knxd.service
     when: knxd_socket
-    register: knxd_service
-    notify: enable_service
-  - debug: var=knxd_service
 
   - name: Create User
     user:
       name: smarthome
       shell: /bin/bash
-      groups: www-data, sudo, i2c, adm, audio, video, plugdev, input, netdev, spi, gpio, dialout 
+      groups: www-data, sudo, i2c, adm, audio, video, plugdev, input, netdev, spi, gpio, dialout
       append: yes
       update_password: always
       password: ""
@@ -171,8 +122,7 @@
       path: /etc/udev/rules.d/70-knxd.rules
       create: yes
       line: 'ACTION=="add", SUBSYSTEM=="tty", ATTRS{id}=="00241011", KERNELS=="3f201000.uart", SYMLINK+="ttyKNX1", OWNER="knxd"'
-    
-  handlers:
+
   - name: enable_socket
     systemd: enabled=yes name=knxd.socket
     register: enable_knxd_socket
@@ -182,4 +132,3 @@
     systemd: enabled=yes name=knxd.service
     register: knxd_service
   - debug: var=enable_knxd_service
-

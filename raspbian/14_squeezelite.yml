@@ -1,0 +1,42 @@
+---
+- name: Install Squeezelite
+  hosts: all
+  remote_user: root
+  become_user: root
+  become: true
+
+  vars:
+    packages:
+      ["libasound2-dev",
+      "libflac-dev",
+      "libmad0-dev",
+      "libvorbis-dev",
+      "libfaad-dev",
+      "libmpg123-dev",
+      "ffmpeg"]
+
+  tasks:
+  - name: Install Packages
+    apt:
+      name: "{{ item }}"
+      state: latest
+      update_cache: yes
+      install_recommends: no
+    with_items: "{{ packages }}"
+
+  - name: Copy squeezelite
+    copy:
+      src: executables/squeezelite
+      dest: /usr/bin/
+      mode: 0755
+
+  - name: Copy squeezelite sh
+    copy:
+      src: executables/squeezelite.sh
+      dest: /usr/local/bin/
+      mode: 0777
+
+  - name: Copy squeezelite service
+    copy:
+      src: configs/squeezelite.service
+      dest: /lib/systemd/system/
