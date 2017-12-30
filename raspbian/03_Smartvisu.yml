@@ -71,7 +71,7 @@
 
   - name: Copy cover
     copy:
-      src: private/cover_empty.jpg
+      src: configs/cover_empty.jpg
       dest: /var/www/html/smartVISU2.9/pics
       mode: 0660
       owner: smarthome
