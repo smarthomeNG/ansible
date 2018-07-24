@@ -1,0 +1,201 @@
+---
+- name: nginx reverse proxy
+  hosts: all
+  remote_user: root
+  become_user: root
+  become: true
+
+  vars:
+    packages:
+      ["certbot",
+      "gzip",
+      "nginx-full",
+      "geoip-database",
+      "libgeoip1",
+      "php7.0-fpm",
+      "lua5.1",
+      "luarocks",
+      "liblua5.1-dev",
+      "git",
+      "apache2-utils",
+      "libnginx-mod-http-lua"
+      ]
+
+    build:
+      ["git-core",
+      "build-essential",
+      "autoconf",
+      "pkg-config",
+      "cmake"]
+
+  tasks:
+  - name: Install Buildtools
+    apt:
+      name: "{{ item }}"
+      state: latest
+      update_cache: yes
+      install_recommends: yes
+    with_items: "{{ build }}"
+
+  - name: Apachestop
+    systemd: state=stopped name=apache2 enabled=no
+    ignore_errors: yes
+
+  - name: install apt
+    apt:
+      name: "{{ item }}"
+      state: latest
+      install_recommends: no
+    with_items: "{{ packages }}"
+
+  - name: Download GeoIP
+    get_url:
+      url: http://geolite.maxmind.com/download/geoip/database/GeoLiteCountry/GeoIP.dat.gz
+      dest: /usr/share/GeoIP/
+
+  - name: Extract GeoIP
+    command: "gunzip GeoIP.dat.gz"
+    args:
+      chdir: /usr/share/GeoIP/
+    ignore_errors: yes
+
+  - name: letsencrypt add
+    blockinfile:
+      path: /etc/nginx/snippets/letsencrypt.conf
+      state: present
+      create: yes
+      block: |
+        location ^~ /.well-known/acme-challenge/ {
+         default_type "text/plain";
+         root /var/www/letsencrypt;
+        }
+
+  - name: Create directory
+    file:
+      path: /var/www/letsencrypt/.well-known/acme-challenge
+      state: directory
+      owner: www-data
+      group: www-data
+
+  - name: copy_available
+    copy:
+      dest: /etc/nginx/sites-available/default
+      src: configs/nginx_availablesites.conf
+      owner: www-data
+      group: www-data
+
+  - name: headers
+    copy:
+      dest: /etc/nginx/headers.conf
+      src: configs/nginx_headers.conf
+      owner: www-data
+      group: www-data
+
+  - name: ticketkey
+    shell: "openssl rand 48 > /etc/nginx/nginx_ticketkey"
+
+  - name: proxyconf
+    copy:
+      dest: /etc/nginx/proxy_params
+      src: configs/nginx_proxy.conf
+      owner: www-data
+      group: www-data
+
+  - name: config
+    copy:
+      dest: /etc/nginx/nginx.conf
+      src: configs/nginx.conf
+      owner: www-data
+      group: www-data
+
+  - name: Restart1
+    systemd: state=restarted name=nginx
+
+  - name: Password1
+    command: "htpasswd -cb /etc/nginx/.smartvisu smarthome smarthome"
+  - name: Password2
+    command: "htpasswd -cb /etc/nginx/.alexa smarthome smarthome"
+  - name: Password3
+    command: "htpasswd -cb /etc/nginx/.shng smarthome smarthome"
+  - name: Password4
+    command: "htpasswd -cb /etc/nginx/.monit smarthome smarthome"
+
+  - name: cert_conf
+    copy:
+      dest: /etc/nginx/conf.d/https.conf
+      src: configs/nginx_mydomain.conf
+      owner: www-data
+      group: www-data
+    when: "not inventory_hostname == 'wz'"
+
+  - name: scriptdir
+    file:
+      path: /etc/nginx/scripts/
+      state: directory
+      mode: 0755
+      group: www-data
+      owner: www-data
+
+  - name: luascript
+    copy:
+      dest: /etc/nginx/scripts/hass_access.lua
+      src: configs/nginx_luascript
+      owner: www-data
+      group: www-data
+
+  - name: Change ini
+    replace:
+      destfile: /etc/php/7.0/fpm/php.ini
+      regexp: ";cgi.fix_pathinfo=1"
+      replace: "cgi.fix_pathinfo=0"
+
+  - name: Git crypto
+    git:
+      repo: 'https://github.com/evanlabs/luacrypto.git'
+      dest: /root/luacrypto
+      version: master
+    register: git
+  - debug: var=git
+
+  - name: Install crypto
+    command: "luarocks install /root/luacrypto/rockspecs/luacrypto-git-1.rockspec"
+
+  - name: Create lua
+    file:
+      path: /usr/local/lib/lua/5.1/
+      state: directory
+      owner: www-data
+      group: www-data
+
+  - name: Link
+    file:
+      dest: '/usr/local/lib/lua/5.1/crypto.so'
+      src: '/usr/local/lib/lua/crypto.so'
+      state: link
+      owner: www-data
+      group: www-data
+
+  - name: create phpinfo
+    blockinfile:
+      mode: 0644
+      owner: www-data
+      group: www-data
+      create: yes
+      path: /var/www/html/phpinfo.php
+      block: |
+        <?php
+        // Show all information, defaults to INFO_ALL
+        phpinfo();
+        ?>
+
+  - name: cgiparam
+    lineinfile:
+      path: /etc/nginx/fastcgi_params
+      insertafter: '(.*)fastcgi_script_name;'
+      line: 'fastcgi_param SCRIPT_FILENAME     $document_root$fastcgi_script_name;'
+
+  - name: Restart php
+    systemd: state=restarted name=php7.0-fpm.service
+
+  - name: Restart2
+    systemd: state=restarted name=nginx

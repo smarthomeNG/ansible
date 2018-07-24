@@ -6,7 +6,7 @@
   become: true
 
   vars:
-    monitgraphpath: /var/www/html/monit
+    monitgraphpath: /var/www/html/monitgraph
 
 
   tasks:
@@ -76,7 +76,7 @@
     cron:
       name: monitgraph
       user: root
-      job: 'php {{ monitgraphpath }}/cron.php >>/var/log/monit-graph.log 2>&1'
+      job: 'php {{ monitgraphpath }}/cron.php >>/var/log/monit-graph.log'
       cron_file: monitgraph
 
   - name: disable cron

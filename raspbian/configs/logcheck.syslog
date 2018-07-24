@@ -20,3 +20,6 @@
 ^\w{3}(.*)[0-9]{1,2}\s[:0-9]{8}\s[._[:alnum:]-]+\s+ansible
 ^\w{3}(.*)[0-9]{1,2}\s[:0-9]{8}\s[._[:alnum:]-]+\s+systemd-timesyncd\[[0-9]*\]\:\s+Synchronized to time server
 ^\w{3}(.*)[0-9]{1,2}\s[:0-9]{8}\s[._[:alnum:]-]+\s+systemd\[[0-9]*\]\:\s+apt-daily-upgrade.timer
+^\w{3}(.*)[0-9]{1,2}\s[:0-9]{8}\s[._[:alnum:]-]+\s+systemd\[[0-9]*\]\:\s+apt-daily
+^\w{3}(.*)[0-9]{1,2}\s[:0-9]{8}\s[._[:alnum:]-]+\s+jackd\[[0-9]*\]\:\s+JackEngine\:\:XRun
+^\w{3}(.*)[0-9]{1,2}\s[:0-9]{8}\s[._[:alnum:]-]+\s+jackd\[[0-9]*\]\:\s+JackAudioDriver\:\:ProcessGraphAsyncMaster

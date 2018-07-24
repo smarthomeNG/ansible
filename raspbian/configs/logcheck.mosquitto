@@ -1,0 +1,6 @@
+^\w{3}\s[ 0-9]{1,2}\s[.:0-9]{8}\s[._[:alnum:]-]+(.*)mosquitto\[[0-9]*\]\:\sNew
+^\w{3}\s[ 0-9]{1,2}\s[.:0-9]{15}\s[._[:alnum:]-]+(.*)mosquitto\[[0-9]*\]\:\sNew
+^\w{3}\s[ 0-9]{1,2}\s[.:0-9]{15}\s[._[:alnum:]-]+(.*)systemd\[[0-9]*\]\:\sStarting Mosquitto MQTT Broker daemon
+^\w{3}\s[ 0-9]{1,2}\s[.:0-9]{15}\s[._[:alnum:]-]+(.*)systemd\[[0-9]*\]\:\sStopping Mosquitto MQTT Broker daemon
+^\w{3}\s[ 0-9]{1,2}\s[.:0-9]{8}\s[._[:alnum:]-]+(.*)systemd\[[0-9]*\]\:\sStarting Mosquitto MQTT Broker daemon
+^\w{3}\s[ 0-9]{1,2}\s[.:0-9]{8}\s[._[:alnum:]-]+(.*)systemd\[[0-9]*\]\:\sStopping Mosquitto MQTT Broker daemon

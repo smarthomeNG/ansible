@@ -12,7 +12,17 @@
       "python3-keyrings.alt",
       "python3-wheel",
       "python3-setuptools",
+      "python-six",
+      "python-idna"
       ]
+
+    pythonremovemodules:
+      ["PyGObject",
+      "pyxdg",
+      "pycrypto",
+      "astral"
+      ]
+
     pythoninstall:
       ["RPi.GPIO",
       "requests",
@@ -20,7 +30,9 @@
       "pymysql",
       "wheel",
       "awake",
-      "setuptools"
+      "setuptools",
+      "pycrypto",
+      "yolk3k"
       ]
 
 
@@ -33,9 +45,6 @@
       autoclean: yes
       purge: yes
     with_items: "{{ pythonremove }}"
-    register: apt
-    ignore_errors: yes
-  - debug: var=apt
 
   - name: Add src
     replace:
@@ -49,40 +58,12 @@
     register: fix
   - debug: var=fix
 
-  - name: Install PIP3
-    apt:
-      name: python3-pip
-      state: latest
-      install_recommends: yes
-
-  - name: Install PIP
-    apt:
-      name: python-pip
-      state: latest
-      install_recommends: yes
-
-  - name: Copy pydevpath
-    copy:
-      src: executables/pydev.sh
-      dest: /etc/profile.d/
-      owner: root
-      group: root
-      mode: 0777
-
-  - name: pydev
-    unarchive:
-      src: executables/pysrc.tar
-      dest: /usr/local/lib/python3.5/dist-packages/
-    register: pydev
-  - debug: var=pydev
-
-  - name: Install packages
+  - name: remove modules
     pip:
       name: "{{ item }}"
+      state: absent
       executable: pip3
-    become: true
-    become_user: root
-    with_items: "{{ pythoninstall }}"
+    with_items: "{{ pythonremovemodules }}"
 
   - name: Install libffi-dev
     apt:
@@ -99,3 +80,18 @@
       install_recommends: no
     register: libssl
   - debug: msg='libssl Installation "{{ libssl }}"'
+
+  - name: Install pip3
+    command: "/usr/local/bin/easy_install-3.5 pip"
+
+  - name: Install pip
+    command: "/usr/local/bin/easy_install pip"
+
+  - name: Install packages
+    pip:
+      name: "{{ item }}"
+      executable: pip3
+      state: latest
+    become: true
+    become_user: root
+    with_items: "{{ pythoninstall }}"

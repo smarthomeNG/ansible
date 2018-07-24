@@ -1,0 +1,87 @@
+---
+- name: Install Smartvisu
+  hosts: all
+  remote_user: root
+  become_user: root
+  become: true
+
+  vars:
+    apachepackages:
+      ["libawl-php",
+      "php7.0-curl",
+      "php7.0",
+      "php7.0-json",
+      "libapache2-mod-php7.0",
+      "libmcrypt4",
+      "php7.0-xml",
+      "apache2",
+      "git",
+      "php-mbstring"]
+
+  tasks:
+  - name: Install Apache and Co
+    apt:
+      name: "{{ item }}"
+      state: latest
+      update_cache: yes
+    with_items: "{{ apachepackages }}"
+    register: apt
+  - debug: var=apt
+
+  - name: change server
+    lineinfile:
+      path: /etc/apache2/apache2.conf
+      line: 'ServerName SmartHomeNG.local'
+      state: present
+      insertbefore: BOF
+
+  - name: create phpinfo
+    blockinfile:
+      mode: 0644
+      owner: www-data
+      group: www-data
+      create: yes
+      path: /var/www/html/phpinfo.php
+      block: |
+        <?php
+        // Show all information, defaults to INFO_ALL
+        phpinfo();
+        ?>
+
+  - name: enable mbstring
+    command: 'phpenmod mbstring'
+    register: mbstring
+  - debug: var=mbstring
+
+  - name: enable modproxy
+    command: 'a2enmod proxy_wstunnel'
+    register: proxy_wstunnel
+  - debug: var=proxy_wstunnel
+
+  - name: check server
+    command: 'apachectl configtest'
+    register: apachecheck
+  - debug: var=apachecheck
+
+  - name: Copy conf
+    copy:
+      src: configs/apache_smartvisu.conf
+      dest: /etc/apache2/sites-enabled/000-smartvisu.conf
+      owner: smarthome
+      group: www-data
+
+  - name: Remove apache default
+    file: path=/etc/apache2/sites-enabled/000-default.conf state=absent
+
+  - name: Enable PHP7
+    command: a2enmod php7.0
+    register: a2enconf
+  - debug: var=a2enconf
+
+  - name: Enable Rewrite
+    command: a2enmod rewrite
+    register: rewrite
+  - debug: var=rewrite
+
+  - name: Restart apache service
+    systemd: state=restarted name=apache2.service

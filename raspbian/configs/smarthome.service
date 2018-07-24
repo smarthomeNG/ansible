@@ -10,6 +10,13 @@ ExecStart=/usr/bin/python3 /usr/local/smarthome/bin/smarthome.py
 User=smarthome
 PIDFile=/usr/local/smarthome/var/run/smarthome.pid
 Restart=on-abort
+Nice=-20
+IOSchedulingClass=realtime
+IOSchedulingPriority=0
+CPUSchedulingPolicy=rr
+CPUSchedulingPriority=98
+IOAccounting=True
+IOWeight=5000
 
 [Install]
 WantedBy=default.target

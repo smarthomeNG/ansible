@@ -1,4 +1,4 @@
-{ "bridge": { "name": "SmarthomeNG", "username": "CC:22:3D:E3:DE:37", "port": 51826, "pin": "041-22-954" },
+{ "bridge": { "name": "SmarthomeNG", "username": "CC:22:3D:E3:DE:37", "port": 51826, "pin": "044-55-999" },
 
 "platforms": [
     {

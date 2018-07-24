@@ -76,10 +76,10 @@ check process knxd matching "knxd"
  if 20 restarts within 45 cycles then unmonitor
 
 #WWW
-check process apache2 with pidfile /var/run/apache2/apache2.pid
- start program = "/bin/systemctl start apache2"
- stop program = "/bin/systemctl stop apache2"
- restart program = "/bin/systemctl restart apache2"
+check process nginx with pidfile /var/run/nginx.pid
+ start program = "/bin/systemctl start nginx"
+ stop program = "/bin/systemctl stop nginx"
+ restart program = "/bin/systemctl restart nginx"
  if failed host 127.0.0.1 port 80 protocol http
  and request "/monittoken" with timeout 10 seconds then restart
  if 15 restarts within 25 cycles then unmonitor
@@ -189,4 +189,4 @@ check system localhost
  if swap usage > 35% then alert
  if cpu usage (user) > 85% then alert
  if cpu usage (system) > 75% then alert
- if cpu usage (wait) > 65% then alert
+ if cpu usage (wait) > 75% then alert

@@ -1,6 +1,8 @@
 /var/log/boot.log
 /var/log/cron.log
-/var/log/lirc.log
+#/var/log/lirc/lirc.log
+#/var/log/mosquitto/mosquitto.log
+#/var/log/mysql/error.log
 /usr/local/smarthome/var/log/smarthome.log
 /var/log/apache2/error.log
 /var/log/syslog

@@ -6,11 +6,49 @@
   become: true
 
   tasks:
-  - name: Install lirc
-    apt: name=lirc force=no state=latest
+  - name: Install xsltproc
+    apt: name=xsltproc force=no state=latest
 
-  - name: reload
-    command: 'systemctl daemon-reload'
+  - name: Install python3-yaml
+    apt: name=xsltproc force=no state=latest install_recommends=yes
+
+  - name: Create deb-files directory
+    file: path=/etc/deb-files/ state=directory mode=0755
+
+  - name: Copy deb file
+    copy:
+      src: packages/lirc_0.10.1-1_armhf.deb
+      dest: /etc/deb-files/
+
+  - name: Groups
+    user:
+      name: smarthome
+      groups: video
+      append: yes
+
+  - name: Install
+    apt:
+      deb: /etc/deb-files/lirc_0.10.1-1_armhf.deb
+      force: yes
+
+  - name: create directory
+    file:
+      path: /var/log/lirc
+      state: directory
+      mode: 0755
+      owner: smarthome
+      group: smarthome
+
+  - name: logfile
+    blockinfile:
+      path: "/etc/rsyslog.d/lirc.conf"
+      create: yes
+      block: |
+        if $programname == 'lircd' then {
+          action(type="omfile" file="/var/log/lirc/lirc.log")
+          stop
+        }
+    ignore_errors: yes
 
   - name: Copy devinput
     copy:
@@ -36,8 +74,23 @@
       group: root
       mode: 0644
 
+  - name: Change helper service
+    replace:
+      destfile: /lib/systemd/system/lircd-setup.service
+      regexp: 'ExecStart=/usr/sbin/lircd-setup'
+      replace: 'ExecStart=/usr/local/sbin/lircd-setup'
+    ignore_errors: yes
+
+  - name: reload
+    command: 'systemctl daemon-reload'
+
   - name: Stop lirc
     systemd: state=stopped name=lircd.service
+
+  - name: ldconfig
+    command: "ldconfig"
+    args:
+      chdir: /sbin
 
   - name: Restart Socket
     systemd: state=restarted name=lircd.socket

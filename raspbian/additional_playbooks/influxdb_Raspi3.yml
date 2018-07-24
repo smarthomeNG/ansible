@@ -9,7 +9,7 @@
     dashboards: [
           {
             "name": "smarthome",
-            "file": "./configs/influxdb.json",
+            "file": "../configs/influxdb.json",
             "dash_name": "Smarthome"
           }
         ]
@@ -71,19 +71,16 @@
 
   - name: Download Grafana
     get_url:
-      url: https://github.com/fg2it/grafana-on-raspberry/releases/download/v4.6.2/grafana_4.6.2_armhf.deb
+      url: https://github.com/fg2it/grafana-on-raspberry/releases/download/v5.1.4/grafana_5.1.4_armhf.deb
       dest: /root/grafana.deb
       mode: 0755
-    when: "inventory_hostname == 'wz'"
 
   - name: Install Grafana
     apt:
       deb: /root/grafana.deb
-    when: "inventory_hostname == 'wz'"
 
   - name: Delete deb
     file: path=/root/grafana.deb state=absent
-    when: "inventory_hostname == 'wz'"
 
   - name: logfile
     blockinfile:
@@ -95,12 +92,10 @@
           stop
         }
     ignore_errors: yes
-    when: "inventory_hostname == 'wz'"
 
   - name: Restart Grafana
     systemd: state=restarted name=grafana-server.service
     notify: disable_grafana
-    when: "inventory_hostname == 'wz'"
 
   - name: datasource1
     uri:
@@ -111,7 +106,6 @@
     register: grafana_influxdb
     failed_when: false
     changed_when: false
-    when: "inventory_hostname == 'wz'"
   - debug: var=grafana_influxdb
 
   - name: datasource2
@@ -132,7 +126,7 @@
       force_basic_auth: yes
       status_code: 201
       body_format: json
-    when: "grafana_influxdb.status == 404 and inventory_hostname == 'wz'"
+    when: "grafana_influxdb.status == 404"
     ignore_errors: yes
 
   - name: dashboard
@@ -147,7 +141,6 @@
       force_basic_auth: yes
       HEADER_Content-Type: "application/json"
     with_items: "{{ dashboards }}"
-    when: "inventory_hostname == 'wz'"
 
   handlers:
   - name: disable_influx

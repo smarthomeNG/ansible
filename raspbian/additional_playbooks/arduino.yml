@@ -25,9 +25,3 @@
       name: "{{ item }}"
       executable: pip
     with_items: "{{ pythonpackages }}"
-
-  - name: del RobotControl
-    file:
-      path: /usr/share/arduino/libraries/Robot_Control
-      state: absent
-    when: "inventory_hostname == 'wz' or inventory_hostname == 'keller'"
