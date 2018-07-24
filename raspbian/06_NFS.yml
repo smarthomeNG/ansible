@@ -11,8 +11,6 @@
   tasks:
   - name: Install NFS
     apt: name=nfs-kernel-server force=no state=latest
-    register: apt
-  - debug: var=apt
 
   - name: Create hosts file
     file: path=/etc/exports state=touch
@@ -71,7 +69,6 @@
     command: "exportfs -ra"
     ignore_errors: yes
     register: exportfs
-    notify: Restart nfs-kernel
   - debug: var=exportfs
 
   - name: Enable rpcbind
@@ -80,9 +77,3 @@
   - name: disable nfs
     systemd: enabled=no name=nfs-kernel-server
     when: "'public' in group_names"
-
-  handlers:
-  - name: Restart nfs-kernel
-    systemd: state=restarted name=nfs-kernel-server
-    register: nfs-kernel
-  - debug: var=nfs-kernel

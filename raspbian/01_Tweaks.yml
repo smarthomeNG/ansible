@@ -64,6 +64,27 @@
       replace: '"de"'
     ignore_errors: yes
 
+  - name: crda
+    replace:
+      destfile: /etc/default/crda
+      regexp: 'REGDOMAIN='
+      replace: 'REGDOMAIN=DE'
+    ignore_errors: yes
+
+  - name: regdomain
+    replace:
+      destfile: /lib/crda/setregdomain
+      regexp: 'REGDOMAIN='
+      replace: 'REGDOMAIN=DE'
+    ignore_errors: yes
+
+  - name: sap
+    replace:
+      destfile: /lib/systemd/system/bluetooth.service
+      regexp: 'ExecStart=/usr/lib/bluetooth/bluetoothd'
+      replace: 'ExecStart=/usr/lib/bluetooth/bluetoothd --noplugin=sap'
+    ignore_errors: yes
+
   - name: Make ssh dir
     file:
       path: /home/pi/.ssh
@@ -142,7 +163,7 @@
     ignore_errors: yes
 
   - name: Test for entry
-    command: 'grep "rootdelay=5 consoleblank=0" /boot/cmdline.txt'
+    command: 'grep "rootdelay=5 consoleblank=0 cgroup_memory=1 cgroup_enable=memory" /boot/cmdline.txt'
     register: test_grep1
     ignore_errors: yes
 
@@ -152,7 +173,7 @@
       backrefs: True
       state: present
       regexp: '(.*)$'
-      line: '\1 rootdelay=5 consoleblank=0'
+      line: '\1 rootdelay=5 consoleblank=0 cgroup_memory=1 cgroup_enable=memory'
     when: test_grep1.stdout == ""
 
   - name: edit config
@@ -266,10 +287,12 @@
     ignore_errors: yes
 
   - name: Colorize
-    get_url:
-      url: http://www.fam.tuwien.ac.at/~schamane/_/_media/bash:mycolorize-r.sh
+    copy:
+      src: executables/mycolorize-r.sh
       dest: /usr/local/bin/colorize
       mode: 0777
+      owner: root
+      group: root
     register: colorize
   - debug: var=colorize
 
@@ -394,12 +417,6 @@
 
   - name: rsyslog
     systemd: state=restarted name=rsyslog.service
-
-  - name: Copy Update script
-    copy:
-      src: executables/update.sh
-      dest: /usr/local/smarthome/
-      mode: 0775
 
   - name: Copy firstboot
     copy:

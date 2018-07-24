@@ -1,0 +1,80 @@
+---
+- name: Install Smartvisu
+  hosts: all
+  remote_user: root
+  become_user: root
+  become: true
+
+  vars:
+
+    smartvisupath: /var/www/html/smartVISU
+    smartvisupath2: /var/www/html/smartVISU2.9
+    htmlpath: /var/www/html
+
+  tasks:
+  - name: Git Smartvisu develop
+    git:
+      repo: 'https://github.com/Martin-Gleiss/smartvisu'
+      dest: "{{ smartvisupath2 }}"
+      version: develop
+    register: git
+  - debug: var=git
+
+  - name: Git Smartvisu master
+    git:
+      repo: 'https://github.com/Martin-Gleiss/smartvisu'
+      dest: "{{ smartvisupath }}"
+      version: master
+    register: git
+  - debug: var=git
+
+  - name: ignore perm2
+    command: git config core.fileMode false chdir=/var/www/html/smartVISU
+
+  - name: ignore perm29
+    command: git config core.fileMode false chdir=/var/www/html/smartVISU2.9
+
+  - name: base-quad
+    unarchive:
+      src: configs/base_quad.tar
+      dest: /var/www/html/smartVISU2.9/pages/base/
+    register: quad
+  - debug: var=quad
+
+  - name: pages-quad
+    unarchive:
+      src: configs/pages_quad.tar
+      dest: /var/www/html/smartVISU2.9/pages/
+    register: quad2
+  - debug: var=quad2
+
+  - name: Copy cover
+    copy:
+      src: configs/cover_empty.jpg
+      dest: /var/www/html/smartVISU2.9/pics
+      mode: 0660
+      owner: smarthome
+      group: www-data
+    register: config
+  - debug: var=config
+
+  - name: Change Owner
+    file:
+      path: "{{ htmlpath }}"
+      owner: smarthome
+      group: www-data
+      mode: 0775
+      recurse: yes
+      state: directory
+
+  - name: mbstring
+    apt: name=php-mbstring force=no state=latest
+
+  - name: xml
+    apt: name=php7.0-xml force=no state=latest
+
+  - name: Restart php
+    systemd: state=restarted name=php7.0-fpm.service
+
+  - name: Restart nginx
+    systemd: state=restarted name=nginx

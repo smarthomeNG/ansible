@@ -101,11 +101,19 @@
       group: logcheck
       mode: 0644
 
+  - name: Copy Logcheck mosquitto
+    copy:
+      src: configs/logcheck.mosquitto
+      dest: /etc/logcheck/ignore.d.server/mosquitto
+      owner: root
+      group: logcheck
+      mode: 0644
+
   - name: change prio
     replace:
       destfile: /etc/cron.d/logcheck
-      regexp: "nice"
-      replace: "ionice -c3 nice"
+      regexp: "nice -n10"
+      replace: "ionice -c3 nice -n19"
     ignore_errors: yes
 
   - name: change time

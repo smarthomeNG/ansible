@@ -1,0 +1,10 @@
+---
+- name: Enable firstboot in the end.
+  hosts: all
+  remote_user: root
+  become_user: root
+  become: true
+
+  tasks:
+  - name: enable_firstboot
+    systemd: enabled=yes name=firstboot.service

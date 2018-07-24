@@ -1,0 +1,153 @@
+---
+- name: Install KNXD
+  hosts: all
+  remote_user: root
+  become_user: root
+  become: true
+
+  vars:
+    knxd:
+      ["git-core",
+      "build-essential",
+      "dh-systemd",
+      "autoconf",
+      "libtool",
+      "libusb-1.0-0-dev",
+      "pkg-config",
+      "libsystemd-dev",
+      "libev-dev",
+      "cmake"]
+
+  tasks:
+
+  - name: Install Prerequisites
+    apt:
+      name: "{{ item }}"
+      state: latest
+      update_cache: yes
+      install_recommends: yes
+    with_items: "{{ knxd }}"
+
+  - name: Create deb-files directory
+    file: path=/etc/deb-files/ state=directory mode=0755
+
+  - name: Copy deb files
+    copy:
+      src: "{{ item }}"
+      dest: /etc/deb-files/
+    with_fileglob:
+      - packages/knxd*
+
+  - name: List knxd deb files
+    shell: ls /etc/deb-files/knxd*_0.12*.deb
+    args:
+      chdir: /root/
+    register: knxd_files
+  - debug: var=knxd_files
+
+  - name: Install knxd
+    apt: deb="{{ item.1 }}" force=yes state=present
+    with_indexed_items: "{{ knxd_files.stdout_lines }}"
+    register: knxd
+  - debug: var=knxd
+
+  - name: clear conf
+    lineinfile: dest=/etc/knxd.conf state=absent regexp='(.*)'
+
+  - name: knxd conf add
+    copy:
+      src: configs/knxd.conf
+      dest: /etc/
+      mode: 0755
+      owner: smarthome
+      group: smarthome
+
+  - name: Copy knxd.ini
+    copy:
+      src: configs/knxd.ini
+      dest: /etc/
+      mode: 0755
+      owner: smarthome
+      group: smarthome
+
+  - name: Copy knxd.ini server
+    copy:
+      src: configs/knxd_IPServer.ini
+      dest: /etc/
+      mode: 0755
+      owner: smarthome
+      group: smarthome
+
+  - name: Copy knxd.ini serial
+    copy:
+      src: configs/knxd_Serial.ini
+      dest: /etc/
+      mode: 0755
+      owner: smarthome
+      group: smarthome
+
+  - name: change prio
+    blockinfile:
+      path: /lib/systemd/system/knxd.service
+      block: |
+        Nice=-20
+        IOSchedulingClass=realtime
+        IOSchedulingPriority=0
+        CPUSchedulingPolicy=rr
+        CPUSchedulingPriority=98
+        IOAccounting=True
+        IOWeight=5000
+      insertafter: "Type=notify"
+    ignore_errors: yes
+
+  - name: Stop knxd socket
+    systemd: state=stopped name=knxd.socket
+
+  - name: Stop knxd service
+    systemd: state=stopped name=knxd.service
+
+  - name: Restart knxd socket
+    systemd: state=restarted name=knxd.socket
+    register: knxd_socket
+
+  - name: Restart knxd service
+    systemd: state=restarted name=knxd.service daemon-reload=yes
+    when: knxd_socket
+
+  - name: Create User
+    user:
+      name: smarthome
+      shell: /bin/bash
+      groups: www-data, sudo, i2c, adm, audio, video, plugdev, input, netdev, spi, gpio, dialout
+      append: yes
+      update_password: always
+      password: ""
+      comment: 'SmarthomeNG User'
+
+  - name: chmod conf
+    file:
+      path: /etc/knxd.conf
+      state: touch
+      owner: smarthome
+      group: smarthome
+      mode: 0755
+
+  - name: Add dialout
+    user:
+      name: knxd
+      groups: dialout
+      append: yes
+
+  - name: udev
+    lineinfile:
+      path: /etc/udev/rules.d/70-knxd.rules
+      create: yes
+      line: 'ACTION=="add", SUBSYSTEM=="tty", ATTRS{id}=="00241011", KERNELS=="3f201000.uart", SYMLINK+="ttyKNX1", OWNER="knxd"'
+
+  - name: enable_socket
+    systemd: enabled=yes name=knxd.socket
+    register: enable_knxd_socket
+
+  - name: enable_service
+    systemd: enabled=yes name=knxd.service
+    register: enable_knxd_service

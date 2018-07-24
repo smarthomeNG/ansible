@@ -5,6 +5,12 @@
   become_user: root
   become: true
 
+  vars:
+    apt_install:
+      ["dialog",
+      "rlwrap"
+      ]
+
   tasks:
   - name: Create Group
     group:
@@ -28,17 +34,19 @@
       groups: www-data, sudo, i2c, adm, audio, video, plugdev, input, netdev, spi, gpio, dialout
       append: yes
 
-  - name: Install dialog
-    apt: name=dialog force=no state=latest
-    register: apt
-  - debug: var=apt
+  - name: install apt
+    apt:
+      name: "{{ item }}"
+      state: latest
+      autoremove: yes
+      autoclean: yes
+    with_items: "{{ apt_install }}"
 
   - name: Git SmarthomeNG
     git:
       repo: 'git://github.com/smarthomeNG/smarthome.git'
       dest: /usr/local/smarthome
       version: master
-      recursive: yes
     register: git
     ignore_errors: yes
   - debug: var=git
@@ -47,9 +55,10 @@
     git:
       repo: 'git://github.com/smarthomeNG/plugins.git'
       dest: /usr/local/smarthome/plugins
-      clone: no
-      update: yes
       version: master
+    register: git2
+    ignore_errors: yes
+  - debug: var=git2
 
   - name: plugins ignore perm
     command: git config core.fileMode false chdir=/usr/local/smarthome/plugins
@@ -76,23 +85,44 @@
       src: configs/smarthome_plugin.yaml
       dest: /usr/local/smarthome/etc/plugin.yaml
 
+  - name: Copy Update script
+    copy:
+      src: executables/update.sh
+      dest: /usr/local/smarthome/
+      mode: 0775
+
+  - name: Change requirements
+    file:
+      path: /usr/local/smarthome/tools/build_requirements.py
+      mode: 0777
+
+  - name: Update requirements
+    command: /usr/local/smarthome/tools/build_requirements.py
+
   - name: Install requirements
-    pip: requirements=/usr/local/smarthome/requirements/all.txt executable=pip3
+    pip: requirements=/usr/local/smarthome/requirements/all.txt executable=pip3 state=latest
     become: true
     become_user: root
 
   - name: Install pymysql
-    pip: name=pymysql executable=pip3
+    pip: name=pymysql executable=pip3 state=latest
     become: true
     become_user: root
 
-  - name: List Modules
-    command: "pip3 list"
-    register: pip3
-    ignore_errors: yes
-  - debug: var=pip3
+  - name: Install yolk3k
+    pip: name=yolk3k executable=pip3 state=latest
+    become: true
+    become_user: root
 
-  - name: Create Service
+  - name: Update modules
+    command: /usr/local/bin/yolk --upgrade
+
+  - name: Downgrade to requirements
+    pip: requirements=/usr/local/smarthome/requirements/all.txt executable=pip3
+    become: true
+    become_user: root
+
+  - name: Copy Service
     copy:
       dest: /lib/systemd/system/smarthome.service
       src: configs/smarthome.service
@@ -101,17 +131,10 @@
     git:
       repo: 'https://github.com/i-am-offline/smarthome.plugin.autoblind.git'
       dest: /usr/local/smarthome/plugins/autoblind
-      version: develop
+      version: Version_1.4.0
     register: autoblind
     ignore_errors: yes
   - debug: var=autoblind
-
-  - name: Install rlwrap
-    apt:
-      name: rlwrap
-      state: latest
-    register: rlwrap
-  - debug: var=rlwrap
 
   - name: Change Owner
     file:
@@ -127,9 +150,12 @@
 
   - name: Restart smarthome service
     systemd: state=restarted name=smarthome.service
-    register: smarthome_service
 
   - name: enable_service
     systemd: enabled=yes name=smarthome.service
-    register: enable_smarthome
-  - debug: var=enable_smarthome
+
+  - name: List Modules
+    command: "yolk --list"
+    register: pip3
+    ignore_errors: yes
+  - debug: var=pip3

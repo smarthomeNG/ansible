@@ -3,10 +3,18 @@ Description=Squeezelite Player
 After=network.target
 
 [Service]
-ExecStart=/etc/squeezelite.sh
+ExecStart=/usr/local/bin/squeezelite.sh
 TimeoutStartSec=5
 TimeoutStopSec=5
-User=root
+User=smarthome
+Group=audio
+Nice=-20
+IOSchedulingClass=realtime
+IOSchedulingPriority=0
+CPUSchedulingPolicy=rr
+CPUSchedulingPriority=98
+IOAccounting=True
+IOWeight=5000
 
 [Install]
 WantedBy=multi-user.target

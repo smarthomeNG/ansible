@@ -6,13 +6,17 @@
   become: true
 
   vars:
-    packages:
+    packages_compile:
       ["libasound2-dev",
       "libflac-dev",
       "libmad0-dev",
       "libvorbis-dev",
       "libfaad-dev",
       "libmpg123-dev",
+      "ffmpeg"]
+
+    packages:
+      [
       "ffmpeg"]
 
   tasks:
@@ -30,6 +34,12 @@
       dest: /usr/bin/
       mode: 0755
 
+  - name: Copy squeezelite-ffmpeg
+    copy:
+      src: executables/squeezelite-ffmpeg
+      dest: /usr/bin/
+      mode: 0755
+
   - name: Copy squeezelite sh
     copy:
       src: executables/squeezelite.sh
@@ -40,3 +50,11 @@
     copy:
       src: configs/squeezelite.service
       dest: /lib/systemd/system/
+
+  - name: Create log file
+    file:
+      path: /var/log/squeezelite.log
+      state: touch
+      owner: smarthome
+      group: smarthome
+      mode: 0755

@@ -50,7 +50,7 @@
 
   - name: Install
     apt:
-      deb: /etc/deb-files/mosquitto_1.4.14-1_armhf.deb
+      deb: /etc/deb-files/mosquitto_1.5-1_armhf.deb
       force: yes
 
   - name: ldconfig
@@ -68,7 +68,7 @@
   - name: Change config
     replace:
       destfile: /etc/mosquitto/mosquitto.conf
-      regexp: "^#pidfile"
+      regexp: "^#pid_file"
       replace: "pid_file /var/run/mosquitto/mosquitto.pid"
 
   - name: create directory
@@ -83,8 +83,10 @@
     blockinfile:
       path: "/etc/mosquitto/mosquitto.conf"
       block: |
-        log_dest file /var/log/mosquitto/mosquitto.log
+        log_dest syslog
         log_type notice
+        log_facility 0
+        log_timestamp false
     ignore_errors: yes
 
   - name: logfile
@@ -92,8 +94,9 @@
       path: "/etc/rsyslog.d/mosquitto.conf"
       create: yes
       block: |
-        if $programname == 'mosquitto' then {
-          action(type="omfile" file="/var/log/mosquitto/mosquitto.log")
+        template(name="FileFormat_timestamp" type="string" string= "%TIMESTAMP% %HOSTNAME% %syslogtag%%msg:::sp-if-no-1st-sp%%msg:::drop-last-lf%\n")
+        if $programname == 'mosquitto' or $msg contains 'Mosquitto' then {
+          action(type="omfile" file="/var/log/mosquitto/mosquitto.log" template="FileFormat_timestamp")
           stop
         }
     ignore_errors: yes
@@ -102,14 +105,6 @@
     copy:
       src: configs/mosquitto.service
       dest: /lib/systemd/system/mosquitto.service
-      owner: root
-      group: root
-      mode: 0644
-
-  - name: Copy mysql
-    copy:
-      src: configs/mysql.service
-      dest: /lib/systemd/system/mysql.service
       owner: root
       group: root
       mode: 0644

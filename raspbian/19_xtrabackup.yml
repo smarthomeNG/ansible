@@ -22,18 +22,10 @@
     become: true
     become_user: root
 
-  - name: Copy script1
-    copy:
-      src: executables/mysql_backup.sh
-      dest: /usr/local/bin/
-      mode: 0775
-      owner: mysql
-      group: mysql
-
   - name: Copy script2
     copy:
       src: executables/mysql_restore.sh
-      dest: /usr/local/bin/
+      dest: /usr/local/bin/mysql_restore
       mode: 0775
       owner: mysql
       group: mysql
@@ -49,7 +41,7 @@
 
   - name: Copy cron
     copy:
-      src: executables/cron_mysqlbackup
+      src: executables/mysql_backup.sh
       dest: /etc/cron.hourly/mysql_backup
       mode: 0755
       owner: mysql
