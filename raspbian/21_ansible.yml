@@ -1,0 +1,94 @@
+---
+- name: Install ansible
+  hosts: all
+  remote_user: root
+  become_user: root
+  become: true
+
+  vars:
+    playbooks:
+      ["homebridge_Raspi3.yml",
+      "influxdb_Raspi3.yml",
+      "grafana_Raspi3.yml"
+      ]
+
+    configs:
+      ["homebridge_config.json",
+      "homebridge.service",
+      "influxdb.json",
+      "logcheck.homebridge"
+      ]
+
+    packages:
+      ["grafana_5.2.2_armhf.deb"
+      ]
+
+  tasks:
+  - name: ansible
+    apt: name=ansible force=no state=latest
+
+  - name: sshpass
+    apt: name=sshpass force=no state=latest
+
+  - name: change directory
+    file:
+      path: /etc/ansible
+      state: directory
+      mode: 0755
+      owner: smarthome
+      group: smarthome
+
+  - name: create dir1
+    file:
+      path: /etc/ansible/playbooks/
+      state: directory
+      mode: 0755
+      owner: smarthome
+      group: smarthome
+
+  - name: create dir2
+    file:
+      path: /etc/ansible/configs/
+      state: directory
+      mode: 0755
+      owner: smarthome
+      group: smarthome
+
+  - name: create dir3
+    file:
+      path: /etc/ansible/packages/
+      state: directory
+      mode: 0755
+      owner: smarthome
+      group: smarthome
+
+  - name: copy playbooks
+    copy:
+      dest: /etc/ansible/playbooks/
+      src: "additional_playbooks/{{ item }}"
+      owner: smarthome
+      group: smarthome
+    with_items: "{{ playbooks }}"
+
+  - name: copy configs
+    copy:
+      dest: /etc/ansible/configs/
+      src: "configs/{{ item }}"
+      owner: smarthome
+      group: smarthome
+    with_items: "{{ configs }}"
+
+  - name: copy packages
+    copy:
+      dest: /etc/ansible/packages/
+      src: "packages/{{ item }}"
+      owner: smarthome
+      group: smarthome
+    with_items: "{{ packages }}"
+
+  - name: copy hosts
+    copy:
+      dest: /etc/ansible/hosts
+      src: configs/ansible_hosts
+      owner: smarthome
+      group: smarthome

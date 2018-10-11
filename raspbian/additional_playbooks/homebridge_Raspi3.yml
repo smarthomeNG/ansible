@@ -1,6 +1,6 @@
 ---
 - name: Install Homebdrige
-  hosts: public
+  hosts: all
   remote_user: root
   become_user: root
   become: true
@@ -17,31 +17,24 @@
 
   - name: Run Setup
     shell: /root/setup_10.x
-    register: setup
-
-  - debug: var=setup
 
   - name: Install NodeJS
     apt: name=nodejs force=no state=latest update_cache=yes
 
-
   - name: Install Avahi
     apt: name=libavahi-compat-libdnssd-dev force=no state=latest update_cache=yes
-
 
   - name: Install Avahi-Utils
     apt: name=avahi-utils force=no state=latest update_cache=yes
 
-
   - name: Install Homebridge
     shell: npm install -g --unsafe-perm homebridge
     register: npm
-
   - debug: var=npm
 
   - name: logfile
     blockinfile:
-      path: "/etc/rsyslog.d/homebridge.conf"
+      dest: "/etc/rsyslog.d/homebridge.conf"
       create: yes
       block: |
         if $programname == 'homebridge' then {
@@ -49,7 +42,6 @@
           stop
         }
     ignore_errors: yes
-
 
   - name: Install people
     shell: npm install -g homebridge-people
@@ -115,9 +107,9 @@
 
   - name: Restart Service
     systemd: state=restarted name=homebridge.service
-    notify: disable_service
+    notify: enable_service
 
 
   handlers:
-  - name: disable_service
-    systemd: enabled=no name=homebridge.service
+  - name: enable_service
+    systemd: enabled=yes name=homebridge.service

@@ -16,8 +16,7 @@
       "ffmpeg"]
 
     packages:
-      [
-      "ffmpeg"]
+      ["ffmpeg"]
 
   tasks:
   - name: Install Packages

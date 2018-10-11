@@ -7,6 +7,20 @@
 
   tasks:
 
+  - name: easy_dir
+    file:
+      path: /etc/ssl/easy-rsa
+      state: directory
+      mode: 0755
+
+  - name: Copy easyrsa
+    unarchive:
+      src: https://github.com/OpenVPN/easy-rsa/releases/download/v3.0.4/EasyRSA-3.0.4.tgz
+      dest: /etc/ssl/easy-rsa
+      remote_src: yes
+      validate_certs: False
+      extra_opts: [--strip-components=1]
+      
   - name: Install freeradius
     apt: name=freeradius force=no state=latest install_recommends=no
 

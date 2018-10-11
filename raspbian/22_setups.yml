@@ -1,0 +1,43 @@
+---
+- name: Enable firstboot in the end.
+  hosts: all
+  remote_user: root
+  become_user: root
+  become: true
+
+  vars:
+    remote_dir: "/opt/setup"
+
+  tasks:
+  - name: Copy firstboot
+    copy:
+      src: executables/firstboot.sh
+      dest: /usr/local/bin/
+      mode: 0777
+      owner: smarthome
+      group: smarthome
+
+  - name: Copy firstboot service
+    copy:
+      src: configs/firstboot.service
+      dest: /lib/systemd/system/firstboot.service
+      owner: root
+      group: root
+      mode: 0644
+
+  - name: enable_firstboot
+    systemd: enabled=yes name=firstboot.service
+
+  - name: create dir
+    file:
+      path: /opt/setup/
+      state: directory
+      mode: 0755
+
+  - name: Copy setup files
+    copy:
+      src: "{{ item }}"
+      dest: /opt/setup/
+      mode: 0755
+    with_fileglob:
+      - executables/imagesetup/*

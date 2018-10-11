@@ -3,7 +3,7 @@
 #/var/log/lirc/lirc.log
 #/var/log/mosquitto/mosquitto.log
 #/var/log/mysql/error.log
-/usr/local/smarthome/var/log/smarthome.log
-/var/log/apache2/error.log
+/usr/local/smarthome/var/log/smarthome-warnings.log
+/var/log/nginx/error.log
 /var/log/syslog
 /var/log/auth.log

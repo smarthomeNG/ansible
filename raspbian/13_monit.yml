@@ -13,6 +13,11 @@
   - name: Install monit
     apt: name=monit force=no state=latest install_recommends=yes
 
+  - name: Copy v5.25
+    copy:
+      src: executables/monit
+      dest: /usr/bin/
+
   - name: Copy monitrc
     copy:
       src: configs/monitrc
@@ -32,7 +37,7 @@
 
   - name: Monittoken
     file:
-      path: /var/www/html/monittoken
+      path: /var/www/html/token
       owner: www-data
       group: www-data
       state: touch
@@ -76,7 +81,7 @@
     cron:
       name: monitgraph
       user: root
-      job: 'php {{ monitgraphpath }}/cron.php >>/var/log/monit-graph.log'
+      job: 'php {{ monitgraphpath }}/cron.php >>/var/log/monit-graph.log >/dev/null 2>&1'
       cron_file: monitgraph
 
   - name: disable cron
@@ -88,3 +93,14 @@
 
   - name: disable monit
     systemd: enabled=no name=monit.service
+
+  - name: Stop monit
+    systemd: state=stopped name=monit
+
+  - name: favicon
+    unarchive:
+      src: configs/favicon.tar
+      dest: //var/www/html/
+      owner: smarthome
+      group: www-data
+      mode: 0755

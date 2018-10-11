@@ -12,7 +12,9 @@
       "screen",
       "rpi-update",
       "dos2unix",
-      "telnet"
+      "telnet",
+      "ufw",
+      "python3-dev"
       ]
 
 
@@ -22,8 +24,6 @@
 
   - name: Safe aptitude upgrade
     apt: upgrade=safe
-    register: apt
-  - debug: var=apt
 
   - name: Upgrade Dist
     apt: upgrade=dist
@@ -254,7 +254,7 @@
       state: directory
       owner: smarthome
       group: smarthome
-      mode: 0600
+      mode: 0700
 
   - name: ssh warning
     file:
@@ -361,7 +361,7 @@
   - name: Copy cleanbash
     copy:
       src: executables/cleanbash.sh
-      dest: /usr/local/bin/
+      dest: /opt/
       mode: 0777
       owner: smarthome
       group: smarthome
@@ -371,7 +371,7 @@
       path: /etc/rsyslog.d/ignore-systemd-session-slice.conf
       create: yes
       block: |
-        if $programname == "systemd" and ($msg contains "Starting Session" or $msg contains "Started Session" or $msg contains "session closed" or $msg contains "session opened" or $msg contains "Created slice" or $msg contains "Starting user-" or $msg contains "Starting User Slice of" or $msg contains "Startup" or $msg contains "Removed session" or $msg contains "New session" or $msg contains "Removed slice User Slice of" or $msg contains "Stopping User Slice of") then stop
+        if $programname == "systemd" and ($msg contains "Starting Session" or $msg contains "Started Session" or $msg contains "session closed" or $msg contains "session opened" or $msg contains "Created slice" or $msg contains "Starting user-" or $msg contains "Starting User Slice of" or $msg contains "Startup" or $msg contains "Removed session" or $msg contains "New session" or $msg contains "Removed slice User Slice of" or $msg contains "Stopping User Slice of" or $msg contains "dwc_otg_handle_mode_mismatch_intr") then stop
         if $programname == "systemd-logind" and ($msg contains "Starting Session" or $msg contains "Started Session" or $msg contains "session closed" or $msg contains "session opened" or $msg contains "Created slice" or $msg contains "Starting user-" or $msg contains "Starting User Slice of" or $msg contains "Removed session"  or $msg contains "New session" or $msg contains "Removed slice User Slice of" or $msg contains "Stopping User Slice of") then stop
 
   - name: systemd-timesyncd
@@ -415,21 +415,25 @@
   - name: enable_fake-hwclock
     systemd: enabled=yes name=fake-hwclock.service
 
+  - name: ufw logfile
+    blockinfile:
+      path: "/etc/rsyslog.d/ufw.conf"
+      create: yes
+      block: |
+        template(name="FileFormat_timestamp" type="string" string= "%TIMESTAMP% %HOSTNAME% %syslogtag%%msg:::sp-if-no-1st-sp%%msg:::drop-last-lf%\n")
+        if $programname == 'ufw' or $msg contains 'UFW' then {
+          action(type="omfile" file="/var/log/ufw.log" template="FileFormat_timestamp")
+          stop
+        }
+    ignore_errors: yes
+
   - name: rsyslog
     systemd: state=restarted name=rsyslog.service
 
-  - name: Copy firstboot
+  - name: Copy Update script
     copy:
-      src: executables/firstboot.sh
-      dest: /usr/local/bin/
-      mode: 0777
+      src: executables/update.sh
+      dest: /opt/system_update
+      mode: 0775
       owner: smarthome
       group: smarthome
-
-  - name: Copy firstboot service
-    copy:
-      src: configs/firstboot.service
-      dest: /lib/systemd/system/firstboot.service
-      owner: root
-      group: root
-      mode: 0644

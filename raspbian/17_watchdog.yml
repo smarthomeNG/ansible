@@ -22,6 +22,20 @@
         watchdog-timeout = 10
         interval = 4
         pidfile = /run/rsyslogd.pid
+        verbose = 1
+        logtick = 120
+
+  - name: logfile
+    blockinfile:
+      path: "/etc/rsyslog.d/watchdog.conf"
+      create: yes
+      block: |
+        template(name="FileFormat_timestamp" type="string" string= "%TIMESTAMP% %HOSTNAME% %syslogtag%%msg:::sp-if-no-1st-sp%%msg:::drop-last-lf%\n")
+        if $programname == 'watchdog' or $msg contains 'watchdog' then {
+          action(type="omfile" file="/var/log/watchdog.log" template="FileFormat_timestamp")
+          stop
+        }
+    ignore_errors: yes
 
   - name: module
     replace:

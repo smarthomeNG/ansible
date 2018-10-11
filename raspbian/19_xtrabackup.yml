@@ -25,7 +25,7 @@
   - name: Copy script2
     copy:
       src: executables/mysql_restore.sh
-      dest: /usr/local/bin/mysql_restore
+      dest: /opt/mysql_restore
       mode: 0775
       owner: mysql
       group: mysql

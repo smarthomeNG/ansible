@@ -1,5 +1,5 @@
 #!/bin/bash
-PATH=$PATH:/usr/lib/knxd:/opt/susvd
+PATH=$PATH:/usr/lib/knxd:/opt/susvd:/opt/:/opt/setup
 export MAKEFLAGS="-j 4"
 
 # Color Tweaks
@@ -23,9 +23,11 @@ export MAKEFLAGS="-j 4"
  ecat() { cat "$1" | e | colorize yellow '.*[Ww][Aa][Rr][Nn].*' purple '.*[Ee][Rr][Rr][Oo][Rr].*' purple '.*[Ff][Aa][Ii][Ll].*' red '.*[Cc][Rr][Ii][Tt][Ii][Cc][Aa][Ll].*' red '.*[Ff][Aa][Tt][Aa][Ll].*' ;}
 
  alias sh.log="tail -f -n 300 /usr/local/smarthome/var/log/smarthome-details.log | colorize green '.*INFO.*' yellow '.*WARNING.*' purple '.*ERROR.*' purple '.*FAIL.*'"
- alias sh.error="tail -f -n 1000 /usr/local/smarthome/var/log/smarthome-warnings.log | e | colorize green '.*INFO.*' yellow '.*WARNING.*' purple '.*ERROR.*' purple '.*FAIL.*'"
-
-
+ alias sh.details="tail -f -n 300 /usr/local/smarthome/var/log/smarthome-details.log | colorize green '.*INFO.*' yellow '.*WARNING.*' purple '.*ERROR.*' purple '.*FAIL.*'"
+ alias sh.error="tail -f -n 1000 /usr/local/smarthome/var/log/smarthome-warnings.log | colorize green '.*INFO.*' yellow '.*WARNING.*' purple '.*ERROR.*' purple '.*FAIL.*'"
+ alias sh.warnings="tail -f -n 1000 /usr/local/smarthome/var/log/smarthome-warnings.log | colorize green '.*INFO.*' yellow '.*WARNING.*' purple '.*ERROR.*' purple '.*FAIL.*'"
+ alias sh.debug="tail -f -n 300 /usr/local/smarthome/var/log/smarthome-develop.log | colorize green '.*INFO.*' yellow '.*WARNING.*' purple '.*ERROR.*' purple '.*FAIL.*'"
+ alias sh.develop="tail -f -n 300 /usr/local/smarthome/var/log/smarthome-develop.log | colorize green '.*INFO.*' yellow '.*WARNING.*' purple '.*ERROR.*' purple '.*FAIL.*'"
 
 # Tweak Ignore Duplicate Entries in History
 HISTCONTROL=ignoreboth

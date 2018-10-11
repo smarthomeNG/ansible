@@ -17,8 +17,7 @@
       ]
 
     pythonremovemodules:
-      ["PyGObject",
-      "pyxdg",
+      ["pyxdg",
       "pycrypto",
       "astral"
       ]
@@ -58,34 +57,38 @@
     register: fix
   - debug: var=fix
 
-  - name: remove modules
-    pip:
-      name: "{{ item }}"
-      state: absent
-      executable: pip3
-    with_items: "{{ pythonremovemodules }}"
-
   - name: Install libffi-dev
     apt:
       name: libffi-dev
       state: latest
       install_recommends: no
-    register: libffi
-  - debug: msg='libffi Installation "{{ libffi }}"'
 
   - name: Install libssl-dev
     apt:
       name: libssl-dev
       state: latest
       install_recommends: no
-    register: libssl
-  - debug: msg='libssl Installation "{{ libssl }}"'
+
+  - name: download get-pip
+    get_url:
+      url: https://bootstrap.pypa.io/get-pip.py
+      dest: /opt/
 
   - name: Install pip3
-    command: "/usr/local/bin/easy_install-3.5 pip"
+    command: "python3 /opt/get-pip.py"
 
   - name: Install pip
-    command: "/usr/local/bin/easy_install pip"
+    command: "python2.7 /opt/get-pip.py"
+
+  - name: Remove pygobject
+    command: "rm /usr/lib/python3/dist-packages/pygobject*"
+
+  - name: remove modules
+    pip:
+      name: "{{ item }}"
+      state: absent
+      executable: pip3
+    with_items: "{{ pythonremovemodules }}"
 
   - name: Install packages
     pip:
