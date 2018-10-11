@@ -8,7 +8,7 @@
   vars:
     samba_users:
       - name: smarthome
-        password: ''
+        password: smarthome
 
   tasks:
   - name: Install Samba

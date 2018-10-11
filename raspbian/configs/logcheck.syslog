@@ -23,3 +23,6 @@
 ^\w{3}(.*)[0-9]{1,2}\s[:0-9]{8}\s[._[:alnum:]-]+\s+systemd\[[0-9]*\]\:\s+apt-daily
 ^\w{3}(.*)[0-9]{1,2}\s[:0-9]{8}\s[._[:alnum:]-]+\s+jackd\[[0-9]*\]\:\s+JackEngine\:\:XRun
 ^\w{3}(.*)[0-9]{1,2}\s[:0-9]{8}\s[._[:alnum:]-]+\s+jackd\[[0-9]*\]\:\s+JackAudioDriver\:\:ProcessGraphAsyncMaster
+^\w{3}(.*)[0-9]{1,2}\s[:0-9]{8}\s[._[:alnum:]-]+\s+systemd\[[0-9]*\]\:\s+certbot.timer
+^\w{3}(.*)[0-9]{1,2}\s[:0-9]{8}\s[._[:alnum:]-](.*)WARN\:\:dwc_otg_handle_mode_mismatch_intr
+^\w{3}(.*)[0-9]{1,2}\s[:0-9]{8}\s[._[:alnum:]-](.*)kernel\:\s\[[.0-9]{11,13}\] $

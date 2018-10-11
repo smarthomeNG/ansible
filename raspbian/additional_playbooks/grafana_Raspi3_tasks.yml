@@ -1,0 +1,141 @@
+- name: Copy deb file
+  copy:
+    src: ../packages/grafana_5.2.2_armhf.deb
+    dest: /etc/deb-files/
+    remote_src: False
+
+- name: Install Grafana
+  apt:
+    deb: /etc/deb-files/grafana_5.2.2_armhf.deb
+
+- name: logfile
+  blockinfile:
+    dest: "/etc/rsyslog.d/grafana.conf"
+    create: yes
+    block: |
+      if $programname == 'grafana-server' then {
+        action(type="omfile" file="/var/log/grafana/grafana.log")
+        stop
+      }
+  ignore_errors: yes
+
+- name: rooturl
+  lineinfile:
+    dest: /etc/grafana/grafana.ini
+    insertafter: '^;root_url ='
+    line: 'root_url = %(protocol)s://%(domain)s/grafana/'
+
+- name: Restart Grafana
+  systemd: state=restarted name=grafana-server.service
+
+- name: datasource1
+  uri:
+    url: http://{{ host_url }}/grafana/api/datasources/name/smarthome
+    user: admin
+    password: admin
+    force_basic_auth: yes
+  register: grafana_influxdb
+  failed_when: false
+  changed_when: false
+- debug: var=grafana_influxdb
+
+- name: datasource2
+  uri:
+    url: http://{{ host_url }}/grafana/api/datasources
+    method: POST
+    user: admin
+    password: admin
+    body:
+      name: "smarthome"
+      type: "influxdb"
+      url: "http://127.0.0.1:8086"
+      access: "proxy"
+      user: "root"
+      password: "root"
+      database: "smarthome"
+      isDefault: true
+    force_basic_auth: yes
+    status_code: 200
+    body_format: json
+  when: "grafana_influxdb.status == 404"
+  ignore_errors: yes
+
+- name: users
+  uri:
+    url: http://{{ host_url }}/grafana/api/admin/users
+    user: "admin"
+    password: "admin"
+    method: POST
+    force_basic_auth: yes
+    body_format: json
+    body:
+      "name": "Smarthome"
+      "login": "smarthome"
+      "password": "smarthome"
+      "email": "root@localhost"
+  register: grafana_users
+  failed_when: false
+  changed_when: false
+- debug: var=grafana_users
+
+- name: getid
+  uri:
+    url: http://{{ host_url }}/grafana/api/users/lookup?loginOrEmail=smarthome
+    user: "admin"
+    password: "admin"
+    method: GET
+    force_basic_auth: yes
+  register: user_id
+- debug: msg="Smarthome ID is {{ user_id['json']['id'] }}"
+
+- name: permission
+  uri:
+    url: http://{{ host_url }}/grafana/api/admin/users/{{ user_id['json']['id'] }}/permissions
+    user: "admin"
+    password: "admin"
+    method: PUT
+    force_basic_auth: yes
+    body_format: json
+    body:
+      isGrafanaAdmin: true
+  register: grafana_permission
+- debug: var=grafana_permission
+
+- name: role
+  uri:
+    url: http://{{ host_url }}/grafana/api/org/users/{{ user_id['json']['id'] }}
+    user: "admin"
+    password: "admin"
+    method: PATCH
+    force_basic_auth: yes
+    body_format: json
+    body:
+      role: "Admin"
+  register: grafana_role
+- debug: var=grafana_role
+
+- name: dashboard
+  uri:
+    url: http://{{ host_url }}/grafana/api/dashboards/db
+    method: POST
+    user: "smarthome"
+    password: "smarthome"
+    body: "{{ lookup('template', item.file) }}"
+    status_code: 200
+    body_format: json
+    force_basic_auth: yes
+    HEADER_Content-Type: "application/json"
+  with_items: "{{ dashboards }}"
+  register: db
+  ignore_errors: yes
+- debug: msg="Dashboard ID is {{ db['results'][0]['json']['id'] }}"
+
+- name: star
+  uri:
+    url: http://{{ host_url }}/grafana/api/user/stars/dashboard/{{ db['results'][0]['json']['id'] }}
+    method: POST
+    user: "smarthome"
+    password: "smarthome"
+    force_basic_auth: yes
+    HEADER_Content-Type: "application/json"
+  ignore_errors: yes

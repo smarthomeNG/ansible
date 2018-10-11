@@ -1,0 +1,5 @@
+[local]
+localhost ansible_connection=local
+
+#[public]
+#image ansible_port=22 ansible_host=localhost ansible_user=smarthome ansible_password=smarthome become=true become_method=sudo

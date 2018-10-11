@@ -101,6 +101,9 @@
         }
     ignore_errors: yes
 
+  - name: rsyslog
+    systemd: state=restarted name=rsyslog.service
+    
   - name: Copy service
     copy:
       src: configs/mosquitto.service

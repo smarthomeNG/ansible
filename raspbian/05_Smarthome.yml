@@ -12,6 +12,15 @@
       ]
 
   tasks:
+  - name: cronjob
+    cron:
+      name: renamelogs
+      user: smarthome
+      job: rename -v 's/(.log)(.[0-9\-]{10})$/$2.log/' /usr/local/smarthome/var/log/*.log.*
+      cron_file: renamelogs
+      hour: 2
+      minute: 2
+
   - name: Create Group
     group:
       name: smarthome
@@ -84,12 +93,6 @@
     copy:
       src: configs/smarthome_plugin.yaml
       dest: /usr/local/smarthome/etc/plugin.yaml
-
-  - name: Copy Update script
-    copy:
-      src: executables/update.sh
-      dest: /usr/local/smarthome/
-      mode: 0775
 
   - name: Change requirements
     file:

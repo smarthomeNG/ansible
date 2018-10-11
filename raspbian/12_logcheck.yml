@@ -126,8 +126,8 @@
   - name: disable logcheck1
     lineinfile:
       dest: /etc/cron.d/logcheck
-      regexp: '^MAILTO(.*)'
-      line: '#MAILTO\1'
+      regexp: '^MAILTO=root'
+      line: '#MAILTO=logcheck'
       backrefs: yes
       state: present
     ignore_errors: yes
@@ -149,19 +149,3 @@
       backrefs: yes
       state: present
     ignore_errors: yes
-
-  - name: Copy logtail
-    copy:
-      src: executables/logtail
-      dest: /usr/sbin/
-      owner: root
-      group: logcheck
-      mode: 0755
-
-  - name: Copy logtail2
-    copy:
-      src: executables/logtail2
-      dest: /usr/sbin/
-      owner: root
-      group: logcheck
-      mode: 0755

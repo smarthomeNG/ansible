@@ -10,18 +10,30 @@
   - name: Install openvpn
     apt: name=openvpn force=no state=latest install_recommends=yes
 
-  - name: Install easyrsa
-    apt: name=easy-rsa force=no state=latest install_recommends=no
+  - name: easy_dir
+    file:
+      path: /etc/ssl/easy-rsa
+      state: directory
+      mode: 0755
 
   - name: Copy easyrsa
-    command: 'cp /usr/share/easy-rsa /etc/openvpn/easy-rsa -R'
-    register: rsa
-  - debug: var=rsa
+    unarchive:
+      src: https://github.com/OpenVPN/easy-rsa/releases/download/v3.0.4/EasyRSA-3.0.4.tgz
+      dest: /etc/ssl/easy-rsa
+      remote_src: yes
+      validate_certs: False
+      extra_opts: [--strip-components=1]
 
   - name: Copy config
     copy:
       src: configs/openvpn.conf
       dest: /etc/openvpn/server.conf
+      mode: 0644
+
+  - name: Copy client
+    copy:
+      src: configs/openvpn_client.conf
+      dest: /home/smarthome/openvpn_client_example.conf
       mode: 0644
 
   - name: ip4

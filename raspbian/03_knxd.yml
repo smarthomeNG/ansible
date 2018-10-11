@@ -48,11 +48,6 @@
   - name: Install knxd
     apt: deb="{{ item.1 }}" force=yes state=present
     with_indexed_items: "{{ knxd_files.stdout_lines }}"
-    register: knxd
-  - debug: var=knxd
-
-  - name: clear conf
-    lineinfile: dest=/etc/knxd.conf state=absent regexp='(.*)'
 
   - name: knxd conf add
     copy:

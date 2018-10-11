@@ -81,14 +81,24 @@ check process nginx with pidfile /var/run/nginx.pid
  stop program = "/bin/systemctl stop nginx"
  restart program = "/bin/systemctl restart nginx"
  if failed host 127.0.0.1 port 80 protocol http
- and request "/monittoken" with timeout 10 seconds then restart
+ and request "/token" with timeout 10 seconds then restart
  if 15 restarts within 25 cycles then unmonitor
+
+#PHP
+check process php-fpm with pidfile /var/run/php/php7.0-fpm.pid
+  start program = "/bin/systemctl start php7.0-fpm"
+  stop program = "/bin/systemctl stop php7.0-fpm"
+  restart program = "/bin/systemctl restart php7.0-fpm"
+  if failed unixsocket /var/run/php/php7.0-fpm.sock then restart
+  if 15 restarts within 25 cycles then unmonitor
 
 #SMARTHOME
 check process smarthome with pidfile /usr/local/smarthome/var/run/smarthome.pid
  start program "/bin/systemctl start smarthome"
  stop program "/bin/systemctl stop smarthome"
  restart program "/bin/systemctl restart smarthome"
+ if failed host 127.0.0.1 port 2323 type tcp for 45 cycles then alert
+ if cpu > 35% for 50 cycles then alert
  if 20 restarts within 45 cycles then unmonitor
 
 #SSH
@@ -98,6 +108,14 @@ check process sshd with pidfile /var/run/sshd.pid
   restart program "/bin/systemctl restart ssh"
   if failed port 22 protocol ssh then restart
   if 10 restarts within 15 cycles then unmonitor
+
+# SAMBA
+check process Samba with pidfile "/var/run/samba/smbd.pid"
+    start program = "/bin/systemctl start smbd"
+    stop program  = "/bin/systemctl stop smbd"
+    restart program = "/bin/systemctl restart smbd"
+    if failed host 127.0.0.1 port 139 type tcp for 2 cycles then restart
+    if 10 restarts within 15 cycles then unmonitor
 
 ##LIRC
 #check process lirc with pidfile /var/run/lirc/lircd.pid

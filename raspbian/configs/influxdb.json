@@ -4,11 +4,22 @@
   "title": "Smarthome",
   "tags": [ "templated" ],
   "timezone": "browser",
-  "rows": [
+  "panels": [
     {
+      "content": "# Smarthome Influxdb Data",
+      "gridPos": {
+        "h": 9,
+        "w": 12,
+        "x": 0,
+        "y": 0
+      },
+      "id": 2,
+      "mode": "markdown",
+      "title": "Panel Title",
+      "type": "text"
     }
   ],
-  "schemaVersion": 6,
+  "schemaVersion": 16,
   "version": 0
   },
 "overwrite": false
