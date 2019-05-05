@@ -14,7 +14,30 @@
       "dos2unix",
       "telnet",
       "ufw",
-      "python3-dev"
+      "python3-dev",
+      "unattended-upgrades",
+      "apt-listchanges",
+      "atop",
+      "libbison-dev",
+      "libfl-dev",
+      "libgcrypt20-dev",
+      "libgpg-error-dev",
+      "libaio-dev",
+      "git-core",
+      "build-essential",
+      "dh-systemd",
+      "autoconf",
+      "libtool",
+      "libusb-1.0-0-dev",
+      "pkg-config",
+      "libsystemd-dev",
+      "libev-dev",
+      "cmake",
+      "mlocate",
+      "snmpd",
+      "snmp", 
+      "fake-hwclock",
+      "libudev-dev"
       ]
 
 
@@ -35,8 +58,6 @@
       name: "{{ item }}"
       state: latest
     with_items: "{{ packages }}"
-    register: apt
-  - debug: var=apt
 
   - name: set timezone to Central Europe
     timezone:
@@ -57,7 +78,7 @@
     register: locale
   - debug: var=locale
 
-  - name: Tastatur
+  - name: keyboard
     replace:
       destfile: /etc/default/keyboard
       regexp: '"gb"'
@@ -84,6 +105,14 @@
       regexp: 'ExecStart=/usr/lib/bluetooth/bluetoothd'
       replace: 'ExecStart=/usr/lib/bluetooth/bluetoothd --noplugin=sap'
     ignore_errors: yes
+
+  - name: tweak screen
+    blockinfile:
+      path: /etc/screenrc
+      block: |
+            termcapinfo xterm* ti@:te@
+            startup_message off
+            shell -/bin/bash
 
   - name: Make ssh dir
     file:
@@ -142,6 +171,9 @@
   - name: Enable sshd
     systemd: enabled=yes name=ssh.service
 
+  - name: Enable network online
+    systemd: enabled=yes name=systemd-networkd-wait-online.service
+    
   - name: Pi dialout
     user:
       name: pi
@@ -186,7 +218,8 @@
         #hdmi_drive=2
         config_hdmi_boost=4
         sdtv_mode=2
-        dtoverlay=lirc-rpi
+        #dtoverlay=gpio-ir,gpio_pin=18
+        #dtoverlay=gpio-ir-tx,gpio_pin=17
         enable_uart=1
         #dtparam=watchdog=on
 
@@ -260,9 +293,6 @@
     file:
       path: /etc/profile.d/sshpwd.sh
       state: absent
-
-  - name: Install fakehwclock
-    apt: name=fake-hwclock force=no state=latest
 
   - name: restart fakehwclock
     systemd: state=restarted name=fake-hwclock.service
@@ -432,8 +462,68 @@
 
   - name: Copy Update script
     copy:
-      src: executables/update.sh
+      src: executables/system_update.sh
       dest: /opt/system_update
       mode: 0775
       owner: smarthome
       group: smarthome
+
+  - name: unattended_config
+    blockinfile:
+      path: "/etc/apt/apt.conf.d/50unattended-upgrades"
+      create: yes
+      insertafter: "Unattended-Upgrade::Origins-Pattern {"
+      block: |
+        "o=Debian,n=${distro_codename}";
+        "o=Raspbian,n=${distro_codename}";
+        "origin=Raspbian,codename=${distro_codename},label=Raspbian";
+        "origin=Raspberry Pi Foundation,codename=${distro_codename},label=Raspberry Pi Foundation";
+
+  - name: unattended_config2
+    blockinfile:
+      path: "/etc/apt/apt.conf.d/20auto-upgrades"
+      create: yes
+      block: |
+        APT::Periodic::Download-Upgradeable-Packages "0";
+        APT::Periodic::AutocleanInterval "7";
+
+  - name: unattended_config3
+    replace:
+      destfile: /etc/apt/apt.conf.d/20auto-upgrades
+      regexp: '"1"'
+      replace: '"0"'
+    ignore_errors: yes
+
+  - name: unattended_config_mail1
+    replace:
+      destfile: /etc/apt/apt.conf.d/50unattended-upgrades
+      regexp: '^//Unattended-Upgrade::Mail "root";'
+      replace: 'Unattended-Upgrade::Mail "root";'
+    ignore_errors: yes
+
+  - name: unattended_config_mail2
+    replace:
+      destfile: /etc/apt/apt.conf.d/50unattended-upgrades
+      regexp: '^//Unattended-Upgrade::MailOnlyOnError "true";'
+      replace: 'Unattended-Upgrade::MailOnlyOnError "true";'
+    ignore_errors: yes
+
+  - name: unattended_config_removedeps
+    replace:
+      destfile: /etc/apt/apt.conf.d/50unattended-upgrades
+      regexp: '^//Unattended-Upgrade::Remove-Unused-Dependencies "false";'
+      replace: 'Unattended-Upgrade::Remove-Unused-Dependencies "true";'
+    ignore_errors: yes
+
+  - name: Swap
+    replace:
+      destfile: /etc/dphys-swapfile
+      regexp: "^CONF_SWAPSIZE=100"
+      replace: "CONF_SWAPSIZE=1024"
+    ignore_errors: yes
+
+  - name: Swapoff
+    command: 'dphys-swapfile swapoff'
+
+  - name: Swapdisable
+    systemd: enabled=no name=dphys-swapfile

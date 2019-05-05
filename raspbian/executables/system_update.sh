@@ -2,6 +2,7 @@
 echo "Updating System Packages"
 sudo apt-get update && apt-get dist-upgrade
 echo "Do you want to update SmarthomeNG?"
+echo "WARNING: Any changes to the source code/plugins you made manually are lost. Back them up now and proceed later."
 sh="Skip"
 select sh in "Update" "Skip"; do
     case $sh in
@@ -10,21 +11,15 @@ select sh in "Update" "Skip"; do
         *) echo "Skipping"; break;;
     esac
 done
+version=$(git status |grep "[bB]ranch"|head -n1|awk -F' ' '{print $NF}')
 if [ $sh = "Update" ]; then
-  echo "Do you want to update to the latest Master (recommended!) or Develop version?"
+  echo "Do you want to update to the latest Master or Develop version?"
+  echo "Currently $version is installed."
   unset master
   select master in "Master" "Develop"; do
       case $master in
           "Master" ) break;;
           "Develop" ) break;;
-          *) echo "Skipping"; break;;
-      esac
-  done
-  echo "WARNING: Changes to the source code/plugins are lost. Back them up now and proceed later."
-  select proceed in "Proceed" "Stop"; do
-      case $proceed in
-          "Proceed" ) break;;
-          "Stop" ) master="Stop"; break;;
           *) echo "Skipping"; break;;
       esac
   done

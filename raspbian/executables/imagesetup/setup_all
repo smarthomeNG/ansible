@@ -4,27 +4,11 @@ OPT_FOLDER=/opt/setup
 echo "WELCOME TO THE RASPBERRY PI SMARTHOME NG IMAGE SETUP"
 echo ""
 echo "This script is used to setup the most important parts of the installation."
-echo "Do you want to expand the file-system on your SD card to use all available space?"
-echo "Otherwise only 4GB will be available no matter how big your card really is."
-echo ""
-select exp in "Expand" "Skip"; do
-    case $exp in
-        Expand ) sudo raspi-config nonint do_expand_rootfs; break;;
-        Skip) echo "Skipping"; break;;
-        *) echo "Skipping"; break;;
-    esac
-done
-echo ""
-echo "Do you want to update your language setting or install new locales?"
-select exp in "Update" "Skip"; do
-    case $exp in
-        Update ) sudo dpkg-reconfigure locales; break;;
-        Skip) echo "Skipping"; break;;
-        *) echo "Skipping"; break;;
-    esac
-done
+$OPT_FOLDER/setup_restore.sh
 
-$OPT_FOLDER/setup_knxd.sh
+$OPT_FOLDER/setup_general.sh
+
+$OPT_FOLDER/setup_knx.sh
 $OPT_FOLDER/setup_ssh.sh
 $OPT_FOLDER/setup_samba.sh
 $OPT_FOLDER/setup_nginx.sh
@@ -46,3 +30,4 @@ $OPT_FOLDER/setup_influxdb.sh
 echo ""
 echo "SMARTHOME IMAGE setup is done. You can rerun this script at any time."
 echo "You might want to reboot your Raspberry Pi now running sudo reboot"
+$OPT_FOLDER/setup_backup.sh

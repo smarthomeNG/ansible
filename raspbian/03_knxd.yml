@@ -29,7 +29,10 @@
     with_items: "{{ knxd }}"
 
   - name: Create deb-files directory
-    file: path=/etc/deb-files/ state=directory mode=0755
+    file: 
+      path: /etc/deb-files/ 
+      state: directory 
+      mode: 0755
 
   - name: Copy deb files
     copy:
@@ -38,16 +41,60 @@
     with_fileglob:
       - packages/knxd*
 
-  - name: List knxd deb files
-    shell: ls /etc/deb-files/knxd*_0.12*.deb
-    args:
-      chdir: /root/
-    register: knxd_files
-  - debug: var=knxd_files
+  - name: Copy knx_py
+    copy:
+      src: packages/knx.cpython-35m-arm-linux-gnueabihf.so
+      dest: /usr/local/lib/python3.5/dist-packages/
 
+  - name: Copy eibd deb
+    copy:
+      src: packages/eibd_0.0.5-1_armhf.deb
+      dest: /etc/deb-files/
+
+  - name: Copy pthsem deb
+    copy:
+      src: packages/pthsem_2.0.8-1_armhf.deb
+      dest: /etc/deb-files/
+
+  - name: Copy eibdscript
+    copy:
+      src: executables/eibd.sh
+      dest: /etc/init.d/eibd
+      mode: 0755
+
+  - name: Create eibd User
+    user:
+      name: eibd
+      shell: /usr/sbin/nologin
+      groups: users
+
+  - name: eibdconf
+    lineinfile:
+      path: /etc/ld.so.conf.d/bcusdk.conf
+      create: yes
+      line: '/usr/local/lib'
+
+  - name: Copy eibd conf
+    copy:
+      src: configs/eibd.ini
+      dest: /etc/default/eibd
+
+  - name: eibdlog
+    lineinfile:
+      path: /var/log/eibd.log
+      create: yes
+      line: 'EIBD Log'
+      mode: 0777
+
+  - name: knxd_deb
+    find:
+      paths: /etc/deb-files/
+      patterns: "knxd*_0.12*.deb"
+    register: knxd_files
+    
   - name: Install knxd
-    apt: deb="{{ item.1 }}" force=yes state=present
-    with_indexed_items: "{{ knxd_files.stdout_lines }}"
+    apt: deb="{{ item.path }}" force=yes state=present
+    with_items: "{{ knxd_files.files }}"
 
   - name: knxd conf add
     copy:

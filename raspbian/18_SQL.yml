@@ -74,6 +74,15 @@
       replace: "password = smarthome"
     ignore_errors: yes
 
+  - name: configxtra
+    blockinfile:
+      path: "/etc/mysql/debian.cnf"
+      block: |
+        [mysqld]
+        skip-host-cache
+        skip-name-resolve
+    ignore_errors: yes
+
   - name: link conf
     file:
       src: /etc/mysql/debian.cnf

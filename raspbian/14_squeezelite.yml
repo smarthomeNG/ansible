@@ -33,12 +33,6 @@
       dest: /usr/bin/
       mode: 0755
 
-  - name: Copy squeezelite-ffmpeg
-    copy:
-      src: executables/squeezelite-ffmpeg
-      dest: /usr/bin/
-      mode: 0755
-
   - name: Copy squeezelite sh
     copy:
       src: executables/squeezelite.sh

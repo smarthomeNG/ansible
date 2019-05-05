@@ -87,3 +87,7 @@ if [ $1 = $BASE ]; then
 else
   pyxtrabackup-restore --base-archive=$BASE --incremental-archive=$1 --user=root --uncompressed-archives --restart
 fi
+
+sudo chown mysql:mysql /var/lib/mysql -R 2>&1
+sudo chmod 0770 /var/lib/mysql -R 2>&1
+sudo systemctl restart mysql

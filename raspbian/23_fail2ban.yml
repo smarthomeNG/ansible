@@ -1,0 +1,81 @@
+---
+- name: fail2ban
+  hosts: all
+  remote_user: root
+  become_user: root
+  become: true
+
+  vars:
+    packages:
+      ["fail2ban"
+      ]
+
+  tasks:
+  - name: install apt
+    apt:
+      name: "{{ item }}"
+      state: latest
+      install_recommends: no
+    with_items: "{{ packages }}"
+
+  - name: copy_jail
+    copy:
+      dest: /etc/fail2ban/jail.local
+      src: configs/fail2ban.conf
+
+  - name: copy_https
+    copy:
+      dest: /etc/fail2ban/filter.d/nginx-https-auth.conf
+      src: configs/fail2ban_https.conf
+
+  - name: update_auth
+    lineinfile:
+      path: /etc/fail2ban/filter.d/nginx-http-auth.conf
+      insertafter: 'password mismatch'
+      line: '^ \[error\] \d+#\d+: \*\d+ no user/password was provided for basic authentication, client: <HOST>, server: \S+, request: "\S+ \S+ HTTP/\d+\.\d+", host: "\S+"\s*$'
+
+  - name: link_badbots
+    file:
+      dest: /etc/fail2ban/filter.d/nginx-badbots.conf
+      src: /etc/fail2ban/filter.d/apache-badbots.conf
+      state: link
+
+  - name: copy_nohome
+    copy:
+      dest: /etc/fail2ban/filter.d/nginx-nohome.conf
+      src: configs/fail2ban_nohome.conf
+
+  - name: copy_noproxy
+    copy:
+      dest: /etc/fail2ban/filter.d/nginx-noproxy.conf
+      src: configs/fail2ban_noproxy.conf
+
+  - name: copy_fail2ban_script
+    copy:
+      dest: /opt/fail2ban_reset.sh
+      src: executables/fail2ban_reset.sh
+      mode: 0777
+
+  - name: copy_fail2ban_script2
+    copy:
+      dest: /opt/fail2ban_gracetime.sh
+      src: executables/fail2ban_gracetime.sh
+      mode: 0777
+
+  - name: copy_fail2ban_mail
+    copy:
+      dest: /etc/fail2ban/action.d/mail-whois-lines.conf
+      src: configs/fail2ban_mail.conf
+      mode: 0777
+
+  - name: copy_fail2ban_sendmail
+    copy:
+      dest: /etc/fail2ban/action.d/sendmail-whois-lines.conf
+      src: configs/fail2ban_sendmail.conf
+      mode: 0777
+
+  - name: Restart fail2ban
+    systemd: state=restarted name=fail2ban
+
+  - name: disable fail2ban
+    systemd: enabled=no name=fail2ban

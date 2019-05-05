@@ -25,6 +25,9 @@
       group: root
       mode: 0644
 
+  - name: Enable network online
+    systemd: enabled=yes name=systemd-networkd-wait-online.service
+    
   - name: enable_firstboot
     systemd: enabled=yes name=firstboot.service
 

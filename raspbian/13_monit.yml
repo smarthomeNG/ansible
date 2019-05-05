@@ -9,14 +9,11 @@
     monitgraphpath: /var/www/html/monitgraph
 
 
-  tasks:
+  tasks: 
   - name: Install monit
-    apt: name=monit force=no state=latest install_recommends=yes
-
-  - name: Copy v5.25
-    copy:
-      src: executables/monit
-      dest: /usr/bin/
+    apt:
+      name: monit
+      state: latest
 
   - name: Copy monitrc
     copy:
@@ -94,13 +91,10 @@
   - name: disable monit
     systemd: enabled=no name=monit.service
 
-  - name: Stop monit
-    systemd: state=stopped name=monit
-
-  - name: favicon
+  - name: favicons
     unarchive:
-      src: configs/favicon.tar
-      dest: //var/www/html/
+      src: configs/favicons.tar
+      dest: /var/www/html/favicons/
       owner: smarthome
       group: www-data
       mode: 0755

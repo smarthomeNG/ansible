@@ -54,7 +54,6 @@
 
   - name: Restart influxdb
     systemd: state=restarted name=influxdb.service
-    notify: disable_influx
 
   - name: influx init
     lineinfile:
@@ -74,6 +73,12 @@
         }
     ignore_errors: yes
 
+  - name: logrotate
+    replace:
+      destfile: /etc/logrotate.d/influxdb
+      regexp: "/var/log/influxdb/influxd.log"
+      replace: "/var/log/influxdb.log"
+
   - name: Create db
     shell: "influx < /root/influx.txt"
     async: 40
@@ -81,8 +86,3 @@
 
   - name: Delete init
     file: path=/root/influx.txt state=absent
-
-
-  handlers:
-  - name: disable_influx
-    systemd: enabled=no name=influxdb.service
