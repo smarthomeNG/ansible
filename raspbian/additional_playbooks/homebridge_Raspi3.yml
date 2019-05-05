@@ -8,15 +8,14 @@
   tasks:
   - name: Download nodeJS
     get_url:
-      url: https://raw.githubusercontent.com/nodesource/distributions/master/deb/setup_10.x
+      url: https://raw.githubusercontent.com/nodesource/distributions/master/deb/setup_11.x
       dest: /root
       mode: 775
     register: curl
-
   - debug: var=curl
 
   - name: Run Setup
-    shell: /root/setup_10.x
+    shell: /root/setup_11.x
 
   - name: Install NodeJS
     apt: name=nodejs force=no state=latest update_cache=yes
@@ -27,6 +26,12 @@
   - name: Install Avahi-Utils
     apt: name=avahi-utils force=no state=latest update_cache=yes
 
+  - name: Rebuild npm
+    shell: npm rebuild
+    chdir: /usr/local/lib/node_modules/homebridge
+    register: rebuildnpm
+  - debug: var=rebuildnpm
+  
   - name: Install Homebridge
     shell: npm install -g --unsafe-perm homebridge
     register: npm
@@ -67,7 +72,6 @@
       state: directory
       owner: smarthome
       group: smarthome
-
 
   - name: Copy private config
     copy:

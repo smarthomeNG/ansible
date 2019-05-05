@@ -1,5 +1,5 @@
 ---
-- name: Install Python PIP
+- name: Install Python Packages
   hosts: all
   remote_user: root
   become_user: root
@@ -31,7 +31,8 @@
       "awake",
       "setuptools",
       "pycrypto",
-      "yolk3k"
+      "yolk3k",
+      "snmp"
       ]
 
 
@@ -54,8 +55,6 @@
 
   - name: Fix
     command: 'apt-get -f -y install'
-    register: fix
-  - debug: var=fix
 
   - name: Install libffi-dev
     apt:
@@ -80,9 +79,6 @@
   - name: Install pip
     command: "python2.7 /opt/get-pip.py"
 
-  - name: Remove pygobject
-    command: "rm /usr/lib/python3/dist-packages/pygobject*"
-
   - name: remove modules
     pip:
       name: "{{ item }}"
@@ -90,7 +86,7 @@
       executable: pip3
     with_items: "{{ pythonremovemodules }}"
 
-  - name: Install packages
+  - name: Install modules
     pip:
       name: "{{ item }}"
       executable: pip3
@@ -98,3 +94,18 @@
     become: true
     become_user: root
     with_items: "{{ pythoninstall }}"
+
+  - name: pygobjectfiles
+    find:
+      paths: /usr/lib/python3/dist-packages/
+      patterns: "pygobject*"
+    register: pygobject_to_delete
+
+  - name: Remove pygobject
+    file:
+      path: "{{ item.path }}"
+      state: absent
+    with_items: "{{ pygobject_to_delete.files }}"
+    ignore_errors: yes
+    register: deleted
+  - debug: var=deleted

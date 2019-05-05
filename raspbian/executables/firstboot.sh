@@ -1,10 +1,13 @@
 #!/bin/bash
-ETH=`sudo dmesg | grep -Po '\K\b[[:alnum:]]+\b: renamed from eth' | cut -d ':' -f 1`
-if [ ! -z "$ETH" ]; then
-    ETHIP=`sudo ip addr list $ETH |grep 'inet ' |cut -d' ' -f6|cut -d/ -f1|cut -d'.' -f1-3`
-else
-    ETHIP=`sudo ip addr list eth0 |grep 'inet ' |cut -d' ' -f6|cut -d/ -f1|cut -d'.' -f1-3`
-fi
+x=1
+while ! ip route | grep -oP 'default via .+ dev eth0' && [ $x -le 10 ]; do
+  sudo echo "interface not up, will try again in 1 second" >> /var/log/firstboot.log;
+  sudo sleep 1;
+  x=$(( $x + 1 ));
+done
+
+ETHIP=`hostname -I| cut -d' ' -f1-1|cut -d'.' -f1-3`
+
 if [ -f /etc/exports ]; then
   if [ -z "$ETHIP" ]; then
     RES='Could not figure out IP address'
@@ -66,5 +69,8 @@ sudo cp /etc/ssh/ssh_host_rsa_key /home/smarthome/smarthomeng.private
 sudo chown smarthome:smarthome /home/smarthome/smarthomeng.private
 RES='Created new SSH host keys. Copy /etc/ssh/ssh_host_rsa_key to your client and connect as smarthome or root!'
 sudo echo ${RES} >> /var/log/firstboot.log
-
+sudo raspi-config nonint do_expand_rootfs
+sudo partprobe
+RES='Expanded SD disk to full capacity'
+sudo echo ${RES} >> /var/log/firstboot.log
 sudo systemctl disable firstboot.service

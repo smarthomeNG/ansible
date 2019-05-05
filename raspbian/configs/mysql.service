@@ -6,12 +6,14 @@ After=syslog.target network.target
 Type=simple
 PermissionsStartOnly=true
 RuntimeDirectory=mysqld
-ExecStart=/usr/sbin/mysqld --basedir=/usr --datadir=/var/lib/mysql --plugin-dir=/usr/lib/mysql/plugin --log-error=/var/log/mysql/error.log --pid-file=/var/run/mysqld/mysqld.pid --socket=/var/run/mysqld/mysqld.sock --port=3306
+ExecStart=/usr/sbin/mysqld --basedir=/usr --datadir=/var/lib/mysql --plugin-dir=/usr/lib/mysql/plugin --log-error=/var/log/mysql/error.log --pid-file=/var/run/mysqld/mysqld.pid --socket=/var/run/mysqld/mysqld.sock --port=3306 --skip-name-resolve --skip-host-cache
 TimeoutSec=300
 PrivateTmp=true
 User=mysql
 Group=mysql
 WorkingDirectory=/usr
+LimitNOFILE=infinity
+LimitMEMLOCK=infinity
 
 [Install]
 WantedBy=multi-user.target

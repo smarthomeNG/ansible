@@ -58,5 +58,11 @@
       insertafter: EOF
       line: 'options bcm2835_wdt nowayout=1'
 
+  - name: Copy logrotate
+    copy:
+      src: configs/logrotate_watchdog
+      dest: /etc/logrotate.d/watchdog
+      mode: 0644
+
   - name: disbale
     systemd: enabled=no name=watchdog.service

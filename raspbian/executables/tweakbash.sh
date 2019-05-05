@@ -1,5 +1,5 @@
 #!/bin/bash
-PATH=$PATH:/usr/lib/knxd:/opt/susvd:/opt/:/opt/setup
+PATH=$PATH:/usr/lib/knxd:/opt/susvd:/opt/:/opt/setup:/usr/local/xtrabackup/bin
 export MAKEFLAGS="-j 4"
 
 # Color Tweaks
@@ -29,6 +29,12 @@ export MAKEFLAGS="-j 4"
  alias sh.debug="tail -f -n 300 /usr/local/smarthome/var/log/smarthome-develop.log | colorize green '.*INFO.*' yellow '.*WARNING.*' purple '.*ERROR.*' purple '.*FAIL.*'"
  alias sh.develop="tail -f -n 300 /usr/local/smarthome/var/log/smarthome-develop.log | colorize green '.*INFO.*' yellow '.*WARNING.*' purple '.*ERROR.*' purple '.*FAIL.*'"
 
+ findsize() { find . -path /mnt -prune -o -type f -size +$1 -exec ls -lh {} \; 2>&1 | awk '{ print $9 ": " $5 }'; }
+ adddate() {
+     while IFS= read -r line; do
+         echo "$(date) $line"
+     done
+ }
 # Tweak Ignore Duplicate Entries in History
 HISTCONTROL=ignoreboth
 
@@ -66,7 +72,7 @@ SmartHome Raspi running for: ${UPTIME}
 $(tput sgr0)"
 if [ -e /var/log/firstboot.log ]; then
   if (( $(date +%s) - $(stat -L --format %Y /var/log/firstboot.log) < (5*60) )); then
-    echo "$(tput setaf 2)Welcome to Smarthome Image 2.1.1. At your first boot these changes were made:"
+    echo "$(tput setaf 2)Welcome to Smarthome Image 2.3. At your first boot these changes were made:"
     echo "$(</var/log/firstboot.log)"
     echo "$(tput sgr0)"
   fi

@@ -7,9 +7,6 @@
 
   tasks:
   - name: Install xsltproc
-    apt: name=xsltproc force=no state=latest
-
-  - name: Install python3-yaml
     apt: name=xsltproc force=no state=latest install_recommends=yes
 
   - name: Create deb-files directory

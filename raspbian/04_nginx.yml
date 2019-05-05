@@ -18,8 +18,7 @@
       "liblua5.1-dev",
       "git",
       "apache2-utils",
-      "libnginx-mod-http-lua",
-      "fail2ban"
+      "libnginx-mod-http-lua"
       ]
 
     build:
@@ -38,7 +37,7 @@
 
   - name: Copy easyrsa
     unarchive:
-      src: https://github.com/OpenVPN/easy-rsa/releases/download/v3.0.4/EasyRSA-3.0.4.tgz
+      src: https://github.com/OpenVPN/easy-rsa/releases/download/v3.0.6/EasyRSA-unix-v3.0.6.tgz
       dest: /etc/ssl/easy-rsa
       remote_src: yes
       validate_certs: False
@@ -235,62 +234,13 @@
   - name: Copy favicons
     unarchive:
       src: configs/favicons.tar
-      dest: /var/www/html/favicons
+      dest: /var/www/html/favicons/
       owner: smarthome
       group: www-data
       mode: 0770
-
-  - name: copy_fail2ban
-    copy:
-      dest: /etc/fail2ban/jail.local
-      src: configs/fail2ban.conf
-
-  - name: copy_https
-    copy:
-      dest: /etc/fail2ban/filter.d/nginx-https-auth.conf
-      src: configs/fail2ban_https.conf
-
-  - name: update_auth
-    lineinfile:
-      path: /etc/fail2ban/filter.d/nginx-http-auth.conf
-      insertafter: 'password mismatch'
-      line: '^ \[error\] \d+#\d+: \*\d+ no user/password was provided for basic authentication, client: <HOST>, server: \S+, request: "\S+ \S+ HTTP/\d+\.\d+", host: "\S+"\s*$'
-
-  - name: link_badbots
-    file:
-      dest: '/etc/fail2ban/filter.d/nginx-badbots.conf'
-      src: '/etc/fail2ban/filter.d/apache-badbots.conf'
-      state: link
-
-  - name: copy_nohome
-    copy:
-      dest: /etc/fail2ban/filter.d/nginx-nohome.conf
-      src: configs/fail2ban_nohome.conf
-
-  - name: copy_noproxy
-    copy:
-      dest: /etc/fail2ban/filter.d/nginx-noproxy.conf
-      src: configs/fail2ban_noproxy.conf
-
-  - name: copy_fail2ban_script
-    copy:
-      dest: /opt/
-      src: executables/fail2ban_reset.sh
-      mode: 0777
-
-  - name: copy_iptables
-    copy:
-      dest: /etc/fail2ban/action.d/iptables-multiport.conf
-      src: configs/fail2ban_iptables.conf
 
   - name: Restart php
     systemd: state=restarted name=php7.0-fpm.service
 
   - name: Restart nginx
     systemd: state=restarted name=nginx
-
-  - name: Restart fail2ban
-    systemd: state=restarted name=fail2ban
-
-  - name: disable fail2ban
-    systemd: enabled=no name=fail2ban

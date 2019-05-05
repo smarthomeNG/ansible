@@ -6,6 +6,7 @@ mail_alias () {
   done
   echo ""
   echo "Do you want to change the configuration?"
+  rerun="Keep"
   select rerun in "Change" "Keep"; do
       case $rerun in
           "Change" ) break;;
@@ -13,7 +14,7 @@ mail_alias () {
           *) echo "Skipping"; break;;
       esac
   done
-  if [ $rerun = "Change" ]; then
+  if [ $rerun == "Change" ]; then
     mail_regex="^[a-z0-9!#\$%&'*+/=?^_\`{|}~-]+(\.[a-z0-9!#$%&'*+/=?^_\`{|}~-]+)*@([a-z0-9]([a-z0-9-]*[a-z0-9])?\.)+[a-z0-9]([a-z0-9-]*[a-z0-9])?\$"
     while ! [[ "$mail" =~ $mail_regex ]]; do
         read -p "Please define your email where $1 summary should be sent to (name@domain.tld): " mail
@@ -38,7 +39,7 @@ if [[ $(echo $EXIM4_e | grep "Failed") ]]; then
 fi
 echo ""
 echo "EXIM4: allows you to send mails from your Raspberry Pi. This is useful for monit and logcheck and the mail plugin of SmarthomeNG. (currently $EXIM4_e)"
-if [[ $EXIM4_e = "not installed" ]]; then
+if [[ $EXIM4_e == "not installed" ]]; then
   unset exim4_install
   select exim4_install in "Install" "Skip"; do
       case $exim4_install in
@@ -60,8 +61,8 @@ done
 EXIM4_e=$(systemctl is-enabled exim4 2>&1 | tail -n 1)&> /dev/null
 echo ""
 echo "EXIM4 Service is $EXIM4_e."
-if [[ $EXIM4_e = "enabled" ]]; then
-    echo "Do you want to run the configuration process now?"
+if [[ $EXIM4_e == "enabled" ]]; then
+    echo "Do you want to run the exim4 configuration process now?"
     select exim4_conf in "Config" "Skip"; do
         case $exim4_conf in
             Config ) mail_alias; break;;

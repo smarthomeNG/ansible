@@ -5,18 +5,13 @@
 ^\w{3}(.*)[0-9]{1,2}\s[:0-9]{8}\s[._[:alnum:]-]+\savahi-daemon\[[0-9]+\]\:\sReceived packet
 ^\w{3}(.*)[0-9]{1,2}\s[:0-9]{8}\s[._[:alnum:]-](.*)Cleanup of Temporary Directories(.*)
 ^\w{3}(.*)[0-9]{1,2}\s[:0-9]{8}\s[._[:alnum:]-](.*)background program processing daemon(.*)
-^\w{3}(.*)[0-9]{1,2}\s[:0-9]{8}\s[._[:alnum:]-](.*)Started (.*)
-^\w{3}(.*)[0-9]{1,2}\s[:0-9]{8}\s[._[:alnum:]-](.*)Stopped (.*)
-^\w{3}(.*)[0-9]{1,2}\s[:0-9]{8}\s[._[:alnum:]-](.*)Starting (.*)
-^\w{3}(.*)[0-9]{1,2}\s[:0-9]{8}\s[._[:alnum:]-](.*)Stopping (.*)
-^\w{3}(.*)[0-9]{1,2}\s[:0-9]{8}\s[._[:alnum:]-](.*)Reloading (.*)
-^\w{3}(.*)[0-9]{1,2}\s[:0-9]{8}\s[._[:alnum:]-](.*)Reloaded (.*)
+^\w{3}(.*)[0-9]{1,2}\s[:0-9]{8}\s[._[:alnum:]-](.*)(Started|Stopped|Starting|Stopping|Reloading|Reloaded)
 ^\w{3}(.*)[0-9]{1,2}\s[:0-9]{8}\s[._[:alnum:]-](.*)gpiomem-bcm2835 20200000.gpiomem: gpiomem device opened.
 ^\w{3}(.*)[0-9]{1,2}\s[:0-9]{8}\s[._[:alnum:]-]+\sirsend:\slirc_command_run
 ^\w{3}(.*)[0-9]{1,2}\s[:0-9]{8}\s[._[:alnum:]-](.*)rsyslogd was HUPed
 ^\w{3}(.*)[0-9]{1,2}\s[:0-9]{8}\s[._[:alnum:]-]+\s+rpc.mountd\[[0-9]*\]\:\s+authenticated mount request
-^\w{3}(.*)[0-9]{1,2}\s[:0-9]{8}\s[._[:alnum:]-]+\s+systemd\[[0-9]*\]\:\s+Closed GnuPG
-^\w{3}(.*)[0-9]{1,2}\s[:0-9]{8}\s[._[:alnum:]-]+\s+systemd\[[0-9]*\]\:\s+Listening on GnuPG
+^\w{3}(.*)[0-9]{1,2}\s[:0-9]{8}\s[._[:alnum:]-]+\s+systemd\[[0-9]*\]\:\s+(Listening on|Closed) GnuPG
+^\w{3}(.*)[0-9]{1,2}\s[:0-9]{8}\s[._[:alnum:]-]+\s+systemd\[[0-9]*\]\:\s+Received SIGRTMIN\+24 from PID [0-9]+ \(kill\)\.$
 ^\w{3}(.*)[0-9]{1,2}\s[:0-9]{8}\s[._[:alnum:]-]+\s+ansible
 ^\w{3}(.*)[0-9]{1,2}\s[:0-9]{8}\s[._[:alnum:]-]+\s+systemd-timesyncd\[[0-9]*\]\:\s+Synchronized to time server
 ^\w{3}(.*)[0-9]{1,2}\s[:0-9]{8}\s[._[:alnum:]-]+\s+systemd\[[0-9]*\]\:\s+apt-daily-upgrade.timer
@@ -24,5 +19,8 @@
 ^\w{3}(.*)[0-9]{1,2}\s[:0-9]{8}\s[._[:alnum:]-]+\s+jackd\[[0-9]*\]\:\s+JackEngine\:\:XRun
 ^\w{3}(.*)[0-9]{1,2}\s[:0-9]{8}\s[._[:alnum:]-]+\s+jackd\[[0-9]*\]\:\s+JackAudioDriver\:\:ProcessGraphAsyncMaster
 ^\w{3}(.*)[0-9]{1,2}\s[:0-9]{8}\s[._[:alnum:]-]+\s+systemd\[[0-9]*\]\:\s+certbot.timer
-^\w{3}(.*)[0-9]{1,2}\s[:0-9]{8}\s[._[:alnum:]-](.*)WARN\:\:dwc_otg_handle_mode_mismatch_intr
-^\w{3}(.*)[0-9]{1,2}\s[:0-9]{8}\s[._[:alnum:]-](.*)kernel\:\s\[[.0-9]{11,13}\] $
+^\w{3}(.*)[0-9]{1,2}\s[:0-9]{8}\s[._[:alnum:]-]+\s+kernel\:\s\[[.0-9]{11,14}\]\s+WARN\:\:dwc_otg_handle_mode_mismatch_intr
+^\w{3}(.*)[0-9]{1,2}\s[:0-9]{8}\s[._[:alnum:]-]+\s+kernel\:\s\[[.0-9]{11,14}\]\s+$
+^\w{3}(.*)[0-9]{1,2}\s[:0-9]{8}\s[._[:alnum:]-]+\s+sshd\[[0-9]*\]\:\s+pam_systemd(.*)Failed to release session
+^\w{3}(.*)[0-9]{1,2}\s[:0-9]{8}\s[._[:alnum:]-]+\s+dnsmasq\[[0-9]*\]\:\s+(forwarded|reply|cached|query)
+^\w{3}(.*)[0-9]{1,2}\s[:0-9]{8}\s[._[:alnum:]-]+\s+dnsmasq\[[0-9]*\]\:\s+local\.list

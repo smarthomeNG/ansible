@@ -12,15 +12,6 @@
       ]
 
   tasks:
-  - name: cronjob
-    cron:
-      name: renamelogs
-      user: smarthome
-      job: rename -v 's/(.log)(.[0-9\-]{10})$/$2.log/' /usr/local/smarthome/var/log/*.log.*
-      cron_file: renamelogs
-      hour: 2
-      minute: 2
-
   - name: Create Group
     group:
       name: smarthome
@@ -89,11 +80,12 @@
       src: /usr/local/smarthome/etc/smarthome.yaml.default
       dest: /usr/local/smarthome/etc/smarthome.yaml
 
-  - name: Copy plugin yaml
+  - name: Copy logging yaml
     copy:
-      src: configs/smarthome_plugin.yaml
-      dest: /usr/local/smarthome/etc/plugin.yaml
-
+      remote_src: True
+      src: /usr/local/smarthome/etc/logging.yaml.default
+      dest: /usr/local/smarthome/etc/logging.yaml
+      
   - name: Change requirements
     file:
       path: /usr/local/smarthome/tools/build_requirements.py
@@ -130,15 +122,6 @@
       dest: /lib/systemd/system/smarthome.service
       src: configs/smarthome.service
 
-  - name: Git Autoblind
-    git:
-      repo: 'https://github.com/i-am-offline/smarthome.plugin.autoblind.git'
-      dest: /usr/local/smarthome/plugins/autoblind
-      version: Version_1.4.0
-    register: autoblind
-    ignore_errors: yes
-  - debug: var=autoblind
-
   - name: Change Owner
     file:
       path: /usr/local/smarthome
@@ -150,7 +133,7 @@
 
   - name: Remove astral
     pip: name=astral executable=pip3 state=absent
-
+      
   - name: Restart smarthome service
     systemd: state=restarted name=smarthome.service
 

@@ -63,16 +63,16 @@ check process cron with pidfile /var/run/crond.pid
 
 #UDEV
 check process udev matching "systemd-udevd"
- start program "/bin/systemctl start udev"
- stop program "/bin/systemctl stop udev"
- restart program "/bin/systemctl restart udev"
+ start program = "/bin/systemctl start udev"
+ stop program = "/bin/systemctl stop udev"
+ restart program = "/bin/systemctl restart udev"
  if 20 restarts within 45 cycles then unmonitor
 
 #KNXD
 check process knxd matching "knxd"
- start program "/bin/systemctl start knxd"
- stop program "/bin/systemctl stop knxd"
- restart program "/bin/systemctl restart knxd"
+ start program = "/bin/systemctl start knxd"
+ stop program = "/bin/systemctl stop knxd"
+ restart program = "/bin/systemctl restart knxd"
  if 20 restarts within 45 cycles then unmonitor
 
 #WWW
@@ -94,41 +94,41 @@ check process php-fpm with pidfile /var/run/php/php7.0-fpm.pid
 
 #SMARTHOME
 check process smarthome with pidfile /usr/local/smarthome/var/run/smarthome.pid
- start program "/bin/systemctl start smarthome"
- stop program "/bin/systemctl stop smarthome"
- restart program "/bin/systemctl restart smarthome"
+ start program = "/bin/systemctl start smarthome"
+ stop program = "/bin/systemctl stop smarthome"
+ restart program = "/bin/systemctl restart smarthome"
  if failed host 127.0.0.1 port 2323 type tcp for 45 cycles then alert
  if cpu > 35% for 50 cycles then alert
  if 20 restarts within 45 cycles then unmonitor
 
 #SSH
 check process sshd with pidfile /var/run/sshd.pid
-  start program "/bin/systemctl start ssh"
-  stop program "/bin/systemctl stop ssh"
-  restart program "/bin/systemctl restart ssh"
+  start program = "/bin/systemctl start ssh"
+  stop program = "/bin/systemctl stop ssh"
+  restart program = "/bin/systemctl restart ssh"
   if failed port 22 protocol ssh then restart
   if 10 restarts within 15 cycles then unmonitor
 
 # SAMBA
 check process Samba with pidfile "/var/run/samba/smbd.pid"
     start program = "/bin/systemctl start smbd"
-    stop program  = "/bin/systemctl stop smbd"
+    stop program = "/bin/systemctl stop smbd"
     restart program = "/bin/systemctl restart smbd"
     if failed host 127.0.0.1 port 139 type tcp for 2 cycles then restart
     if 10 restarts within 15 cycles then unmonitor
 
 ##LIRC
 #check process lirc with pidfile /var/run/lirc/lircd.pid
-# start program "/bin/systemctl start lircd"
-# stop program "/bin/systemctl stop lircd"
-# restart program "/bin/systemctl restart lircd"
+# start program = "/bin/systemctl start lircd"
+# stop program = "/bin/systemctl stop lircd"
+# restart program = "/bin/systemctl restart lircd"
 # if 20 restarts within 45 cycles then unmonitor
 
 ##WATCHDOG
 #check process watchdog with pidfile /var/run/watchdog.pid
-# start program "/bin/systemctl start watchdog"
-# stop program "/bin/systemctl start watchdog"
-# restart program "/bin/systemctl restart watchdog"
+# start program = "/bin/systemctl start watchdog"
+# stop program = "/bin/systemctl start watchdog"
+# restart program = "/bin/systemctl restart watchdog"
 # if 20 restarts within 45 cycles then unmonitor
 
 ##EXIM
@@ -149,9 +149,9 @@ check process Samba with pidfile "/var/run/samba/smbd.pid"
 
 ##SUSV
 #check process susvd with pidfile /var/run/susvd.pid
-# start program "/opt/susvd/susvd start"
-# stop program "/opt/susvd/susvd stop"
-# restart program "/opt/susvd/susvd restart"
+# start program = "/opt/susvd/susvd start"
+# stop program = "/opt/susvd/susvd stop"
+# restart program = "/opt/susvd/susvd restart"
 # if 10 restarts within 15 cycles then unmonitor
 
 ##RADIUS
@@ -165,38 +165,53 @@ check process Samba with pidfile "/var/run/samba/smbd.pid"
 ##NFS
 #check process NFS matching "nfsd"
 #  start program = "/bin/systemctl start nfs-kernel-server"
-#  stop program  = "/bin/systemctl stop nfs-kernel-server"
-#	restart program = "/bin/systemctl restart nfs-kernel-server"
+#  stop program = "/bin/systemctl stop nfs-kernel-server"
+#	 restart program = "/bin/systemctl restart nfs-kernel-server"
 #  if failed host 127.0.0.1 port 2049 type tcp for 2 cycles then restart
 #  if 10 restarts within 15 cycles then unmonitor
 
 ##HOMEBRIDGE
 #check process homebridge matching "homebridge"
-#  start program "/bin/systemctl start homebridge"
-#  stop program "/bin/systemctl stop homebridge"
-#  restart program "/bin/systemctl restart homebridge"
+#  start program = "/bin/systemctl start homebridge"
+#  stop program = "/bin/systemctl stop homebridge"
+#  restart program = "/bin/systemctl restart homebridge"
 #  if 20 restarts within 45 cycles then timeout
 
 ##INFLUXDB
 #check process influxdb matching "influxd"
-#  start program "/bin/systemctl start influxdb"
-#  stop program "/bin/systemctl stop influxdb"
-#  restart program "/bin/systemctl restart influxdb"
+#  start program = "/bin/systemctl start influxdb"
+#  stop program = "/bin/systemctl stop influxdb"
+#  restart program = "/bin/systemctl restart influxdb"
 #  if 20 restarts within 45 cycles then timeout
 
 ##MOSQUITTO
-#check process mosquitto with pidfile /var/run/mosquitto.pid
-#  start program "/bin/systemctl start mosquitto"
-#  stop program "/bin/systemctl stop mosquitto"
-#  restart program "/bin/systemctl restart mosquitto"
+#check process mosquitto matching "mosquitto"
+#  start program = "/bin/systemctl start mosquitto"
+#  stop program = "/bin/systemctl stop mosquitto"
+#  restart program = "/bin/systemctl restart mosquitto"
 #  if 20 restarts within 45 cycles then timeout
+
+##MYSQL
+#check process mysql with pidfile /run/mysqld/mysqld.pid
+#    start program = "/bin/systemctl start mysql" with timeout 60 seconds
+#    stop program = "/bin/systemctl stop mysql"
+#    restart program = "/bin/systemctl restart mysql"
+#    if failed unixsocket /var/run/mysqld/mysqld.sock then restart
 
 ##GRAFANA
 #check process grafana-server with pidfile /var/run/grafana/grafana-server.pid
-#  start program "/bin/systemctl start grafana-server"
-#  stop program "/bin/systemctl stop grafana-server"
-#  restart program "/bin/systemctl restart grafana-server"
+#  start program = "/bin/systemctl start grafana-server"
+#  stop program = "/bin/systemctl stop grafana-server"
+#  restart program = "/bin/systemctl restart grafana-server"
 #  if 20 restarts within 45 cycles then timeout
+
+##OPENVPN
+#check process openvpn with pidfile /run/openvpn/server.pid
+#  start program = "/bin/systemctl start openvpn@server" with timeout 60 seconds
+#  stop program = "/bin/systemctl stop openvpn@server"
+#  restart program = "/bin/systemctl restart openvpn@server"
+#  if failed host 127.0.0.1 port 11395 type udp with timeout 15 seconds for 5 cycles then restart
+#  if 10 restarts within 15 cycles then unmonitor
 
 #System
 check system localhost

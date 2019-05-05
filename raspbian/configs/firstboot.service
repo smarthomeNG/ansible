@@ -1,6 +1,7 @@
 [Unit]
 Description=First boot script
-After=network.target dbus-org.freedesktop.NetworkManager.target
+After=network-online.target dbus-org.freedesktop.NetworkManager.target
+Wants=network-online.target 
 
 [Service]
 Type=simple
