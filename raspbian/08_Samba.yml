@@ -18,6 +18,9 @@
     copy:
       dest: /etc/samba/smb.conf
       src: configs/samba.conf
+      owner: smarthome
+      group: smarthome
+      mode: 0755
 
   - name: Create Samba users
     shell: >
@@ -27,14 +30,6 @@
     with_items: "{{ samba_users }}"
     register: create_user_output
     changed_when: "'Added user' in create_user_output.stdout"
-
-  - name: chmod conf
-    file:
-      path: /etc/samba/smbd.conf
-      state: touch
-      owner: smarthome
-      group: smarthome
-      mode: 0755
 
   - name: Restart smbd
     systemd: state=restarted name=smbd

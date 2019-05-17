@@ -2,7 +2,8 @@
 RSA_FOLDER=etc/ssl/easy-rsa
 KEY_FOLDER=etc/ssl/ca/
 backupfolder='home/smarthome/backup'
-sudo mkdir $backupfolder
+sudo mkdir /$backupfolder >/dev/null 2>&1
+sudo touch $backupfolder/backup_log.txt 2>&1
 
 adddate() {
     while IFS= read -r line; do
@@ -45,6 +46,9 @@ cleanup() {
 
 backup_all() {
   cd /
+  sudo mkdir /$backupfolder >/dev/null 2>&1
+  echo "Starting backup. Be patient."
+  echo "Starting backup. Be patient." | adddate > $backupfolder/backup_log.txt 2>&1
   logchecksize=$(du -sm /var/www/html/monitgraph/* | awk '$1 > 100')
   if [ -z "$logchecksize" ]; then
     sudo tar vprf $backupfolder/image_backup.tar var/www/html/monitgraph/ | adddate_copy >> $backupfolder/backup_log.txt 2>&1
@@ -56,7 +60,7 @@ backup_all() {
         case $logcheck in
             Backup )
               sudo tar vprf $backupfolder/image_backup.tar var/www/html/monitgraph/ | adddate_copy >> $backupfolder/backup_log.txt 2>&1
-              echo "Backing up monitgraph"
+              echo "Backed up monitgraph"
               break;;
             Skip ) echo "Skipping monitgraph"; break;;
             *) echo "Skipping monitgraph"; break;;
@@ -69,13 +73,18 @@ backup_all() {
   sudo tar vprf $backupfolder/image_backup.tar etc/mailname | adddate_copy >> $backupfolder/backup_log.txt 2>&1
 
   echo "Backed up exim4"
-  sudo tar vprf $backupfolder/image_backup.tar $RSA_FOLDER | adddate_copy >> $backupfolder/backup_log.txt 2>&1
-  sudo tar vprf $backupfolder/image_backup.tar $KEY_FOLDER | adddate_copy >> $backupfolder/backup_log.txt 2>&1
-  sudo tar vprf $backupfolder/image_backup.tar etc/letsencrypt/ | adddate_copy >> $backupfolder/backup_log.txt 2>&1
-  sudo tar vprf $backupfolder/image_backup.tar var/www/letsencrypt/.well-known/ | adddate_copy >> $backupfolder/backup_log.txt 2>&1
-  sudo tar vprf $backupfolder/image_backup.tar var/www/letsencrypt | adddate_copy >> $backupfolder/backup_log.txt 2>&1
+  if [ -z "$RSA_FOLDER" ]; then
+	sudo tar vprf $backupfolder/image_backup.tar $RSA_FOLDER | adddate_copy >> $backupfolder/backup_log.txt 2>&1
+	sudo tar vprf $backupfolder/image_backup.tar $KEY_FOLDER | adddate_copy >> $backupfolder/backup_log.txt 2>&1
+	echo "Backed up certifictes"
+  fi
+  if [ -z "etc/letsencryp" ]; then
+	  sudo tar vprf $backupfolder/image_backup.tar etc/letsencrypt/ | adddate_copy >> $backupfolder/backup_log.txt 2>&1
+	  sudo tar vprf $backupfolder/image_backup.tar var/www/letsencrypt/.well-known/ | adddate_copy >> $backupfolder/backup_log.txt 2>&1
+	  sudo tar vprf $backupfolder/image_backup.tar var/www/letsencrypt | adddate_copy >> $backupfolder/backup_log.txt 2>&1
+	  echo "Backed up letsencrypt"
+  fi	
 
-  echo "Backed up certifictes"
   sudo tar vprf $backupfolder/image_backup.tar etc/fail2ban/ | adddate_copy >> $backupfolder/backup_log.txt 2>&1
 
   echo "Backed up fail2ban"
@@ -87,15 +96,19 @@ backup_all() {
   sudo tar vprf $backupfolder/image_backup.tar etc/dphys-swapfile | adddate_copy >> $backupfolder/backup_log.txt 2>&1
 
   echo "Backed up swap settings"
-  sudo tar vprf $backupfolder/image_backup.tar home/smarthome/.homebridge | adddate_copy >> $backupfolder/backup_log.txt 2>&1
-
-  echo "Backed up homebridge"
-  sudo tar vprf $backupfolder/image_backup.tar etc/influxdb/influxdb.conf | adddate_copy >> $backupfolder/backup_log.txt 2>&1
-
-  echo "Backed up influxdb"
-  sudo tar vprf $backupfolder/image_backup.tar etc/grafana/ | adddate_copy >> $backupfolder/backup_log.txt 2>&1
-
-  echo "Backed up grafana"
+  if [ -z "home/smarthome/.homebridge" ]; then
+	  sudo tar vprf $backupfolder/image_backup.tar home/smarthome/.homebridge | adddate_copy >> $backupfolder/backup_log.txt 2>&1
+	  echo "Backed up homebridge"
+  fi
+  if [ -z "etc/influxdb/influxdb.conf" ]; then
+	  sudo tar vprf $backupfolder/image_backup.tar etc/influxdb/influxdb.conf | adddate_copy >> $backupfolder/backup_log.txt 2>&1
+	  echo "Backed up influxdb config"
+  fi
+  if [ -z "etc/grafana/" ]; then
+	sudo tar vprf $backupfolder/image_backup.tar etc/grafana/ | adddate_copy >> $backupfolder/backup_log.txt 2>&1
+	echo "Backed up grafana config"
+  fi
+  
   sudo tar vprf $backupfolder/image_backup.tar etc/knxd.* | adddate_copy >> $backupfolder/backup_log.txt 2>&1
   sudo tar vprf $backupfolder/image_backup.tar etc/default/eibd | adddate_copy >> $backupfolder/backup_log.txt 2>&1
   sudo tar vprf $backupfolder/image_backup.tar etc/init.d/eibd | adddate_copy >> $backupfolder/backup_log.txt 2>&1
@@ -161,7 +174,9 @@ backup_all() {
   sudo tar vprf $backupfolder/image_backup.tar etc/rsyslog.conf | adddate_copy >> $backupfolder/backup_log.txt 2>&1
   sudo tar vprf $backupfolder/image_backup.tar etc/rsyslog.d | adddate_copy >> $backupfolder/backup_log.txt 2>&1
   sudo tar vprf $backupfolder/image_backup.tar boot/config.txt | adddate_copy >> $backupfolder/backup_log.txt 2>&1
-  sudo tar vprf $backupfolder/image_backup.tar var/lib/systemd/linger | adddate_copy >> $backupfolder/backup_log.txt 2>&1
+  if [ -z "var/lib/systemd/linger" ]; then
+	sudo tar vprf $backupfolder/image_backup.tar var/lib/systemd/linger | adddate_copy >> $backupfolder/backup_log.txt 2>&1
+  fi
   sudo tar vprf $backupfolder/image_backup.tar etc/default/keyboard | adddate_copy >> $backupfolder/backup_log.txt 2>&1
   sudo tar vprf $backupfolder/image_backup.tar etc/locale.gen | adddate_copy >> $backupfolder/backup_log.txt 2>&1
   currentlang=$(localectl status |grep LANG | awk -F'LANG=' '{ print $2 }')
@@ -203,37 +218,62 @@ backup_mysql() {
   PWD=${PWD:=$defaultpwd}
   echo "Backup of mysql is saved in /$backupfolder/mysql/. Please make sure there is enough free diskspace."
   echo "Connecting to database with user $USER and password $PWD. This might take a long time - be patient."
-  mkdir /$backupfolder/mysql | adddate >> /$backupfolder/backup_log.txt 2>&1
-  sudo systemctl start mysql
-  sudo /usr/local/bin/pyxtrabackup-inc /$backupfolder/mysql/ --user=$USER --password=$PWD --no-compress | adddate >> /$backupfolder/backup_log.txt 2>&1
-  sudo /usr/local/bin/pyxtrabackup-inc /$backupfolder/mysql/ --user=$USER --password=$PWD --no-compress --incremental | adddate >> /$backupfolder/backup_log.txt 2>&1
+  sudo mkdir /$backupfolder >/dev/null 2>&1
+  sudo mkdir /$backupfolder/mysql | adddate >> /$backupfolder/backup_log.txt 2>&1
+  sudo systemctl start mysql | adddate >> /$backupfolder/backup_log.txt 2>&1
+  #sudo /usr/local/bin/pyxtrabackup-inc /$backupfolder/mysql/ --user=$USER --password=$PWD --no-compress | adddate >> /$backupfolder/backup_log.txt 2>&1
+  sudo /usr/local/bin/pyxtrabackup-inc /$backupfolder/mysql/ --user=$USER --password=$PWD --no-compress --incremental | adddate &>> /$backupfolder/backup_log.txt 2>&1
   echo ""
   echo "Backup finished. Please copy the complete mysql folder from /$backupfolder to your external backup disk."
+  echo "Backup finished. Please copy the complete mysql folder from /$backupfolder to your external backup disk." | adddate >> /$backupfolder/backup_log.txt 2>&1
 
 }
 
 backup_influxdb() {
-  echo ""
-  echo "Backup of influxdb is running and stored to /$backupfolder/"; echo "";
-           sudo /usr/bin/influxd backup -portable -database smarthome /$backupfolder/influxdb >> $backupfolder/backup_log.txt 2>&1
-           cd /
-           sudo tar vprf $backupfolder/influxdb_backup.tar $backupfolder/influxdb 2>&1
-           sudo rm /$backupfolder/influxdb -R | adddate >> /$backupfolder/backup_log.txt 2>&1
-  echo ""
-  echo "Backup finished. Please copy the file /$backupfolder/influxdb_backup.tar to your external backup disk."
+    echo ""
+    echo "Backup of influxdb is running and stored to /$backupfolder/"; echo "";
+	sudo mkdir /$backupfolder >/dev/null 2>&1
+	sudo /usr/bin/influxd backup -portable -database smarthome /$backupfolder/influxdb | adddate >> $backupfolder/backup_log.txt 2>&1
+	cd /
+	if [ -z "$backupfolder/influxdb" ]; then
+		sudo tar vprf $backupfolder/influxdb_backup.tar $backupfolder/influxdb | adddate_copy >> /$backupfolder/backup_log.txt 2>&1
+		sudo rm /$backupfolder/influxdb -R | adddate >> /$backupfolder/backup_log.txt 2>&1
+		echo ""
+		echo "Backup finished. Please copy the file /$backupfolder/influxdb_backup.tar to your external backup disk."
+		echo "Backup finished. Please copy the file /$backupfolder/influxdb_backup.tar to your external backup disk." | adddate >> /$backupfolder/backup_log.txt 2>&1
+	else
+		echo ""
+		echo "No influxdb database found. Nothing backed up."
+		echo "No influxdb database found. Nothing backed up." | adddate >> /$backupfolder/backup_log.txt 2>&1
+	fi
 
+}
+
+backup_overwrite() {
+  if [ -f /$backupfolder/backup_log.txt ]; then
+	  echo "There seems to be an older backup existing. Previously created backups in $backupfolder will be overwritten. Are you sure?"
+	  select overwrite in "Overwrite" "Skip"; do
+		case $overwrite in
+			Overwrite ) echo "Backup is running."; echo ""; rm /$backupfolder/ -R; backup_all; break;;
+			Skip) echo "Skipping"; break;;
+			*) echo "Skipping"; break;;
+		esac
+	  done
+  else
+    backup_all
+  fi
+  
 }
 
 echo ""
 echo "Do you want to backup your configuration?"
 echo "In case you update your image you can easily restore your configuration by running setup_all on the new install."
-echo "Previously created backups (/$backupfolder/image_backup.tar) will be overwritten."
 echo ""
 echo "Backup files are stored in /$backupfolder/. If you don't have enough space on your SD card or USB stick"
 echo "you can mount an external drive and symlink the folder like sudo ln -s /mnt/usb /$backupfolder/"
 select backup in "Backup" "Skip"; do
     case $backup in
-        Backup ) echo "Backup is running."; echo ""; backup_all; break;;
+        Backup ) echo "Checking for existing backups."; echo ""; backup_overwrite; break;;
         Skip) echo "Skipping"; break;;
         *) echo "Skipping"; break;;
     esac
@@ -241,8 +281,8 @@ done
 
 echo ""
 echo "Do you want to backup your influxdb database?"
-select backup in "Backup" "Skip"; do
-    case $backup in
+select influx in "Backup" "Skip"; do
+    case $influx in
         Backup ) backup_influxdb; break;;
         Skip) echo "Skipping"; break;;
         *) echo "Skipping"; break;;

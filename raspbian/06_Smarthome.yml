@@ -8,7 +8,12 @@
   vars:
     apt_install:
       ["dialog",
-      "rlwrap"
+      "rlwrap",
+      "libatlas-base-dev",
+      "libblas-dev",
+      "liblapack-dev",
+      "libopenblas-base",
+      "libopenblas-dev"
       ]
 
   tasks:
@@ -47,8 +52,8 @@
       repo: 'git://github.com/smarthomeNG/smarthome.git'
       dest: /usr/local/smarthome
       version: master
+      force: yes
     register: git
-    ignore_errors: yes
   - debug: var=git
 
   - name: Git Plugins
@@ -56,6 +61,7 @@
       repo: 'git://github.com/smarthomeNG/plugins.git'
       dest: /usr/local/smarthome/plugins
       version: master
+      force: yes
     register: git2
     ignore_errors: yes
   - debug: var=git2
@@ -85,7 +91,7 @@
       remote_src: True
       src: /usr/local/smarthome/etc/logging.yaml.default
       dest: /usr/local/smarthome/etc/logging.yaml
-      
+
   - name: Change requirements
     file:
       path: /usr/local/smarthome/tools/build_requirements.py
@@ -133,7 +139,7 @@
 
   - name: Remove astral
     pip: name=astral executable=pip3 state=absent
-      
+
   - name: Restart smarthome service
     systemd: state=restarted name=smarthome.service
 

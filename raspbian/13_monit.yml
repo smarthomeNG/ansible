@@ -9,7 +9,7 @@
     monitgraphpath: /var/www/html/monitgraph
 
 
-  tasks: 
+  tasks:
   - name: Install monit
     apt:
       name: monit
@@ -28,6 +28,7 @@
       repo: 'https://github.com/perusio/monit-graph.git'
       dest: "{{ monitgraphpath }}"
       version: master
+      force: yes
     register: git
     ignore_errors: yes
   - debug: var=git

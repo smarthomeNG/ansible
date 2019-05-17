@@ -109,3 +109,16 @@
     ignore_errors: yes
     register: deleted
   - debug: var=deleted
+
+  - name: SciPyWheel
+    copy:
+      src: packages/scipy-1.2.1.whl
+      dest: /opt/scipy-1.2.1-cp35-cp35m-linux_armv7l.whl
+      mode: 0777
+
+  - name: SciPy
+    pip:
+      name: /opt/scipy-1.2.1-cp35-cp35m-linux_armv7l.whl
+      executable: pip3
+    become: true
+    become_user: root

@@ -51,7 +51,7 @@ create_clientcerts() {
         sudo chmod 0755 $KEY_FOLDER/private/ca.crl &> /dev/null
 
         echo "Folder content of $KEY_FOLDER"
-        sudo sh -c "ls $KEY_FOLDER/*"
+        sudo sh -c "ls $KEY_FOLDER*"
         echo ""
         echo "Client certificates and ca.crt are copied to /home/smarthome. Make sure to transfer them securely to your clients."
         echo "They are saved as pkcs12 with suffix pfx. You can change the suffix to p12 if needed."

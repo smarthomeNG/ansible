@@ -28,10 +28,11 @@
 
   - name: Rebuild npm
     shell: npm rebuild
-    chdir: /usr/local/lib/node_modules/homebridge
+    args:
+      chdir: /usr/local/lib/node_modules/homebridge
     register: rebuildnpm
   - debug: var=rebuildnpm
-  
+
   - name: Install Homebridge
     shell: npm install -g --unsafe-perm homebridge
     register: npm
