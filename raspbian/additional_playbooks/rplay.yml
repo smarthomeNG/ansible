@@ -1,0 +1,44 @@
+---
+- name: Install rPlay
+  hosts: all
+  remote_user: root
+  become_user: root
+  become: true
+
+  vars:
+    packages:
+      ["libao-dev",
+      "avahi-utils",
+      "libavahi-compat-libdnssd-dev",
+      "libva-dev",
+      "youtube-dl"
+      ]
+
+  tasks:
+  - name: Update Cache
+    apt: update_cache=yes
+
+  - name: install apt
+    apt:
+      name: "{{ item }}"
+      state: latest
+    with_items: "{{ packages }}"
+
+  - name: Create deb-files directory
+    file:
+      path: /etc/deb-files/
+      state: directory
+      mode: 0755
+    ignore_errors: yes
+
+  - name: Copy deb files
+    copy:
+      src: "../packages/rplay-1.0.1-armhf.deb"
+      dest: /etc/deb-files/
+
+  - name: Install rplay
+    apt:
+      deb: /etc/deb-files/rplay-1.0.1-armhf.deb
+      state: present
+    register: rplay
+  - debug: var=rplay

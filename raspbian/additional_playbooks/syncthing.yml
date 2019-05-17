@@ -1,6 +1,6 @@
 ---
 - name: Install Syncthing
-  hosts: public
+  hosts: all
   remote_user: root
   become_user: root
   become: true
