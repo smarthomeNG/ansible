@@ -11,7 +11,9 @@
       "avahi-utils",
       "libavahi-compat-libdnssd-dev",
       "libva-dev",
-      "youtube-dl"
+      "youtube-dl",
+      "libjpeg8",
+      "libraspberrypi0"
       ]
 
   tasks:
