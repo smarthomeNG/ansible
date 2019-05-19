@@ -10,7 +10,7 @@ export MAKEFLAGS="-j 4"
  alias ls='ls $LS_OPTIONS'
  alias la='ls -A'
  alias errorgrep='grep --text "FATAL\|ERROR\|WARNING\|CRITICAL\|FAIL\|fatal\|error\|warn\|fail\|Fail" -i --color=auto'
- alias cli='rlwrap telnet localhost 2323'
+ alias cli='rlwrap telnet 127.0.0.1 2323'
  alias ..='cd ..'
  alias cleanexim='sudo /usr/sbin/exim -bp | sudo /usr/sbin/exiqgrep -i | xargs exim -Mrm'
  alias cleanbash='/usr/local/bin/cleanbash.sh'

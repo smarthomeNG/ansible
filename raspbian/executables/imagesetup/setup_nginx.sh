@@ -9,7 +9,7 @@ nginx_config () {
     echo ""
     echo "Changing nginx config based on domain $domain"
     sudo sed -i 's/'DOMAIN_HERE'/'${domain}'/g' /etc/nginx/conf.d/https.conf 2>&1
-    sudo sed -i 's/'DOMAIN_HERE'/'${domain}'/g' /etc/nginx/sites-available/default.conf 2>&1
+    sudo sed -i 's/'DOMAIN_HERE'/'${domain}'/g' /etc/nginx/sites-available/default 2>&1
     sudo sed -i 's/#ssl_certificate/ssl_certificate/g' /etc/nginx/conf.d/https.conf 2>&1
     sudo sed -i 's/#ssl_certificate_key/ssl_certificate_key/g' /etc/nginx/conf.d/https.conf 2>&1
     sudo sed -i 's/#ssl_trusted_certificate/ssl_trusted_certificate/g' /etc/nginx/conf.d/https.conf 2>&1
@@ -147,6 +147,6 @@ if [ $NGINX_e = "enabled" ]; then
     done
     FAIL2BAN_e=$(systemctl is-enabled fail2ban 2>&1)&> /dev/null
     echo ""
-    echo "nginx Service is $FAIL2BAN_e."
+    echo "fail2ban Service is $FAIL2BAN_e."
 
 fi

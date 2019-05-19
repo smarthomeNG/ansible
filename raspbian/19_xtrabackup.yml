@@ -8,12 +8,12 @@
   tasks:
   - name: Copy deb
     copy:
-      src: packages/xtrabackup_2.4.9-1_armhf.deb
+      src: packages/xtrabackup_2.4.14-1_armhf.deb
       dest: /etc/deb-files/
 
   - name: Install xtrabackup
     apt:
-      deb: /etc/deb-files/xtrabackup_2.4.9-1_armhf.deb
+      deb: /etc/deb-files/xtrabackup_2.4.14-1_armhf.deb
 
   - name: Install pyxtrabackup
     pip:

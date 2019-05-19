@@ -1,6 +1,6 @@
 #!/bin/bash
 wlan_setup () {
-  read -p "Please define the SSID: " ssid
+  read -p "Please define the SSID you want to join: " ssid
   read -p "Please define the password. It will be saved as plaintext in the wpa-supplicant file: " password
   sudo wpa_passphrase ${ssid} ${password} >> /etc/wpa_supplicant/wpa_supplicant.conf 2>&1
   sudo sed -i '/#psk=/d' /etc/wpa_supplicant/wpa_supplicant.conf 2>&1
@@ -35,7 +35,7 @@ select unattended in "Activate" "Deactivate" "Skip"; do
 done
 
 echo ""
-echo "Do you want to setup WLAN?"
+echo "Do you want to setup WLAN adapter to join your WiFi network?"
 select wlan in "Setup" "Skip"; do
     case $wlan in
         Setup ) wlan_setup; break;;
@@ -55,15 +55,15 @@ select name in "Change" "Skip"; do
 done
 if [ $name = "Change" ]; then
   read -p "Please define your hostname (without any spaces): " newhost
+  sudo sed -i '3,$s/127.0.0.1.*/127.0.0.1\t'${newhost}'/' /etc/hosts &> /dev/null
   sudo hostnamectl set-hostname ${newhost}
-  sudo sed -i 's/SmarthomeNG/'${newhost}'/g' /etc/hosts 2>&1
   echo "Changes hostname to $newhost"
 fi
 
 recommended=$(($(free -m|awk '$1=="Mem:"{print $2}')*2))
 echo ""
 echo "Do you want to change the Swap file on your Raspberry Pi?"
-SWAP_e=$(systemctl is-enabled dphys-swapfile 2>&1 | tail -n 1)&> /dev/null
+SWAP_e=$(systemctl is-enabled dphys-swapfile 2>&1 | tail -n 1) &> /dev/null
 echo "Swap File is currently $SWAP_e."
 echo "It is recommended to deactivate (set to 0) the Swapping in general"
 echo "If you still want to use it (e.g. for compiling) you might want to set the swap to $recommended MB."

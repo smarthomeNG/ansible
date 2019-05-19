@@ -84,23 +84,32 @@ restore_influx() {
 }
 
 restore_mysql() {
-  today=$(date +"%Y%m%d")
+  sudo systemctl stop monit
+  sudo systemctl stop mysql
   SQLBASE=/$backupfolder/mysql
-  today=$(ls $SQLBASE >/dev/null 2>&1 | tail -n 1 | tr -s ' ' | cut -f9- -d' ' | sed 's:/*$::')
-  FOLDER=$SQLBASE'/'$today'INC'
-  mysqlbase=$(ls $FOLDER'/base_backup_'$today'_'*'.tar' >/dev/null 2>&1| tr -s ' ' | cut -f9- -d' ')
-  mysqlinc=$(ls $FOLDER/inc* -t >/dev/null 2>&1 | head -n 1 | tr -s ' ' | cut -f9- -d' ')
+  FOLDER=$SQLBASE'/'$(ls -tr $SQLBASE| tail -1 | tr -s ' ' | cut -f9- -d' ')'/INC'
+  mysqlbase=$(ls $FOLDER'/base_backup_'*'.tar' | tr -s ' ' | cut -f9- -d' ')
+  mysqlinc=$(ls $FOLDER/inc* -t | head -n 1 | tr -s ' ' | cut -f9- -d' ')
   if [ -n "$mysqlinc" ]; then
-      echo "Restore of mysql is running."
+      echo "Incremental restore $mysqlinc of mysql is running."
       echo ""
       sudo pyxtrabackup-restore --base-archive=$mysqlbase --incremental-archive=$mysqlinc --user=root --uncompressed-archives | addate >> /$backupfolder/restore_log.txt
+      sudo chown mysql:mysql /var/lib/mysql -R | addate >> /$backupfolder/restore_log.txt 2>&1
+      sudo chmod 0770 /var/lib/mysql -R | addate >> /$backupfolder/restore_log.txt 2>&1
+      sudo systemctl restart mysql
+      echo "Restored incremental mysql database if no errors occured."
+  elif [ -n "$mysqlbase" ]; then
+      echo "Restore of mysql is running."
+      echo ""
+      sudo rm -rf /var/lib/mysql/* | addate >> /$backupfolder/restore_log.txt
+      sudo tar xvpf $mysqlbase -C /var/lib/mysql | addate >> /$backupfolder/restore_log.txt 2>&1
       sudo chown mysql:mysql /var/lib/mysql -R | addate >> /$backupfolder/restore_log.txt 2>&1
       sudo chmod 0770 /var/lib/mysql -R | addate >> /$backupfolder/restore_log.txt 2>&1
       sudo systemctl restart mysql
       echo "Restored mysql database if no errors occured."
   else
     echo ""
-	echo "Folder not found. Please copy your mysql backup folder to the folder /$backupfolder."
+	  echo "Folder not found. Please copy your mysql backup folder to the folder /$backupfolder."
     echo "Folder not found. Please copy your mysql backup folder to the folder /$backupfolder." | addate >> /$backupfolder/restore_log.txt 2>&1
     echo ""
     select mysql in "Retry" "Skip"; do
@@ -132,7 +141,7 @@ if [ -n "/$backupfolder" ]; then
 
 	if [ $backup == "Restore" ]; then
 		echo ""
-		echo "Restore finished."		
+		echo "Restore finished."
 	fi
 	echo ""
 	echo "Do you want to restore your influxdb database? The current influxdb database will be erased!"
@@ -148,6 +157,7 @@ if [ -n "/$backupfolder" ]; then
 	echo ""
 	echo "Do you want to restore your mysql database?"
 	echo "If yes, you need to place the mysql backup folder in the /$backupfolder folder now."
+  echo "WARNING: Current /var/lib/mysql folder will be deleted!!"
 	select mysql in "Restore" "Skip"; do
 		case $mysql in
 			Restore ) restore_mysql; break;;
@@ -162,4 +172,3 @@ if [ -n "/$backupfolder" ]; then
 else
 	echo "The backup files don't seem to be in /$backupfolder!"
 fi
-

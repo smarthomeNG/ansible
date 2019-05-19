@@ -49,6 +49,7 @@ backup_all() {
   sudo mkdir /$backupfolder >/dev/null 2>&1
   echo "Starting backup. Be patient."
   echo "Starting backup. Be patient." | adddate > $backupfolder/backup_log.txt 2>&1
+  sudo tar vcpf $backupfolder/image_backup.tar $backupfolder/backup_log.txt | adddate_copy >> $backupfolder/backup_log.txt 2>&1
   logchecksize=$(du -sm /var/www/html/monitgraph/* | awk '$1 > 100')
   if [ -z "$logchecksize" ]; then
     sudo tar vprf $backupfolder/image_backup.tar var/www/html/monitgraph/ | adddate_copy >> $backupfolder/backup_log.txt 2>&1
@@ -67,7 +68,7 @@ backup_all() {
         esac
     done
   fi
-  sudo tar vcpf $backupfolder/image_backup.tar etc/exim4/ | adddate_copy > $backupfolder/backup_log.txt 2>&1
+  sudo tar vprf $backupfolder/image_backup.tar etc/exim4/ | adddate_copy > $backupfolder/backup_log.txt 2>&1
   sudo tar vprf $backupfolder/image_backup.tar etc/email-addresses | adddate_copy >> $backupfolder/backup_log.txt 2>&1
   sudo tar vprf $backupfolder/image_backup.tar etc/aliases | adddate_copy >> $backupfolder/backup_log.txt 2>&1
   sudo tar vprf $backupfolder/image_backup.tar etc/mailname | adddate_copy >> $backupfolder/backup_log.txt 2>&1
@@ -83,7 +84,7 @@ backup_all() {
 	  sudo tar vprf $backupfolder/image_backup.tar var/www/letsencrypt/.well-known/ | adddate_copy >> $backupfolder/backup_log.txt 2>&1
 	  sudo tar vprf $backupfolder/image_backup.tar var/www/letsencrypt | adddate_copy >> $backupfolder/backup_log.txt 2>&1
 	  echo "Backed up letsencrypt"
-  fi	
+  fi
 
   sudo tar vprf $backupfolder/image_backup.tar etc/fail2ban/ | adddate_copy >> $backupfolder/backup_log.txt 2>&1
 
@@ -108,7 +109,7 @@ backup_all() {
 	sudo tar vprf $backupfolder/image_backup.tar etc/grafana/ | adddate_copy >> $backupfolder/backup_log.txt 2>&1
 	echo "Backed up grafana config"
   fi
-  
+
   sudo tar vprf $backupfolder/image_backup.tar etc/knxd.* | adddate_copy >> $backupfolder/backup_log.txt 2>&1
   sudo tar vprf $backupfolder/image_backup.tar etc/default/eibd | adddate_copy >> $backupfolder/backup_log.txt 2>&1
   sudo tar vprf $backupfolder/image_backup.tar etc/init.d/eibd | adddate_copy >> $backupfolder/backup_log.txt 2>&1
@@ -214,15 +215,26 @@ backup_mysql() {
   defaultpwd='smarthome'
   read -p "Please provide the username of your database (default is $defaultuser): " USER
   USER=${USER:=$defaultuser}
-  read -p "Please provide the password of your database (default is $defaultpwd): " PWD
-  PWD=${PWD:=$defaultpwd}
+  read -p "Please provide the password of your database (default is $defaultpwd): " PASSWORD
+  PASSWORD=${PASSWORD:=$defaultpwd}
+  FOLDER='/'$backupfolder'/mysql/'`date +"%Y%m%d"`'/INC'
   echo "Backup of mysql is saved in /$backupfolder/mysql/. Please make sure there is enough free diskspace."
-  echo "Connecting to database with user $USER and password $PWD. This might take a long time - be patient."
+  echo "Connecting to database with user $USER and password $PASSWORD. This might take a long time - be patient."
   sudo mkdir /$backupfolder >/dev/null 2>&1
   sudo mkdir /$backupfolder/mysql | adddate >> /$backupfolder/backup_log.txt 2>&1
   sudo systemctl start mysql | adddate >> /$backupfolder/backup_log.txt 2>&1
-  #sudo /usr/local/bin/pyxtrabackup-inc /$backupfolder/mysql/ --user=$USER --password=$PWD --no-compress | adddate >> /$backupfolder/backup_log.txt 2>&1
-  sudo /usr/local/bin/pyxtrabackup-inc /$backupfolder/mysql/ --user=$USER --password=$PWD --no-compress --incremental | adddate &>> /$backupfolder/backup_log.txt 2>&1
+  if [ -d "$FOLDER" ]; then
+    if test -n "$(find ${FOLDER} -maxdepth 1 -name 'base*' -print -quit)"; then
+      echo "Creating incremental backup in existing folder $FOLDER" | adddate &>> /$backupfolder/backup_log.txt 2>&1
+      /usr/local/bin/pyxtrabackup-inc /$backupfolder/mysql/ --user=$USER --password=$PASSWORD --no-compress --incremental | adddate &>> /$backupfolder/backup_log.txt 2>&1
+    else
+      echo "Creating full backup in existing folder $FOLDER" | adddate &>> /$backupfolder/backup_log.txt 2>&1
+      /usr/local/bin/pyxtrabackup-inc /$backupfolder/mysql/ --user=$USER --password=$PASSWORD --no-compress | adddate &>> /$backupfolder/backup_log.txt 2>&1
+    fi
+  else
+    echo "Creating new backup in newly created folder" | adddate &>> /$backupfolder/backup_log.txt 2>&1
+    /usr/local/bin/pyxtrabackup-inc /$backupfolder/mysql/ --user=$USER --password=$PASSWORD --no-compress | adddate &>> /$backupfolder/backup_log.txt 2>&1
+  fi
   echo ""
   echo "Backup finished. Please copy the complete mysql folder from /$backupfolder to your external backup disk."
   echo "Backup finished. Please copy the complete mysql folder from /$backupfolder to your external backup disk." | adddate >> /$backupfolder/backup_log.txt 2>&1
@@ -262,7 +274,7 @@ backup_overwrite() {
   else
     backup_all
   fi
-  
+
 }
 
 echo ""
