@@ -8,12 +8,12 @@
   tasks:
   - name: Copy deb
     copy:
-      src: packages/xtrabackup_2.4.9-1_armhf.deb
+      src: packages/xtrabackup_2.4.14-1_armhf.deb
       dest: /etc/deb-files/
 
   - name: Install xtrabackup
     apt:
-      deb: /etc/deb-files/xtrabackup_2.4.9-1_armhf.deb
+      deb: /etc/deb-files/xtrabackup_2.4.14-1_armhf.deb
 
   - name: Install pyxtrabackup
     pip:
@@ -32,12 +32,10 @@
 
   - name: Links
     file:
-      src: '/usr/local/xtrabackup/bin/{{ item.src }}'
-      dest: '{{ item.dest }}'
+      src: /usr/local/bin/xtrabackup
+      dest: /usr/local/bin/innobackupex
       state: link
-    with_items:
-      - { src: 'innobackupex', dest: '/usr/local/bin/innobackupex' }
-      - { src: 'xtrabackup', dest: '/usr/local/bin/xtrabackup' }
+    ignore_errors: yes
 
   - name: Copy cron
     copy:

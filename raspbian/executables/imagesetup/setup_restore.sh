@@ -3,10 +3,8 @@ RSA_FOLDER=etc/ssl/easy-rsa
 KEY_FOLDER=etc/ssl/ca/
 
 backupfolder='home/smarthome/backup'
-touch /$backupfolder/restore_log.txt
-truncate -s 0 /$backupfolder/restore_log.txt
 
-adddate() {
+addate() {
     while IFS= read -r line; do
         echo "$(date) $line"
     done
@@ -46,7 +44,8 @@ restore_all() {
       echo "Please reboot now."
   else
       echo ""
-      echo "File not found. Please copy your image_backup_encrypted.tar file to the folder /$backupfolder."
+	  echo "File not found. Please copy your image_backup_encrypted.tar file to the folder /$backupfolder."
+      echo "File not found. Please copy your image_backup_encrypted.tar file to the folder /$backupfolder." | addate >> /$backupfolder/restore_log.txt 2>&1
       echo ""
       select backupall in "Retry" "Skip"; do
           case $backupall in
@@ -71,7 +70,8 @@ restore_influx() {
       echo "Restored influxdb database and deleted /$backupfolder/influxdb folder. Compressed backup still exists in /$backupfolder."
   else
       echo ""
-      echo "File not found. Please copy your influxdb_backup.tar file to the folder /$backupfolder."
+	  echo "File not found. Please copy your influxdb_backup.tar file to the folder /$backupfolder."
+      echo "File not found. Please copy your influxdb_backup.tar file to the folder /$backupfolder." | addate >> /$backupfolder/restore_log.txt 2>&1
       echo ""
       select backup in "Retry" "Skip"; do
           case $backup in
@@ -84,23 +84,33 @@ restore_influx() {
 }
 
 restore_mysql() {
-  today=$(date +"%Y%m%d")
+  sudo systemctl stop monit
+  sudo systemctl stop mysql
   SQLBASE=/$backupfolder/mysql
-  today=$(ls $SQLBASE | tail -n 1 | tr -s ' ' | cut -f9- -d' ' | sed 's:/*$::')
-  FOLDER=$SQLBASE'/'$today'/INC'
-  mysqlbase=$(ls $FOLDER'/base_backup_'$today'_'*'.tar' | tr -s ' ' | cut -f9- -d' ')
+  FOLDER=$SQLBASE'/'$(ls -tr $SQLBASE| tail -1 | tr -s ' ' | cut -f9- -d' ')'/INC'
+  mysqlbase=$(ls $FOLDER'/base_backup_'*'.tar' | tr -s ' ' | cut -f9- -d' ')
   mysqlinc=$(ls $FOLDER/inc* -t | head -n 1 | tr -s ' ' | cut -f9- -d' ')
   if [ -n "$mysqlinc" ]; then
-      echo "Restore of mysql is running."
+      echo "Incremental restore $mysqlinc of mysql is running."
       echo ""
       sudo pyxtrabackup-restore --base-archive=$mysqlbase --incremental-archive=$mysqlinc --user=root --uncompressed-archives | addate >> /$backupfolder/restore_log.txt
+      sudo chown mysql:mysql /var/lib/mysql -R | addate >> /$backupfolder/restore_log.txt 2>&1
+      sudo chmod 0770 /var/lib/mysql -R | addate >> /$backupfolder/restore_log.txt 2>&1
+      sudo systemctl restart mysql
+      echo "Restored incremental mysql database if no errors occured."
+  elif [ -n "$mysqlbase" ]; then
+      echo "Restore of mysql is running."
+      echo ""
+      sudo rm -rf /var/lib/mysql/* | addate >> /$backupfolder/restore_log.txt
+      sudo tar xvpf $mysqlbase -C /var/lib/mysql | addate >> /$backupfolder/restore_log.txt 2>&1
       sudo chown mysql:mysql /var/lib/mysql -R | addate >> /$backupfolder/restore_log.txt 2>&1
       sudo chmod 0770 /var/lib/mysql -R | addate >> /$backupfolder/restore_log.txt 2>&1
       sudo systemctl restart mysql
       echo "Restored mysql database if no errors occured."
   else
     echo ""
-    echo "Folder not found. Please copy your mysql backup folder to the folder /$backupfolder."
+	  echo "Folder not found. Please copy your mysql backup folder to the folder /$backupfolder."
+    echo "Folder not found. Please copy your mysql backup folder to the folder /$backupfolder." | addate >> /$backupfolder/restore_log.txt 2>&1
     echo ""
     select mysql in "Retry" "Skip"; do
         case $mysql in
@@ -112,45 +122,53 @@ restore_mysql() {
   fi
 }
 
-echo ""
-echo "Do you want to restore your previously saved configuration?"
-echo "BE AWARE: Any current config files for packages, smartvisu and smarthome will be overwritten by the backup files!"
-echo ""
-echo "Please copy the relevant files and folders to /$backupfolder."
-backup="Skip"
-select backup in "Restore" "Skip"; do
-    case $backup in
-        Restore) echo "Starting restore."; restore_all; break;;
-        Skip) echo "Skipping"; break;;
-        *) echo "Skipping"; break;;
-    esac
-done
+if [ -n "/$backupfolder" ]; then
+	touch /$backupfolder/restore_log.txt >/dev/null 2>&1
+	truncate -s 0 /$backupfolder/restore_log.txt >/dev/null 2>&1
+	echo ""
+	echo "Do you want to restore your previously saved configuration?"
+	echo "BE AWARE: Any current config files for packages, smartvisu and smarthome will be overwritten by the backup files!"
+	echo ""
+	echo "Please copy the relevant files and folders to /$backupfolder."
+	backup="Skip"
+	select backup in "Restore" "Skip"; do
+		case $backup in
+			Restore) echo "Starting restore."; restore_all; break;;
+			Skip) echo "Skipping"; break;;
+			*) echo "Skipping"; break;;
+		esac
+	done
 
-if [ $backup == "Restore" ]; then
-    echo ""
-    echo "Restore finished."
-    echo ""
-    echo "Do you want to restore your influxdb database? The current influxdb database will be erased!"
-    echo "If yes, you need to place the influxdb_backup.tar file in the /$backupfolder folder now."
-    select influx in "Restore" "Skip"; do
-        case $influx in
-            Restore ) restore_influx; break;;
-            Skip) echo "Skipping"; break;;
-            *) echo "Skipping"; break;;
-        esac
-    done
+	if [ $backup == "Restore" ]; then
+		echo ""
+		echo "Restore finished."
+	fi
+	echo ""
+	echo "Do you want to restore your influxdb database? The current influxdb database will be erased!"
+	echo "If yes, you need to place the influxdb_backup.tar file in the /$backupfolder folder now."
+	select influx in "Restore" "Skip"; do
+		case $influx in
+			Restore ) restore_influx; break;;
+			Skip) echo "Skipping"; break;;
+			*) echo "Skipping"; break;;
+		esac
+	done
 
-    echo ""
-    echo "Do you want to restore your mysql database?"
-    echo "If yes, you need to place the mysql backup folder in the /$backupfolder folder now."
-    select mysql in "Restore" "Skip"; do
-        case $mysql in
-            Restore ) restore_mysql; break;;
-            Skip) echo "Skipping"; break;;
-            *) echo "Skipping"; break;;
-        esac
-    done
-    echo ""
-    echo "Everything finished. You might want to check the file $backupfolder/restore_log.txt for errors."
-    echo "You should reboot your system now and hope for the best. Good bye!"
+	echo ""
+	echo "Do you want to restore your mysql database?"
+	echo "If yes, you need to place the mysql backup folder in the /$backupfolder folder now."
+  echo "WARNING: Current /var/lib/mysql folder will be deleted!!"
+	select mysql in "Restore" "Skip"; do
+		case $mysql in
+			Restore ) restore_mysql; break;;
+			Skip) echo "Skipping"; break;;
+			*) echo "Skipping"; break;;
+		esac
+	done
+	echo ""
+	echo "Everything finished. You might want to check the file /$backupfolder/restore_log.txt for errors."
+	echo "You should reboot your system now and hope for the best. Good bye!"
+
+else
+	echo "The backup files don't seem to be in /$backupfolder!"
 fi

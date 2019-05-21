@@ -11,6 +11,7 @@
       "gzip",
       "nginx-full",
       "geoip-database",
+      "geoip-bin",
       "libgeoip1",
       "php7.0-fpm",
       "lua5.1",
@@ -64,27 +65,59 @@
 
   - name: Download GeoIP
     get_url:
-      url: http://geolite.maxmind.com/download/geoip/database/GeoLiteCountry/GeoIP.dat.gz
-      dest: /usr/share/GeoIP/
+      url: https://dl.miyuru.lk/geoip/maxmind/country/maxmind4.dat.gz
+      dest: /usr/share/GeoIP
     ignore_errors: yes
 
-  - name: Download GeoIPv6
+  - name: Download GeoIP6
     get_url:
-      url: http://geolite.maxmind.com/download/geoip/database/GeoIPv6.dat.gz
-      dest: /usr/share/GeoIP/
+      url: https://dl.miyuru.lk/geoip/maxmind/country/maxmind6.dat.gz
+      dest: /usr/share/GeoIP
     ignore_errors: yes
 
   - name: Extract GeoIP
-    command: "gunzip -f GeoIP.dat.gz"
+    command: "gunzip -f maxmind4.dat.gz"
     args:
       chdir: /usr/share/GeoIP/
     ignore_errors: yes
 
   - name: Extract GeoIPv6
-    command: "gunzip -f GeoIPv6.dat.gz"
+    command: "gunzip -f maxmind6.dat.gz"
     args:
       chdir: /usr/share/GeoIP/
     ignore_errors: yes
+
+  - name: Movev4
+    copy:
+      remote_src: yes
+      src: /usr/share/GeoIP/maxmind4.dat
+      dest: /usr/share/GeoIP/GeoIP.dat
+
+  - name: Movev6
+    copy:
+      remote_src: yes
+      src: /usr/share/GeoIP/maxmind6.dat
+      dest: /usr/share/GeoIP/GeoIPv6.dat
+
+  - name: Deletev4gz
+    file:
+      path: /usr/share/GeoIP/maxmind4.dat.gz
+      state: absent
+
+  - name: Deletev6gz
+    file:
+      path: /usr/share/GeoIP/maxmind6.dat.gz
+      state: absent
+
+  - name: Deletev4
+    file:
+      path: /usr/share/GeoIP/maxmind4.dat
+      state: absent
+
+  - name: Deletev6
+    file:
+      path: /usr/share/GeoIP/maxmind6.dat
+      state: absent
 
   - name: letsencrypt add
     blockinfile:

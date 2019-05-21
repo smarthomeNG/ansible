@@ -8,7 +8,12 @@
   vars:
     apt_install:
       ["dialog",
-      "rlwrap"
+      "rlwrap",
+      "libatlas-base-dev"
+      ]
+    python_install:
+      ["pymysql",
+      "yolk3k"
       ]
 
   tasks:
@@ -34,6 +39,19 @@
       groups: www-data, sudo, i2c, adm, audio, video, plugdev, input, netdev, spi, gpio, dialout
       append: yes
 
+  - name: SciPyWheel
+    copy:
+      src: packages/scipy-1.2.1.whl
+      dest: /opt/scipy-1.2.1-cp35-cp35m-linux_armv7l.whl
+      mode: 0777
+
+  - name: SciPy
+    pip:
+      name: /opt/scipy-1.2.1-cp35-cp35m-linux_armv7l.whl
+      executable: pip3
+    become: true
+    become_user: root
+
   - name: install apt
     apt:
       name: "{{ item }}"
@@ -42,13 +60,22 @@
       autoclean: yes
     with_items: "{{ apt_install }}"
 
+  - name: install modules
+    pip:
+      name: "{{ item }}"
+      state: latest
+      executable: pip3
+    become: true
+    become_user: root
+    with_items: "{{ python_install }}"
+
   - name: Git SmarthomeNG
     git:
       repo: 'git://github.com/smarthomeNG/smarthome.git'
       dest: /usr/local/smarthome
       version: master
+      force: yes
     register: git
-    ignore_errors: yes
   - debug: var=git
 
   - name: Git Plugins
@@ -56,6 +83,7 @@
       repo: 'git://github.com/smarthomeNG/plugins.git'
       dest: /usr/local/smarthome/plugins
       version: master
+      force: yes
     register: git2
     ignore_errors: yes
   - debug: var=git2
@@ -85,7 +113,7 @@
       remote_src: True
       src: /usr/local/smarthome/etc/logging.yaml.default
       dest: /usr/local/smarthome/etc/logging.yaml
-      
+
   - name: Change requirements
     file:
       path: /usr/local/smarthome/tools/build_requirements.py
@@ -94,23 +122,19 @@
   - name: Update requirements
     command: /usr/local/smarthome/tools/build_requirements.py
 
+  - name: Change scipy
+    replace:
+      destfile: /usr/local/smarthome/plugins/scipy/requirements.txt
+      regexp: "scipy>=1.1.0"
+      replace: "scipy>=1.1.0<=1.2.1"
+
   - name: Install requirements
     pip: requirements=/usr/local/smarthome/requirements/all.txt executable=pip3 state=latest
     become: true
     become_user: root
 
-  - name: Install pymysql
-    pip: name=pymysql executable=pip3 state=latest
-    become: true
-    become_user: root
-
-  - name: Install yolk3k
-    pip: name=yolk3k executable=pip3 state=latest
-    become: true
-    become_user: root
-
   - name: Update modules
-    command: /usr/local/bin/yolk --upgrade
+    command: pip3 freeze --local | sed '/scipy.*/d' |sed -rn 's/^([^=# \t\\][^ \t=]*)=.*/echo; echo Processing \1 ...; pip3 install -U \1/p' |sh
 
   - name: Downgrade to requirements
     pip: requirements=/usr/local/smarthome/requirements/all.txt executable=pip3
@@ -133,7 +157,7 @@
 
   - name: Remove astral
     pip: name=astral executable=pip3 state=absent
-      
+
   - name: Restart smarthome service
     systemd: state=restarted name=smarthome.service
 

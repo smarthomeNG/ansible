@@ -11,19 +11,20 @@ select sh in "Update" "Skip"; do
         *) echo "Skipping"; break;;
     esac
 done
-version=$(git status |grep "[bB]ranch"|head -n1|awk -F' ' '{print $NF}')
+
 if [ $sh = "Update" ]; then
+  version=$(cd /usr/local/smarthome && git status |grep "[bB]ranch"|head -n1|awk -F' ' '{print $NF}')
   echo "Do you want to update to the latest Master or Develop version?"
   echo "Currently $version is installed."
-  unset master
-  select master in "Master" "Develop"; do
-      case $master in
+  unset tree
+  select tree in "Master" "Develop"; do
+      case $tree in
           "Master" ) break;;
           "Develop" ) break;;
           *) echo "Skipping"; break;;
       esac
   done
-  if [ $master = "Develop" ]; then
+  if [ $tree = "Develop" ]; then
     echo 'Updating SmarthomeNG to latest develop version'
     cd /usr/local/smarthome
     sudo git stash
@@ -33,7 +34,7 @@ if [ $sh = "Update" ]; then
     sudo git stash
     sudo git checkout develop
     sudo git pull origin develop
-  elif [ $master = "Master" ]; then
+  elif [ $tree = "Master" ]; then
     echo 'Updating SmarthomeNG to latest master version'
     cd /usr/local/smarthome
     sudo git stash
@@ -46,6 +47,7 @@ if [ $sh = "Update" ]; then
   fi
   sudo chown smarthome:smarthome /usr/local/smarthome -R
   sudo chmod 0755 /usr/local/smarthome -R
+  sudo chmod +x /usr/local/smarthome/bin/smarthome.py
 fi
 
 echo "Do you want to update SmartVISU 2.9?"
@@ -76,9 +78,14 @@ select py in "Update" "Skip"; do
     esac
 done
 if [ $py = "Update" ]; then
+  echo "Updating SmarthomeNG requirements"
+  sudo /usr/local/smarthome/tools/build_requirements.py
+  echo "Updating all modules except scipy (as there are huge problems with the update)"
   sudo pip3 install --upgrade pip
-  sudo pip3 freeze --local |sed -rn 's/^([^=# \t\\][^ \t=]*)=.*/echo; echo Processing \1 ...; pip3 install -U \1/p' |sh
-  sudo sed -i 's/pyatv==0.3.9/#pyatv==0.3.9/g' /usr/local/smarthome/requirements/all.txt 2>&1
+  sudo pip3 freeze --local | sed '/scipy.*/d' |sed -rn 's/^([^=# \t\\][^ \t=]*)=.*/echo; echo Processing \1 ...; pip3 install -U \1/p' |sh
+  #sudo pip3 freeze --local | sed -rn 's/^([^=# \t\\][^ \t=]*)=.*/echo; echo Processing \1 ...; pip3 install -U \1/p' |sh
+  echo "Reverting modules to SmarthomeNG requirements"
+  #sudo sed -i 's/pyatv==0.3.9/#pyatv==0.3.9/g' /usr/local/smarthome/requirements/all.txt 2>&1
   sudo pip3 install --upgrade -r /usr/local/smarthome/requirements/all.txt
 fi
 echo "Finished Updating"

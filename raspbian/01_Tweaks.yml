@@ -35,7 +35,7 @@
       "cmake",
       "mlocate",
       "snmpd",
-      "snmp", 
+      "snmp",
       "fake-hwclock",
       "libudev-dev"
       ]
@@ -173,7 +173,7 @@
 
   - name: Enable network online
     systemd: enabled=yes name=systemd-networkd-wait-online.service
-    
+
   - name: Pi dialout
     user:
       name: pi
@@ -522,8 +522,11 @@
       replace: "CONF_SWAPSIZE=1024"
     ignore_errors: yes
 
+  - name: Restartswap
+    systemd: state=restarted name=dphys-swapfile
+
   - name: Swapoff
     command: 'dphys-swapfile swapoff'
-
+    
   - name: Swapdisable
     systemd: enabled=no name=dphys-swapfile

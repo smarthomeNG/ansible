@@ -10,15 +10,15 @@
     pip: name=paho-mqtt executable=pip3
 
   - name: add apt-key
-    apt_key: 
+    apt_key:
       url: http://repo.mosquitto.org/debian/mosquitto-repo.gpg.key
-      state: present 
+      state: present
 
   - name: add repository
-    apt_repository: 
+    apt_repository:
       repo: deb https://repo.mosquitto.org/debian stretch main
-      state: present 
-      filename: mosquitto 
+      state: present
+      filename: mosquitto
       update_cache: yes
 
   - name: Create User
