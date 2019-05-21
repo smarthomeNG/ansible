@@ -133,14 +133,6 @@
     become: true
     become_user: root
 
-  - name: Update modules
-    command: pip3 freeze --local | sed '/scipy.*/d' |sed -rn 's/^([^=# \t\\][^ \t=]*)=.*/echo; echo Processing \1 ...; pip3 install -U \1/p' |sh
-
-  - name: Downgrade to requirements
-    pip: requirements=/usr/local/smarthome/requirements/all.txt executable=pip3
-    become: true
-    become_user: root
-
   - name: Copy Service
     copy:
       dest: /lib/systemd/system/smarthome.service
