@@ -5,15 +5,6 @@
   become_user: root
   become: true
 
-  vars:
-    dashboards: [
-          {
-            "name": "smarthome",
-            "file": "../configs/influxdb.json",
-            "dash_name": "Smarthome"
-          }
-        ]
-
   tasks:
   - name: trans
     apt:

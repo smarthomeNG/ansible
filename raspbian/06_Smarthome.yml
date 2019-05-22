@@ -9,11 +9,13 @@
     apt_install:
       ["dialog",
       "rlwrap",
-      "libatlas-base-dev"
+      "libatlas-base-dev",
+      "libyaml-dev"
       ]
     python_install:
       ["pymysql",
-      "yolk3k"
+      "yolk3k",
+      "cython"
       ]
 
   tasks:
@@ -48,6 +50,19 @@
   - name: SciPy
     pip:
       name: /opt/scipy-1.2.1-cp35-cp35m-linux_armv7l.whl
+      executable: pip3
+    become: true
+    become_user: root
+
+  - name: zwaveWheel
+    copy:
+      src: packages/python_openzwave-0.4.18.whl
+      dest: /opt/python_openzwave-0.4.18-cp35-cp35m-linux_armv7l.whl
+      mode: 0777
+
+  - name: zwave
+    pip:
+      name: /opt/python_openzwave-0.4.18-cp35-cp35m-linux_armv7l.whl
       executable: pip3
     become: true
     become_user: root
@@ -119,25 +134,23 @@
       path: /usr/local/smarthome/tools/build_requirements.py
       mode: 0777
 
+  - name: Change scipy
+    replace:
+      destfile: /usr/local/smarthome/plugins/uzsu/requirements.txt
+      regexp: "scipy>=.*"
+      replace: "scipy>=1.1.0,<=1.2.1"
+
+  - name: Change zwave
+    replace:
+      destfile: /usr/local/smarthome/plugins/zwave/requirements.txt
+      regexp: "python-openzwave.*"
+      replace: "python-openzwave>=0.4.0.35,<=0.4.18"
+
   - name: Update requirements
     command: /usr/local/smarthome/tools/build_requirements.py
 
-  - name: Change scipy
-    replace:
-      destfile: /usr/local/smarthome/plugins/scipy/requirements.txt
-      regexp: "scipy>=1.1.0"
-      replace: "scipy>=1.1.0<=1.2.1"
-
   - name: Install requirements
     pip: requirements=/usr/local/smarthome/requirements/all.txt executable=pip3 state=latest
-    become: true
-    become_user: root
-
-  - name: Update modules
-    command: pip3 freeze --local | sed '/scipy.*/d' |sed -rn 's/^([^=# \t\\][^ \t=]*)=.*/echo; echo Processing \1 ...; pip3 install -U \1/p' |sh
-
-  - name: Downgrade to requirements
-    pip: requirements=/usr/local/smarthome/requirements/all.txt executable=pip3
     become: true
     become_user: root
 
