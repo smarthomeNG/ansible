@@ -1,5 +1,5 @@
 ---
-- name: Enable firstboot in the end.
+- name: Setup Files to config images
   hosts: all
   remote_user: root
   become_user: root
@@ -27,7 +27,7 @@
 
   - name: Enable network online
     systemd: enabled=yes name=systemd-networkd-wait-online.service
-    
+
   - name: enable_firstboot
     systemd: enabled=yes name=firstboot.service
 
