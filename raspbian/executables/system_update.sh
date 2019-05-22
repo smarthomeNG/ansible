@@ -82,7 +82,7 @@ if [ $py = "Update" ]; then
   sudo /usr/local/smarthome/tools/build_requirements.py
   echo "Updating all modules except scipy (as there are huge problems with the update)"
   sudo pip3 install --upgrade pip
-  sudo pip3 freeze --local | sed '/scipy.*/d' |sed -rn 's/^([^=# \t\\][^ \t=]*)=.*/echo; echo Processing \1 ...; pip3 install -U \1/p' |sh
+  sudo pip3 freeze --local | sed '/scipy.*/d' | sed '/zwave.*/d' | sed -rn 's/^([^=# \t\\][^ \t=]*)=.*/echo; echo Processing \1 ...; pip3 install -U \1/p' |sh
   #sudo pip3 freeze --local | sed -rn 's/^([^=# \t\\][^ \t=]*)=.*/echo; echo Processing \1 ...; pip3 install -U \1/p' |sh
   echo "Reverting modules to SmarthomeNG requirements"
   #sudo sed -i 's/pyatv==0.3.9/#pyatv==0.3.9/g' /usr/local/smarthome/requirements/all.txt 2>&1
