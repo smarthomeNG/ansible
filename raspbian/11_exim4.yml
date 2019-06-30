@@ -49,6 +49,18 @@
       line: "SmartHomeNG"
     ignore_errors: yes
 
+  - name: timeout1
+    replace:
+      destfile: /etc/exim4/conf.d/main/02_exim4-config_options
+      regexp: 'MAIN_IGNORE_BOUNCE_ERRORS_AFTER = (.*)'
+      replace: 'MAIN_IGNORE_BOUNCE_ERRORS_AFTER = 1h'
+
+  - name: timeout2
+    replace:
+      destfile: /etc/exim4/conf.d/main/02_exim4-config_options
+      regexp: 'MAIN_TIMEOUT_FROZEN_AFTER = (.*)'
+      replace: 'MAIN_TIMEOUT_FROZEN_AFTER = 1h'
+
   - name: Restart exim4
     systemd: state=restarted name=exim4
 

@@ -8,14 +8,14 @@
   tasks:
   - name: Download nodeJS
     get_url:
-      url: https://raw.githubusercontent.com/nodesource/distributions/master/deb/setup_11.x
+      url: https://raw.githubusercontent.com/nodesource/distributions/master/deb/setup_12.x
       dest: /root
       mode: 775
     register: curl
   - debug: var=curl
 
   - name: Run Setup
-    shell: /root/setup_11.x
+    shell: /root/setup_12.x
 
   - name: Install NodeJS
     apt: name=nodejs force=no state=latest update_cache=yes
@@ -29,8 +29,9 @@
   - name: Rebuild npm
     shell: npm rebuild
     args:
-      chdir: /usr/local/lib/node_modules/homebridge
+      chdir: /usr/lib/node_modules/homebridge
     register: rebuildnpm
+    ignore_errors: true
   - debug: var=rebuildnpm
 
   - name: Install Homebridge

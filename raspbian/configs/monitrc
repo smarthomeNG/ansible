@@ -149,9 +149,9 @@ check process Samba with pidfile "/var/run/samba/smbd.pid"
 
 ##SUSV
 #check process susvd with pidfile /var/run/susvd.pid
-# start program = "/opt/susvd/susvd start"
-# stop program = "/opt/susvd/susvd stop"
-# restart program = "/opt/susvd/susvd restart"
+#start program = "/bin/systemctl start susvd"
+#stop program = "/bin/systemctl stop susvd"
+#restart program = "/bin/systemctl restart susvd"
 # if 10 restarts within 15 cycles then unmonitor
 
 ##RADIUS
