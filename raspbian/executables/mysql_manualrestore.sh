@@ -16,7 +16,7 @@ adddate() {
 }
 
 INNOBACKUPEX=innobackupex
-INNOBACKUPEXFULL=/usr/local/xtrabackup/bin/$INNOBACKUPEX
+INNOBACKUPEXFULL=/usr/local/bin/$INNOBACKUPEX
 TMPFILE="/tmp/innobackupex-runner.$$.tmp"
 MEMORY=1024M # Amount of memory to use when preparing the backup
 MYSQL=/usr/bin/mysql

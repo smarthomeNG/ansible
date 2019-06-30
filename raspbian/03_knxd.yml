@@ -29,9 +29,9 @@
     with_items: "{{ knxd }}"
 
   - name: Create deb-files directory
-    file: 
-      path: /etc/deb-files/ 
-      state: directory 
+    file:
+      path: /etc/deb-files/
+      state: directory
       mode: 0755
 
   - name: Copy deb files
@@ -40,11 +40,6 @@
       dest: /etc/deb-files/
     with_fileglob:
       - packages/knxd*
-
-  - name: Copy knx_py
-    copy:
-      src: packages/knx.cpython-35m-arm-linux-gnueabihf.so
-      dest: /usr/local/lib/python3.5/dist-packages/
 
   - name: Copy eibd deb
     copy:
@@ -91,7 +86,7 @@
       paths: /etc/deb-files/
       patterns: "knxd*_0.12*.deb"
     register: knxd_files
-    
+
   - name: Install knxd
     apt: deb="{{ item.path }}" force=yes state=present
     with_items: "{{ knxd_files.files }}"

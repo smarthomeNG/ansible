@@ -32,7 +32,8 @@
       "setuptools",
       "pycrypto",
       "yolk3k",
-      "snmp"
+      "snmp",
+      "knxPython"
       ]
 
 
