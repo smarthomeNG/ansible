@@ -17,6 +17,7 @@
       repo: 'https://github.com/Martin-Gleiss/smartvisu'
       dest: "{{ smartvisupath2 }}"
       version: develop
+      force: yes
     register: git
   - debug: var=git
 
@@ -25,6 +26,7 @@
       repo: 'https://github.com/Martin-Gleiss/smartvisu'
       dest: "{{ smartvisupath }}"
       version: master
+      force: yes
     register: git
   - debug: var=git
 
@@ -71,10 +73,10 @@
     apt: name=php-mbstring force=no state=latest
 
   - name: xml
-    apt: name=php7.0-xml force=no state=latest
+    apt: name=php7.3-xml force=no state=latest
 
   - name: Restart php
-    systemd: state=restarted name=php7.0-fpm.service
+    systemd: state=restarted name=php7.3-fpm.service
 
   - name: Restart nginx
     systemd: state=restarted name=nginx

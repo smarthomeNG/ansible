@@ -6,7 +6,7 @@ install_influxdb () {
   fi
   echo ""
   echo "INFLUXDB: Time Series Database Monitoring plus Grafana to view graphs. (currently $INFLUX_e)"
-  if [[ $INFLUX_e = "not installed" ]]; then
+  if [[ $INFLUX_e == "not installed" ]]; then
     unset influx_install
     select influx_install in "Install" "Skip"; do
         case $influx_install in
@@ -20,7 +20,7 @@ install_influxdb () {
   if [[ $(echo $INFLUX_e | grep "Failed") ]]; then
     INFLUX_e="not installed"
   fi
-  if [[ ! $INFLUX_e = "not installed" ]]; then
+  if [[ ! $INFLUX_e == "not installed" ]]; then
     echo ""
     echo "Do you want to enable InfluxDB?"
     unset influx
@@ -46,7 +46,7 @@ install_influxdb () {
   fi
   echo ""
   echo "GRAFANA: Web Service to configure and show influxdb graphs. (currently $GRAFANA_e)"
-  if [[ $GRAFANA_e = "not installed" ]]; then
+  if [[ $GRAFANA_e == "not installed" ]]; then
     unset grafana_install
     select grafana_install in "Install" "Skip"; do
         case $grafana_install in
@@ -60,7 +60,7 @@ install_influxdb () {
   if [[ $(echo $GRAFANA_e | grep "Failed") ]]; then
     GRAFANA_e="not installed"
   fi
-  if [[ ! $GRAFANA_e = "not installed" ]]; then
+  if [[ ! $GRAFANA_e == "not installed" ]]; then
     echo ""
     echo "Do you want to enable Grafana?"
     unset influx
@@ -88,7 +88,7 @@ case $raspi in
     a22082 ) raspiversion=3;;
     a01041 ) raspiversion=3;;
 esac
-if [ $raspiversion = "3" ]; then
+if [[ $raspiversion == "3" ]]; then
   echo "It looks like you have a Raspberry Pi Version 3. Installing InfluxDB"
   install_influxdb
 

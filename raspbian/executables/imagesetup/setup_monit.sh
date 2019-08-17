@@ -11,7 +11,7 @@ select monit in "Enable" "Disable" "Skip"; do
     esac
 done
 MONIT_e=$(systemctl is-enabled monit 2>&1 | tail -n 1)&> /dev/null
-if [ $MONIT_e = "enabled" ]; then
+if [[ $MONIT_e == "enabled" ]]; then
   ETH=`sudo dmesg | grep -Po '\K\b[[:alnum:]]+\b: renamed from eth' | cut -d ':' -f 1`
   if [ ! -z "$ETH" ]; then
       ETHIP=`sudo ip addr list $ETH |grep 'inet ' |cut -d' ' -f6|cut -d/ -f1|cut -d'.' -f1-3`

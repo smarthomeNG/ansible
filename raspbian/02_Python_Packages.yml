@@ -33,7 +33,8 @@
       "pycrypto",
       "yolk3k",
       "snmp",
-      "knxPython"
+      "knxPython",
+      "spur"
       ]
 
 
@@ -46,6 +47,7 @@
       autoclean: yes
       purge: yes
     with_items: "{{ pythonremove }}"
+    ignore_errors: yes
 
   - name: Add src
     replace:

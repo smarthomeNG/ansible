@@ -6,6 +6,22 @@
   become: true
 
   tasks:
+  - name: Copy devinput
+    copy:
+      src: configs/devinput.lircd.conf
+      dest: /etc/lirc/lircd.conf.d/
+      owner: root
+      group: root
+      mode: 0644
+
+  - name: Copy options
+    copy:
+      src: configs/lirc_options.conf
+      dest: /etc/lirc/
+      owner: root
+      group: root
+      mode: 0644
+
   - name: Install xsltproc
     apt: name=xsltproc force=no state=latest install_recommends=yes
 
@@ -24,9 +40,7 @@
       append: yes
 
   - name: Install
-    apt:
-      deb: /etc/deb-files/lirc_0.10.1-1_armhf.deb
-      force: yes
+    apt: name=lirc force=yes state=latest install_recommends=no
 
   - name: create directory
     file:
@@ -46,30 +60,6 @@
           stop
         }
     ignore_errors: yes
-
-  - name: Copy devinput
-    copy:
-      src: configs/devinput.lircd.conf
-      dest: /etc/lirc/lircd.conf.d/
-      owner: root
-      group: root
-      mode: 0644
-
-  - name: Copy options
-    copy:
-      src: configs/lirc_options.conf
-      dest: /etc/lirc/
-      owner: root
-      group: root
-      mode: 0644
-
-  - name: Copy service
-    copy:
-      src: configs/lircd.service
-      dest: /lib/systemd/system/lircd.service
-      owner: root
-      group: root
-      mode: 0644
 
   - name: Change helper service
     replace:

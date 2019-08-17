@@ -83,7 +83,7 @@ select sshd in "Enable" "Disable" "Skip"; do
     esac
 done
 SSHD_e=$(systemctl is-enabled sshd 2>&1 | tail -n 1)&> /dev/null
-if [ $SSHD_e = "enabled" ]; then
+if [[ $SSHD_e == "enabled" ]]; then
     echo ""
     echo "It is highly recommended to secure your SSH connection with certificates instead of passwords."
     echo "Do you want to enable certificates and set them up?"

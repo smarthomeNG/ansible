@@ -1,6 +1,7 @@
 #!/bin/bash
 echo "Updating System Packages"
-sudo apt-get update && apt-get dist-upgrade
+sudo apt-get update 
+sudo apt-get dist-upgrade
 echo "Do you want to update SmarthomeNG?"
 echo "WARNING: Any changes to the source code/plugins you made manually are lost. Back them up now and proceed later."
 sh="Skip"

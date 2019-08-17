@@ -6,7 +6,7 @@ install_homebridge () {
   fi
   echo ""
   echo "HOMEBRIDGE: Implement your Raspi in your Apple HomeKit environment. (currently $HOMEBRIDGE_e)"
-  if [[ $HOMEBRIDGE_e = "not installed" ]]; then
+  if [[ $HOMEBRIDGE_e == "not installed" ]]; then
     select homebridge_install in "Install" "Skip"; do
         case $homebridge_install in
             Install ) cd /etc/ansible; ansible-playbook playbooks/homebridge_Raspi3.yml; break;;
@@ -19,7 +19,7 @@ install_homebridge () {
   if [[ $(echo $HOMEBRIDGE_e | grep "Failed") ]]; then
     HOMEBRIDGE_e="not installed"
   fi
-  if [[ ! $HOMEBRIDGE_e = "not installed" ]]; then
+  if [[ ! $HOMEBRIDGE_e == "not installed" ]]; then
     echo ""
     echo "Do you want to enable Homebridge?"
     select homebridge in "Enable" "Disable" "Skip"; do
@@ -37,7 +37,7 @@ install_homebridge () {
   fi
   echo ""
   echo "HOMEBRIDGE Service is $HOMEBRIDGE_e. Config file is /home/smarthome/.homebridge/config.json"
-  if [[ $HOMEBRIDGE_e = "enabled" ]]; then
+  if [[ $HOMEBRIDGE_e == "enabled" ]]; then
     echo "Find the PIN code below:"
     sudo systemctl status homebridge --no-pager
   fi
@@ -50,7 +50,7 @@ case $raspi in
     a22082 ) raspiversion=3;;
     a01041 ) raspiversion=3;;
 esac
-if [ $raspiversion = "3" ]; then
+if [[ $raspiversion == "3" ]]; then
   echo ""
   echo "It looks like you have a Raspberry Pi Version 3. Installing Homebridge"
   install_homebridge

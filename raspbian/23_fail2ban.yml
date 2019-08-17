@@ -34,6 +34,13 @@
       insertafter: 'password mismatch'
       line: '^ \[error\] \d+#\d+: \*\d+ no user/password was provided for basic authentication, client: <HOST>, server: \S+, request: "\S+ \S+ HTTP/\d+\.\d+", host: "\S+"\s*$'
 
+  - name: update service
+    replace:
+      destfile: /lib/systemd/system/fail2ban.service
+      regexp: '^PIDFile=/var/run/fail2ban/fail2ban.pid'
+      replace: 'PIDFile=/run/fail2ban/fail2ban.pid'
+    ignore_errors: yes
+
   - name: link_badbots
     file:
       dest: /etc/fail2ban/filter.d/nginx-badbots.conf

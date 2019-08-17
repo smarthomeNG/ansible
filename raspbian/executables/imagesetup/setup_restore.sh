@@ -139,7 +139,7 @@ if [ -n "/$backupfolder" ]; then
 		esac
 	done
 
-	if [ $backup == "Restore" ]; then
+	if [[ $backup == "Restore" ]]; then
 		echo ""
 		echo "Restore finished."
 	fi

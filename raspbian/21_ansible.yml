@@ -20,7 +20,7 @@
       ]
 
     packages:
-      ["grafana_5.2.2_armhf.deb"
+      ["grafana_6.2.5_armhf.deb"
       ]
 
   tasks:

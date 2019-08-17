@@ -43,6 +43,13 @@
       replace: "net.ipv4.ip_forward=1"
     ignore_errors: yes
 
+  - name: ip6
+    replace:
+      destfile: /etc/sysctl.conf
+      regexp: "^#net.ipv6.conf.all.forwarding=1"
+      replace: "net.ipv6.conf.all.forwarding=1"
+    ignore_errors: yes
+    
   - name: store sysctl
     shell: "sysctl -p"
     register: sysctl

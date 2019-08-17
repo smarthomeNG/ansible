@@ -21,7 +21,6 @@
         min-memory = 1
         watchdog-timeout = 10
         interval = 4
-        pidfile = /run/rsyslogd.pid
         verbose = 1
         logtick = 120
 

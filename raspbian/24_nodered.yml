@@ -1,0 +1,31 @@
+---
+- name: node-red
+  hosts: all
+  remote_user: root
+  become_user: root
+  become: true
+
+  tasks:
+  - name: download nodered script
+    get_url:
+      url: https://raw.githubusercontent.com/node-red/raspbian-deb-package/master/resources/update-nodejs-and-nodered
+      dest: /home/smarthome
+      mode: 775
+
+#  - name: install nodered
+#    shell: "yes | /home/smarthome/update-nodejs-and-nodered"
+#    become_user: smarthome
+#    become: true
+#    become_method: su
+  - name: Restart nodered service
+    systemd: state=restarted name=nodered.service
+
+  - name: httproot
+    replace:
+      destfile: /home/smarthome/.node-red/settings.js
+      regexp: "//httpRoot:"
+      replace: "httpRoot:"
+
+  - name: enable
+    systemd: name=nodered enabled=yes
+    ignore_errors: yes
