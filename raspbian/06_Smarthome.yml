@@ -93,6 +93,13 @@
     ignore_errors: yes
   - debug: var=git2
 
+  - name: uzsu requirement
+    replace:
+      destfile: /usr/local/smarthome/plugins/uzsu/requirements.txt
+      regexp: "^scipy>=1.1.0,<=1.2.1"
+      replace: "scipy>=1.1.0,<=1.3.0"
+    ignore_errors: yes
+
   - name: plugins ignore perm
     command: git config core.fileMode false chdir=/usr/local/smarthome/plugins
 

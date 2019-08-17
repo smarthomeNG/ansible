@@ -21,4 +21,3 @@ ansible-playbook 20_mosquitto.yml
 ansible-playbook 21_ansible.yml
 ansible-playbook 22_setups.yml
 ansible-playbook 23_fail2ban.yml
-ansible-playbook 24_nodered.yml
