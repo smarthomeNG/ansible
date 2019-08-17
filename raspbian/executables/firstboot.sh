@@ -73,4 +73,6 @@ sudo raspi-config nonint do_expand_rootfs
 sudo partprobe
 RES='Expanded SD disk to full capacity'
 sudo echo ${RES} >> /var/log/firstboot.log
-sudo systemctl disable firstboot.service
+RES='Rebooting'
+sudo echo ${RES} >> /var/log/firstboot.log
+sudo reboot

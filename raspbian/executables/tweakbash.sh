@@ -71,9 +71,9 @@ echo "$(tput setaf 2)
 SmartHome Raspi running for: ${UPTIME}
 $(tput sgr0)"
 if [ -e /var/log/firstboot.log ]; then
-  if (( $(date +%s) - $(stat -L --format %Y /var/log/firstboot.log) < (5*60) )); then
-    echo "$(tput setaf 2)Welcome to Smarthome Image 2.3. At your first boot these changes were made:"
-    echo "$(</var/log/firstboot.log)"
-    echo "$(tput sgr0)"
-  fi
+  echo "$(tput setaf 2)Welcome to Smarthome Image 2.3. At your first boot these changes were made:"
+  echo "$(</var/log/firstboot.log)"
+  echo "$(tput sgr0)"
+  sudo rm /var/log/firstboot.log
+  echo "It is recommended to run setup_all now to adjust services and configs."
 fi

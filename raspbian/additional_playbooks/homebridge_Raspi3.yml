@@ -12,6 +12,9 @@
   - name: Install Avahi-Utils
     apt: name=avahi-utils force=no state=latest update_cache=yes
 
+  - name: Install NodeJS
+    apt: name=nodejs force=yes state=latest update_cache=yes
+
   - name: Install Homebridge
     shell: npm install -g --unsafe-perm homebridge
     register: npm
