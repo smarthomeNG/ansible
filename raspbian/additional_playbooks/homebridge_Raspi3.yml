@@ -15,6 +15,9 @@
   - name: Install NodeJS
     apt: name=nodejs force=yes state=latest update_cache=yes
 
+  - name: Install npm
+    apt: name=npm force=yes state=latest
+
   - name: Install Homebridge
     shell: npm install -g --unsafe-perm homebridge
     register: npm
