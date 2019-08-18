@@ -26,7 +26,7 @@
   - name: Rebuild npm
     shell: npm rebuild
     args:
-      chdir: /usr/lib/node_modules/homebridge
+      chdir: /usr/local/lib/node_modules/homebridge
     register: rebuildnpm
     ignore_errors: true
   - debug: var=rebuildnpm

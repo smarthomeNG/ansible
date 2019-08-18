@@ -9,7 +9,8 @@
     playbooks:
       ["homebridge_Raspi3.yml",
       "influxdb_Raspi3.yml",
-      "grafana_Raspi3.yml"
+      "grafana_Raspi3.yml",
+      "nodered_Raspi3.yml"
       ]
 
     configs:
