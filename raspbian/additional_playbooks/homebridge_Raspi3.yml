@@ -18,6 +18,9 @@
   - name: Install npm
     apt: name=npm force=yes state=latest
 
+  - name: Update npm
+    command: npm install npm@latest -g
+
   - name: Install Homebridge
     shell: npm install -g --unsafe-perm homebridge
     register: npm
