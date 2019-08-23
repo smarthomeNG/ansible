@@ -41,7 +41,7 @@ done
 VPN_e=$(systemctl is-enabled openvpn@server.service 2>&1 | tail -n 1)&> /dev/null
 echo ""
 echo "OPENVPN Service is $VPN_e. Config file is /etc/openvpn/server.conf"
-if [ $VPN_e = "enabled" ]; then
+if [[ $VPN_e == "enabled" ]]; then
     openvpn_config
     sudo systemctl restart openvpn@server.service
 fi

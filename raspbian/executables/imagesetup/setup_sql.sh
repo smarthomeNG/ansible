@@ -10,13 +10,13 @@ sql_backupconfig () {
             *) echo "Skipping"; break;;
         esac
     done
-    if [ $backup_conf1 == "Enable" ]; then
+    if [[ $backup_conf1 == "Enable" ]]; then
         unset backup_keep
         while ! [[ "$backup_keep" =~ ^[0-9]+$ ]]; do
             echo "MySQL Backup is enabled."
             read -p "Please define the number of backups that should be kept in the folder: " backup_keep
         done
-        sudo sed -i 's/'MAXKEEP=[0-9]*'/'MAXKEEP="$backup_keep"'/1' /etc/cron.hourly/mysql_backup
+        sudo sed -i 's/'days_of_backups=[0-9]*'/'days_of_backups="$backup_keep"'/1' /etc/cron.hourly/mysql_backup
         echo "MySQL Backup will keep the latest ${backup_keep} backups."
     fi
 }
@@ -35,7 +35,7 @@ done
 SQL_e=$(systemctl is-enabled mysql 2>&1 | tail -n 1)&> /dev/null
 echo ""
 echo "MYSQL Service is $SQL_e. Config file is /etc/mysql/debian.cnf"
-if [ $SQL_e == "enabled" ]; then
+if [[ $SQL_e == "enabled" ]]; then
     echo ""
     echo "An automatic backup of your database will be created every hour in the folder /var/backups/mysql."
     echo "A maxmimum number of the 5 most recent backups is kept."

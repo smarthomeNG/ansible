@@ -43,6 +43,13 @@
       replace: "net.ipv4.ip_forward=1"
     ignore_errors: yes
 
+  - name: ip6
+    replace:
+      destfile: /etc/sysctl.conf
+      regexp: "^#net.ipv6.conf.all.forwarding=1"
+      replace: "net.ipv6.conf.all.forwarding=1"
+    ignore_errors: yes
+
   - name: store sysctl
     shell: "sysctl -p"
     register: sysctl
@@ -67,6 +74,21 @@
         iptables -A FORWARD -j REJECT
         iptables -t nat -A POSTROUTING -s '10.8.0.0/24' -j MASQUERADE
         iptables-save > /etc/iptables/rules.v4
+    register: ready
+
+  - name: Reboot
+    shell: "sleep 5 && reboot"
+    async: 1
+    poll: 0
+    when: ready is changed
+
+  - name: Wait
+    wait_for_connection:
+      connect_timeout: 20
+      sleep: 5
+      delay: 5
+      timeout: 300
+    when: ready is changed
 
   - name: run iptables
     shell: "/usr/local/bin/iptables_openvpn.sh"

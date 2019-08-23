@@ -6,23 +6,6 @@
   become: true
 
   tasks:
-  - name: trans
-    apt:
-      name: apt-transport-https
-      state: latest
-
-  - name: key
-    apt_key:
-      url: https://repos.influxdata.com/influxdb.key
-      state: present
-      validate_certs: False
-
-  - name: repo
-    apt_repository:
-      repo: deb https://repos.influxdata.com/debian stretch stable
-      state: present
-      filename: influxdb
-
   - name: Install
     apt:
       name: influxdb
@@ -46,13 +29,6 @@
   - name: Restart influxdb
     systemd: state=restarted name=influxdb.service
 
-  - name: influx init
-    lineinfile:
-      dest: "/root/influx.txt"
-      create: yes
-      line: CREATE DATABASE smarthome
-    ignore_errors: yes
-
   - name: logfile
     blockinfile:
       dest: "/etc/rsyslog.d/influxdb.conf"
@@ -71,9 +47,6 @@
       replace: "/var/log/influxdb.log"
 
   - name: Create db
-    shell: "influx < /root/influx.txt"
+    shell: influx -execute "CREATE DATABASE smarthome"
     async: 40
     poll: 0
-
-  - name: Delete init
-    file: path=/root/influx.txt state=absent

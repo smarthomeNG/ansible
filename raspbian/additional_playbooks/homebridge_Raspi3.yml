@@ -6,38 +6,34 @@
   become: true
 
   tasks:
-  - name: Download nodeJS
-    get_url:
-      url: https://raw.githubusercontent.com/nodesource/distributions/master/deb/setup_12.x
-      dest: /root
-      mode: 775
-    register: curl
-  - debug: var=curl
-
-  - name: Run Setup
-    shell: /root/setup_12.x
-
-  - name: Install NodeJS
-    apt: name=nodejs force=no state=latest update_cache=yes
-
   - name: Install Avahi
     apt: name=libavahi-compat-libdnssd-dev force=no state=latest update_cache=yes
 
   - name: Install Avahi-Utils
     apt: name=avahi-utils force=no state=latest update_cache=yes
 
-  - name: Rebuild npm
-    shell: npm rebuild
-    args:
-      chdir: /usr/lib/node_modules/homebridge
-    register: rebuildnpm
-    ignore_errors: true
-  - debug: var=rebuildnpm
+  - name: Install NodeJS
+    apt: name=nodejs force=yes state=latest update_cache=yes
+
+  - name: Install npm
+    apt: name=npm force=yes state=latest
+    ignore_errors: yes
+
+  - name: Update npm
+    command: npm install npm@latest -g
 
   - name: Install Homebridge
     shell: npm install -g --unsafe-perm homebridge
     register: npm
   - debug: var=npm
+
+  - name: Rebuild npm
+    shell: npm rebuild
+    args:
+      chdir: /usr/local/lib/node_modules/homebridge
+    register: rebuildnpm
+    ignore_errors: true
+  - debug: var=rebuildnpm
 
   - name: logfile
     blockinfile:

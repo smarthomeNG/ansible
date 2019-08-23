@@ -1,0 +1,20 @@
+[client]
+host     	= localhost
+user     	= root
+password 	= smarthome
+socket   	= /run/mysqld/mysqld.sock
+[mysql_upgrade]
+host     = localhost
+user     = root
+password = smarthome
+socket   = /run/mysqld/mysqld.sock
+basedir  = /usr
+[mariabackup]
+host     	= localhost
+user     	= root
+password 	= smarthome
+log      	= /var/log/mysql/mariabackup.log
+target-dir	= /var/backups/mysql
+socket		= /run/mysqld/mysqld.sock
+[mysqld]
+socket      = /run/mysqld/mysqld.sock

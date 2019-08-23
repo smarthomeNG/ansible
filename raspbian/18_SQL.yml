@@ -7,10 +7,11 @@
 
   tasks:
   - name: Install mysql server
-    apt: name=mysql-server force=no state=latest install_recommends=yes update_cache=yes
+    apt: name=mariadb-server force=no state=latest install_recommends=yes update_cache=yes
 
   - name: Install mysql client
-    apt: name=mysql-client force=no state=latest install_recommends=yes
+    apt: name=mariadb-client force=no state=latest install_recommends=yes
+    ignore_errors: yes
 
   - name: Restart sql
     systemd: state=restarted name=mysql
@@ -68,21 +69,13 @@
       state: directory
 
   - name: conf
-    replace:
-      destfile: /etc/mysql/debian.cnf
-      regexp: "^password = "
-      replace: "password = smarthome"
-    ignore_errors: yes
-
-  - name: configxtra
-    blockinfile:
-      path: "/etc/mysql/debian.cnf"
-      block: |
-        [mysqld]
-        skip-host-cache
-        skip-name-resolve
-    ignore_errors: yes
-
+    copy:
+      src: configs/mysql.cnf
+      dest: /etc/mysql/debian.cnf
+      owner: mysql
+      group: mysql
+      mode: 0644
+      
   - name: link conf
     file:
       src: /etc/mysql/debian.cnf
@@ -91,72 +84,79 @@
       group: mysql
       state: link
 
+  - name: unbind
+    replace:
+      destfile: /etc/mysql/mariadb.conf.d/50-server.cnf
+      regexp: "^bind-address"
+      replace: "#bind-address"
+    ignore_errors: yes
+
   - name: exec
     replace:
-      destfile: /etc/php/7.0/apache2/php.ini
+      destfile: /etc/php/7.3/apache2/php.ini
       regexp: "^max_execution_time = (.*)"
       replace: "max_execution_time = 9999"
     ignore_errors: yes
 
   - name: exec fpm
     replace:
-      destfile: /etc/php/7.0/fpm/php.ini
+      destfile: /etc/php/7.3/fpm/php.ini
       regexp: "^max_execution_time = (.*)"
       replace: "max_execution_time = 9999"
     ignore_errors: yes
 
   - name: memory
     replace:
-      destfile: /etc/php/7.0/apache2/php.ini
+      destfile: /etc/php/7.3/apache2/php.ini
       regexp: "^memory_limit = (.*)"
       replace: "memory_limit = 512M"
     ignore_errors: yes
 
   - name: memory fpm
     replace:
-      destfile: /etc/php/7.0/fpm/php.ini
+      destfile: /etc/php/7.3/fpm/php.ini
       regexp: "^memory_limit = (.*)"
       replace: "memory_limit = 512M"
     ignore_errors: yes
 
   - name: size
     replace:
-      destfile: /etc/php/7.0/apache2/php.ini
+      destfile: /etc/php/7.3/apache2/php.ini
       regexp: "^upload_max_filesize = (.*)"
       replace: "upload_max_filesize = 400M"
     ignore_errors: yes
 
   - name: size fpm
     replace:
-      destfile: /etc/php/7.0/fpm/php.ini
+      destfile: /etc/php/7.3/fpm/php.ini
       regexp: "^upload_max_filesize = (.*)"
       replace: "upload_max_filesize = 400M"
     ignore_errors: yes
 
   - name: postsize
     replace:
-      destfile: /etc/php/7.0/apache2/php.ini
+      destfile: /etc/php/7.3/apache2/php.ini
       regexp: "^post_max_size = (.*)"
       replace: "post_max_size = 400M"
     ignore_errors: yes
 
   - name: postsize fpm
     replace:
-      destfile: /etc/php/7.0/fpm/php.ini
+      destfile: /etc/php/7.3/fpm/php.ini
       regexp: "^post_max_size = (.*)"
       replace: "post_max_size = 400M"
     ignore_errors: yes
 
   - name: mysqli
     replace:
-      destfile: /etc/php/7.0/apache2/php.ini
+      destfile: /etc/php/7.3/apache2/php.ini
       regexp: "^;mysqli.allow_local_infile = On"
       replace: "mysqli.allow_local_infile = On"
     ignore_errors: yes
 
   - name: mysqli fpm
     replace:
-      destfile: /etc/php/7.0/fpm/php.ini
+      destfile: /etc/php/7.3/fpm/php.ini
       regexp: "^;mysqli.allow_local_infile = On"
       replace: "mysqli.allow_local_infile = On"
     ignore_errors: yes
@@ -194,6 +194,10 @@
       group: www-data
       state: link
 
+  - name: fix php7.3 problem
+    command: sudo sed -i "s/|\s*\((count(\$analyzed_sql_results\['select_expr'\]\)/| (\1)/g" /usr/share/phpmyadmin/libraries/sql.lib.php
+    ignore_errors: yes
+
   - name: Restart apache
     systemd: state=restarted name=apache2
     ignore_errors: yes
@@ -203,7 +207,7 @@
     ignore_errors: yes
 
   - name: Restart php
-    systemd: state=restarted name=php7.0-fpm
+    systemd: state=restarted name=php7.3-fpm
     ignore_errors: yes
 
   - name: disable mysql

@@ -13,7 +13,7 @@
       "geoip-database",
       "geoip-bin",
       "libgeoip1",
-      "php7.0-fpm",
+      "php7.3-fpm",
       "lua5.1",
       "luarocks",
       "liblua5.1-dev",
@@ -186,7 +186,6 @@
       src: configs/nginx_https.conf
       owner: www-data
       group: www-data
-    when: "not inventory_hostname == 'wz'"
 
   - name: letsencrypt_ini
     copy:
@@ -210,7 +209,7 @@
 
   - name: Change ini
     replace:
-      destfile: /etc/php/7.0/fpm/php.ini
+      destfile: /etc/php/7.3/fpm/php.ini
       regexp: ";cgi.fix_pathinfo=1"
       replace: "cgi.fix_pathinfo=0"
 
@@ -273,7 +272,7 @@
       mode: 0770
 
   - name: Restart php
-    systemd: state=restarted name=php7.0-fpm.service
+    systemd: state=restarted name=php7.3-fpm.service
 
   - name: Restart nginx
     systemd: state=restarted name=nginx

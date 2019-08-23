@@ -9,7 +9,8 @@
     playbooks:
       ["homebridge_Raspi3.yml",
       "influxdb_Raspi3.yml",
-      "grafana_Raspi3.yml"
+      "grafana_Raspi3.yml",
+      "nodered_Raspi3.yml"
       ]
 
     configs:
@@ -20,7 +21,7 @@
       ]
 
     packages:
-      ["grafana_5.2.2_armhf.deb"
+      ["grafana_6.2.5_armhf.deb"
       ]
 
   tasks:

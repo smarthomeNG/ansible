@@ -13,7 +13,7 @@ mail_alias () {
           *) echo "Skipping"; break;;
       esac
   done
-  if [ $rerun = "Change" ]; then
+  if [[ $rerun == "Change" ]]; then
     mail_regex="^[a-z0-9!#\$%&'*+/=?^_\`{|}~-]+(\.[a-z0-9!#$%&'*+/=?^_\`{|}~-]+)*@([a-z0-9]([a-z0-9-]*[a-z0-9])?\.)+[a-z0-9]([a-z0-9-]*[a-z0-9])?\$"
     while ! [[ "$mail" =~ $mail_regex ]]; do
         read -p "Please define your email where $1 summary should be sent to (name@domain.tld): " mail
@@ -33,7 +33,7 @@ mail_alias () {
 }
 
 enable_logcheck () {
-    if [[ $EXIM4_e = "disabled" ]]; then
+    if [[ $EXIM4_e == "disabled" ]]; then
         echo ""
         echo "EXIM4 is currently disabled. Logcheck only makes sense if you send the logfile reports to your mail account."
         exim4

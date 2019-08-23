@@ -18,13 +18,13 @@
   tasks:
   - name: Copy deb file
     copy:
-      src: ../packages/grafana_6.1.6_armhf.deb
+      src: ../packages/grafana_6.2.5_armhf.deb
       dest: /etc/deb-files/
       remote_src: False
 
   - name: Install Grafana
     apt:
-      deb: /etc/deb-files/grafana_6.1.6_armhf.deb
+      deb: /etc/deb-files/grafana_6.2.5_armhf.deb
 
   - name: logfile
     blockinfile:

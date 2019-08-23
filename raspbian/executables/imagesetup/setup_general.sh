@@ -1,9 +1,11 @@
 #!/bin/bash
 wlan_setup () {
+  sudo chmod 0666 /etc/wpa_supplicant/wpa_supplicant.conf
   read -p "Please define the SSID you want to join: " ssid
   read -p "Please define the password. It will be saved as plaintext in the wpa-supplicant file: " password
   sudo wpa_passphrase ${ssid} ${password} >> /etc/wpa_supplicant/wpa_supplicant.conf 2>&1
   sudo sed -i '/#psk=/d' /etc/wpa_supplicant/wpa_supplicant.conf 2>&1
+  sudo chmod 0600 /etc/wpa_supplicant/wpa_supplicant.conf
   echo "File /etc/wpa_supplicant/wpa_supplicant.conf is updated. Plain text password removed."
   sudo wpa_cli -i wlan0 reconfigure
   sudo systemctl enable wpa_supplicant
@@ -53,7 +55,7 @@ select name in "Change" "Skip"; do
         *) echo "Skipping"; break;;
     esac
 done
-if [ $name = "Change" ]; then
+if [[ $name == "Change" ]]; then
   read -p "Please define your hostname (without any spaces): " newhost
   sudo sed -i '3,$s/127.0.0.1.*/127.0.0.1\t'${newhost}'/' /etc/hosts &> /dev/null
   sudo hostnamectl set-hostname ${newhost}

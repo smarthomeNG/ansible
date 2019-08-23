@@ -23,7 +23,7 @@ create_clientcerts() {
         echo "Creating pkcs12 file with suffix pfx. You can rename that p12 if needed. It's recommended to set a password."
         sudo /usr/bin/openssl pkcs12 -export -out pki/$client.pfx -inkey pki/private/$client.key -in pki/issued/$client.crt -certfile pki/ca.crt
         sudo cp $RSA_FOLDER/pki/$client.pfx /home/smarthome/
-        if [ $client == "Squeezebox"]; then
+        if [[ $client == "Squeezebox" ]]; then
           sudo openssl pkcs8 -topk8 -inform PEM -outform PEM -nocrypt -in $RSA_FOLDER/pki/private/Squeezebox.key -out $RSA_FOLDER/pki/private/Squeezebox_PKCS8.pem
           sudo cp $RSA_FOLDER/pki/private/Squeezebox_PKCS8.pem /home/smarthome/
         fi
@@ -70,7 +70,10 @@ create_servercerts () {
     cd $RSA_FOLDER
     mv pki pki_backup &>/dev/null
     echo "If you had a previous pki folder it got copied to pki_backup."
-    test=$(awk '/^#/ {f=0} /^if/ {f=1} !f;' $RSA_FOLDER/vars|grep -v -e '^$' | grep -v '#') 2>&1
+    unset test
+    if [[ -e $RSA_FOLDER/vars ]]; then
+      test=true
+    fi
     if [[ $test ]]; then
         echo ""
         echo "You have setup the variables for key generation like this:"
@@ -90,7 +93,7 @@ create_servercerts () {
     else
         rerun="Change"
     fi
-    if [ $rerun = "Change" ]; then
+    if [[ $rerun == "Change" ]]; then
         echo "Setting up variables for OpenVPN. Please provide the relevant information..."
         sudo cp $RSA_FOLDER/vars.example $RSA_FOLDER/vars
         sudo sed -i 's/#set_var EASYRSA_BATCH[[:space:]]*\".*\"/set_var EASYRSA_BATCH\t\t"yes"/g' $RSA_FOLDER/vars 2>&1
@@ -169,12 +172,12 @@ create_servercerts () {
         fi
         sudo ./easyrsa init-pki
         sudo touch $RSA_FOLDER/pki/index.txt.attr
-        if [ $dh = "Create" ]; then
+        if [[ $dh == "Create" ]]; then
             sudo ./easyrsa gen-dh
             echo ""
             echo "Make sure the process was writing at least 10 lines with ... and +. Otherwise Ctrl-C and restart setup_nginx.sh."
             echo ""
-        elif [ $dh = "Keep" ]; then
+        elif [[ $dh == "Keep" ]]; then
             sudo mv /tmp/dh.pem $RSA_FOLDER/pki/
         fi
         sudo ./easyrsa build-ca nopass

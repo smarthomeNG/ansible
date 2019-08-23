@@ -6,7 +6,6 @@
   become: true
 
   vars:
-    host_url: localhost
     dashboards: [
           {
             "name": "smarthome",
@@ -18,13 +17,13 @@
   tasks:
   - name: key
     apt_key:
-      url: https://bintray.com/user/downloadSubjectPublicKey?username=bintray
+      url: https://packages.grafana.com/gpg.key
       state: present
       validate_certs: False
 
   - name: repo
     apt_repository:
-      repo: deb https://dl.bintray.com/fg2it/deb stretch main
+      repo: deb https://packages.grafana.com/oss/deb stable main
       state: present
       filename: grafana
 
@@ -56,7 +55,7 @@
 
   - name: datasource1
     uri:
-      url: http://{{ host_url }}/grafana/api/datasources/name/smarthome
+      url: http://{{ hostvars[inventory_hostname]['ansible_default_ipv4']['address'] }}/grafana/api/datasources/name/smarthome
       user: admin
       password: admin
       force_basic_auth: yes
@@ -67,7 +66,7 @@
 
   - name: datasource2
     uri:
-      url: http://{{ host_url }}/grafana/api/datasources
+      url: http://{{ hostvars[inventory_hostname]['ansible_default_ipv4']['address'] }}/grafana/api/datasources
       method: POST
       user: admin
       password: admin
@@ -88,7 +87,7 @@
 
   - name: users
     uri:
-      url: http://{{ host_url }}/grafana/api/admin/users
+      url: http://{{ hostvars[inventory_hostname]['ansible_default_ipv4']['address'] }}/grafana/api/admin/users
       user: "admin"
       password: "admin"
       method: POST
@@ -106,7 +105,7 @@
 
   - name: getid
     uri:
-      url: http://{{ host_url }}/grafana/api/users/lookup?loginOrEmail=smarthome
+      url: http://{{ hostvars[inventory_hostname]['ansible_default_ipv4']['address'] }}/grafana/api/users/lookup?loginOrEmail=smarthome
       user: "admin"
       password: "admin"
       method: GET
@@ -116,7 +115,7 @@
 
   - name: permission
     uri:
-      url: http://{{ host_url }}/grafana/api/admin/users/{{ user_id['json']['id'] }}/permissions
+      url: http://{{ hostvars[inventory_hostname]['ansible_default_ipv4']['address'] }}/grafana/api/admin/users/{{ user_id['json']['id'] }}/permissions
       user: "admin"
       password: "admin"
       method: PUT
@@ -129,7 +128,7 @@
 
   - name: role
     uri:
-      url: http://{{ host_url }}/grafana/api/org/users/{{ user_id['json']['id'] }}
+      url: http://{{ hostvars[inventory_hostname]['ansible_default_ipv4']['address'] }}/grafana/api/org/users/{{ user_id['json']['id'] }}
       user: "admin"
       password: "admin"
       method: PATCH
@@ -142,7 +141,7 @@
 
   - name: dashboard
     uri:
-      url: http://{{ host_url }}/grafana/api/dashboards/db
+      url: http://{{ hostvars[inventory_hostname]['ansible_default_ipv4']['address'] }}/grafana/api/dashboards/db
       method: POST
       user: "smarthome"
       password: "smarthome"
@@ -158,7 +157,7 @@
 
   - name: star
     uri:
-      url: http://{{ host_url }}/grafana/api/user/stars/dashboard/{{ db['results'][0]['json']['id'] }}
+      url: http://{{ hostvars[inventory_hostname]['ansible_default_ipv4']['address'] }}/grafana/api/user/stars/dashboard/{{ db['results'][0]['json']['id'] }}
       method: POST
       user: "smarthome"
       password: "smarthome"

@@ -42,10 +42,13 @@
 
 
   tasks:
+  - name: Update release
+    shell: apt-get update --allow-releaseinfo-change
+
   - name: Update Cache
     apt: update_cache=yes
 
-  - name: Safe aptitude upgrade
+  - name: Safe apt upgrade
     apt: upgrade=safe
 
   - name: Upgrade Dist
@@ -114,6 +117,13 @@
             startup_message off
             shell -/bin/bash
 
+  - name: adjust timeout
+    blockinfile:
+      path: /etc/systemd/system.conf
+      block: |
+            DefaultTimeoutStartSec=150s
+            DefaultTimeoutStopSec=150s
+
   - name: Make ssh dir
     file:
       path: /home/pi/.ssh
@@ -161,15 +171,17 @@
 
   - name: getty AMA
     systemd: masked=yes name=serial-getty@ttyAMA0.service
+    ignore_errors: yes
 
   - name: getty S0
     systemd: masked=yes name=serial-getty@ttyS0.service
-
-  - name: Restart sshd
-    systemd: state=restarted name=ssh
+    ignore_errors: yes
 
   - name: Enable sshd
     systemd: enabled=yes name=ssh.service
+
+  - name: Restart sshd
+    systemd: state=restarted name=ssh
 
   - name: Enable network online
     systemd: enabled=yes name=systemd-networkd-wait-online.service
@@ -391,7 +403,7 @@
   - name: Copy cleanbash
     copy:
       src: executables/cleanbash.sh
-      dest: /opt/
+      dest: /usr/local/bin/
       mode: 0777
       owner: smarthome
       group: smarthome
@@ -518,15 +530,20 @@
   - name: Swap
     replace:
       destfile: /etc/dphys-swapfile
-      regexp: "^CONF_SWAPSIZE=100"
-      replace: "CONF_SWAPSIZE=1024"
+      regexp: "^CONF_SWAPSIZE="
+      replace: "CONF_SWAPSIZE="
     ignore_errors: yes
 
-  - name: Restartswap
-    systemd: state=restarted name=dphys-swapfile
+#  - name: Restartswap
+#    systemd: state=restarted name=dphys-swapfile
 
   - name: Swapoff
     command: 'dphys-swapfile swapoff'
-    
+
   - name: Swapdisable
     systemd: enabled=no name=dphys-swapfile
+
+  - name: delete swap
+    file:
+      path: /var/swap
+      state: absent

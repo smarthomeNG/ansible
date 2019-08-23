@@ -9,17 +9,15 @@
   - name: Install paho-mqtt
     pip: name=paho-mqtt executable=pip3
 
-  - name: add apt-key
-    apt_key:
-      url: http://repo.mosquitto.org/debian/mosquitto-repo.gpg.key
-      state: present
+  - name: Create deb-files directory
+    file: path=/etc/deb-files/ state=directory mode=0755
 
-  - name: add repository
-    apt_repository:
-      repo: deb https://repo.mosquitto.org/debian stretch main
-      state: present
-      filename: mosquitto
-      update_cache: yes
+  - name: Copy deb files
+    copy:
+      src: "{{ item }}"
+      dest: /etc/deb-files/
+    with_fileglob:
+      - packages/mosquitto*
 
   - name: Create User
     user:
@@ -31,9 +29,21 @@
 
   - name: Install
     apt:
-      name: "mosquitto"
-      state: latest
-      update_cache: yes
+      name: mosquitto
+      force: yes
+
+  - name: Install_client
+    apt:
+      name: mosquitto-clients
+      force: yes
+
+  - name: Create User
+    user:
+      name: mosquitto
+      shell: /dev/null
+      groups: users
+      createhome: no
+      comment: 'Mosquitto User'
 
   - name: create directory
     file:

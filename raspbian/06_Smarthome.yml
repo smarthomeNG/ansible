@@ -10,12 +10,15 @@
       ["dialog",
       "rlwrap",
       "libatlas-base-dev",
-      "libyaml-dev"
+      "libyaml-dev",
+      "graphviz"
       ]
     python_install:
       ["pymysql",
       "yolk3k",
-      "cython"
+      "cython",
+      "recommonmark",
+      "sphinx-rtd-theme"
       ]
 
   tasks:
@@ -43,26 +46,13 @@
 
   - name: SciPyWheel
     copy:
-      src: packages/scipy-1.2.1.whl
-      dest: /opt/scipy-1.2.1-cp35-cp35m-linux_armv7l.whl
+      src: packages/scipy-1.3.0-cp37.whl
+      dest: /opt/scipy-1.3.0-cp37-cp37m-linux_armv7l.whl
       mode: 0777
 
   - name: SciPy
     pip:
-      name: /opt/scipy-1.2.1-cp35-cp35m-linux_armv7l.whl
-      executable: pip3
-    become: true
-    become_user: root
-
-  - name: zwaveWheel
-    copy:
-      src: packages/python_openzwave-0.4.18.whl
-      dest: /opt/python_openzwave-0.4.18-cp35-cp35m-linux_armv7l.whl
-      mode: 0777
-
-  - name: zwave
-    pip:
-      name: /opt/python_openzwave-0.4.18-cp35-cp35m-linux_armv7l.whl
+      name: /opt/scipy-1.3.0-cp37-cp37m-linux_armv7l.whl
       executable: pip3
     become: true
     become_user: root
@@ -103,6 +93,13 @@
     ignore_errors: yes
   - debug: var=git2
 
+  - name: uzsu requirement
+    replace:
+      destfile: /usr/local/smarthome/plugins/uzsu/requirements.txt
+      regexp: "^scipy>=1.1.0,<=1.2.1"
+      replace: "scipy>=1.1.0,<=1.3.0"
+    ignore_errors: yes
+
   - name: plugins ignore perm
     command: git config core.fileMode false chdir=/usr/local/smarthome/plugins
 
@@ -133,18 +130,6 @@
     file:
       path: /usr/local/smarthome/tools/build_requirements.py
       mode: 0777
-
-  - name: Change scipy
-    replace:
-      destfile: /usr/local/smarthome/plugins/uzsu/requirements.txt
-      regexp: "scipy>=.*"
-      replace: "scipy>=1.1.0,<=1.2.1"
-
-  - name: Change zwave
-    replace:
-      destfile: /usr/local/smarthome/plugins/zwave/requirements.txt
-      regexp: "python-openzwave.*"
-      replace: "python-openzwave>=0.4.0.35,<=0.4.18"
 
   - name: Update requirements
     command: /usr/local/smarthome/tools/build_requirements.py

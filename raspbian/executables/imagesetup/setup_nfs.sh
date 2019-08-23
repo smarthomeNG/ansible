@@ -11,7 +11,7 @@ select nfs in "Enable" "Disable" "Skip"; do
     esac
 done
 NFS_e=$(systemctl is-enabled nfs-server 2>&1 | tail -n 1)&> /dev/null
-if [ $NFS_e = "enabled" ]; then
+if [[ $NFS_e == "enabled" ]]; then
   ETH=`sudo dmesg | grep -Po '\K\b[[:alnum:]]+\b: renamed from eth' | cut -d ':' -f 1`
   if [ ! -z "$ETH" ]; then
       ETHIP=`sudo ip addr list $ETH |grep 'inet ' |cut -d' ' -f6|cut -d/ -f1|cut -d'.' -f1-3`
@@ -24,7 +24,7 @@ if [ $NFS_e = "enabled" ]; then
     sudo sed -i -e 's/\([0-9]\{1,3\}\.\)\{2\}[0-9]\{1,3\}\./'${ETHIP}'\./' /etc/exports 2>&1
   fi
 fi
-if [[ $EXIM4_e = "enabled" ]]; then
+if [[ $EXIM4_e == "enabled" ]]; then
   sudo systemctl restart nfs-server;
 fi
 echo ""

@@ -5,36 +5,14 @@
   become_user: root
   become: true
 
-  vars:
-    knxd:
-      ["git-core",
-      "build-essential",
-      "dh-systemd",
-      "autoconf",
-      "libtool",
-      "libusb-1.0-0-dev",
-      "pkg-config",
-      "libsystemd-dev",
-      "libev-dev",
-      "cmake"]
-
   tasks:
-
-  - name: Install Prerequisites
-    apt:
-      name: "{{ item }}"
-      state: latest
-      update_cache: yes
-      install_recommends: yes
-    with_items: "{{ knxd }}"
-
   - name: Create deb-files directory
     file:
       path: /etc/deb-files/
       state: directory
       mode: 0755
 
-  - name: Copy deb files
+  - name: Copy knxd deb files
     copy:
       src: "{{ item }}"
       dest: /etc/deb-files/
@@ -81,15 +59,10 @@
       line: 'EIBD Log'
       mode: 0777
 
-  - name: knxd_deb
-    find:
-      paths: /etc/deb-files/
-      patterns: "knxd*_0.12*.deb"
-    register: knxd_files
-
   - name: Install knxd
-    apt: deb="{{ item.path }}" force=yes state=present
-    with_items: "{{ knxd_files.files }}"
+    apt:
+      name: knxd
+      state: latest
 
   - name: knxd conf add
     copy:

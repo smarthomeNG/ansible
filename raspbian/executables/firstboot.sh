@@ -48,6 +48,17 @@ else
 fi
 sudo echo ${RES} >> /var/log/firstboot.log
 
+
+FIRSTBOOT_e=$(systemctl is-enabled firstboot 2>&1 | tail -n 1) &> /dev/null
+x=1
+while [[ $FIRSTBOOT_e == "enabled" ]] && [ $x -le 10 ]; do
+  sudo echo "Disabling firstboot Service" >> /var/log/firstboot.log;
+  sudo systemctl disable firstboot
+  sudo sleep 2;
+  FIRSTBOOT_e=$(systemctl is-enabled firstboot 2>&1 | tail -n 1) &> /dev/null
+  x=$(( $x + 1 ));
+done
+
 if [ -f /etc/ssh/ssh_host_dsa_key ]; then
     RES='Deleting existing SSH host keys.'
     rm /etc/ssh/ssh_host_*
@@ -71,6 +82,6 @@ RES='Created new SSH host keys. Copy /etc/ssh/ssh_host_rsa_key to your client an
 sudo echo ${RES} >> /var/log/firstboot.log
 sudo raspi-config nonint do_expand_rootfs
 sudo partprobe
-RES='Expanded SD disk to full capacity'
+RES='Expanded SD disk to full capacity. Will reboot now.'
 sudo echo ${RES} >> /var/log/firstboot.log
-sudo systemctl disable firstboot.service
+sudo reboot
