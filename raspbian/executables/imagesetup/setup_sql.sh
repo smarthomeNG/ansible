@@ -16,7 +16,7 @@ sql_backupconfig () {
             echo "MySQL Backup is enabled."
             read -p "Please define the number of backups that should be kept in the folder: " backup_keep
         done
-        sudo sed -i 's/'MAXKEEP=[0-9]*'/'MAXKEEP="$backup_keep"'/1' /etc/cron.hourly/mysql_backup
+        sudo sed -i 's/'days_of_backups=[0-9]*'/'days_of_backups="$backup_keep"'/1' /etc/cron.hourly/mysql_backup
         echo "MySQL Backup will keep the latest ${backup_keep} backups."
     fi
 }

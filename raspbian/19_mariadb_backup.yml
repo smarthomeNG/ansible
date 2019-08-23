@@ -1,0 +1,35 @@
+---
+- name: Install Mariadb Backup
+  hosts: all
+  remote_user: root
+  become_user: root
+  become: true
+
+  tasks:
+  - name: Install backup
+    apt:
+      name: mariadb-backup
+      
+  - name: Copy script
+    copy:
+      src: executables/mysql_restore.sh
+      dest: /opt/mysql_restore
+      mode: 0775
+      owner: mysql
+      group: mysql
+
+  - name: Copy cron
+    copy:
+      src: executables/mysql_backup.sh
+      dest: /etc/cron.hourly/mysql_backup
+      mode: 0755
+      owner: mysql
+      group: mysql
+
+  - name: backupdir
+    file:
+      dest: /var/backups/mysql
+      owner: mysql
+      group: mysql
+      mode: 0770
+      state: directory

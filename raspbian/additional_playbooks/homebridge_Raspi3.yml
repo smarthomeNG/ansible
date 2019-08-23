@@ -17,6 +17,7 @@
 
   - name: Install npm
     apt: name=npm force=yes state=latest
+    ignore_errors: yes
 
   - name: Update npm
     command: npm install npm@latest -g

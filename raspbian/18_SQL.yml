@@ -69,28 +69,13 @@
       state: directory
 
   - name: conf
-    replace:
-      destfile: /etc/mysql/debian.cnf
-      regexp: "^password = (.*)"
-      replace: "password = smarthome"
-    ignore_errors: yes
-
-  - name: unbind
-    replace:
-      destfile: /etc/mysql/mariadb.conf.d/50-server.cnf
-      regexp: "^bind-address"
-      replace: "#bind-address"
-    ignore_errors: yes
-    
-  - name: configxtra
-    blockinfile:
-      path: "/etc/mysql/debian.cnf"
-      block: |
-        [mysqld]
-        skip-host-cache
-        skip-name-resolve
-    ignore_errors: yes
-
+    copy:
+      src: configs/mysql.cnf
+      dest: /etc/mysql/debian.cnf
+      owner: mysql
+      group: mysql
+      mode: 0644
+      
   - name: link conf
     file:
       src: /etc/mysql/debian.cnf
@@ -98,6 +83,13 @@
       owner: mysql
       group: mysql
       state: link
+
+  - name: unbind
+    replace:
+      destfile: /etc/mysql/mariadb.conf.d/50-server.cnf
+      regexp: "^bind-address"
+      replace: "#bind-address"
+    ignore_errors: yes
 
   - name: exec
     replace:
@@ -201,6 +193,10 @@
       owner: smarthome
       group: www-data
       state: link
+
+  - name: fix php7.3 problem
+    command: sudo sed -i "s/|\s*\((count(\$analyzed_sql_results\['select_expr'\]\)/| (\1)/g" /usr/share/phpmyadmin/libraries/sql.lib.php
+    ignore_errors: yes
 
   - name: Restart apache
     systemd: state=restarted name=apache2

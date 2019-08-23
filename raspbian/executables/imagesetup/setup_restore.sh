@@ -86,40 +86,14 @@ restore_influx() {
 restore_mysql() {
   sudo systemctl stop monit
   sudo systemctl stop mysql
-  SQLBASE=/$backupfolder/mysql
-  FOLDER=$SQLBASE'/'$(ls -tr $SQLBASE| tail -1 | tr -s ' ' | cut -f9- -d' ')'/INC'
-  mysqlbase=$(ls $FOLDER'/base_backup_'*'.tar' | tr -s ' ' | cut -f9- -d' ')
-  mysqlinc=$(ls $FOLDER/inc* -t | head -n 1 | tr -s ' ' | cut -f9- -d' ')
-  if [ -n "$mysqlinc" ]; then
-      echo "Incremental restore $mysqlinc of mysql is running."
-      echo ""
-      sudo pyxtrabackup-restore --base-archive=$mysqlbase --incremental-archive=$mysqlinc --user=root --uncompressed-archives | addate >> /$backupfolder/restore_log.txt
-      sudo chown mysql:mysql /var/lib/mysql -R | addate >> /$backupfolder/restore_log.txt 2>&1
-      sudo chmod 0770 /var/lib/mysql -R | addate >> /$backupfolder/restore_log.txt 2>&1
-      sudo systemctl restart mysql
-      echo "Restored incremental mysql database if no errors occured."
-  elif [ -n "$mysqlbase" ]; then
-      echo "Restore of mysql is running."
-      echo ""
-      sudo rm -rf /var/lib/mysql/* | addate >> /$backupfolder/restore_log.txt
-      sudo tar xvpf $mysqlbase -C /var/lib/mysql | addate >> /$backupfolder/restore_log.txt 2>&1
-      sudo chown mysql:mysql /var/lib/mysql -R | addate >> /$backupfolder/restore_log.txt 2>&1
-      sudo chmod 0770 /var/lib/mysql -R | addate >> /$backupfolder/restore_log.txt 2>&1
-      sudo systemctl restart mysql
-      echo "Restored mysql database if no errors occured."
-  else
-    echo ""
-	  echo "Folder not found. Please copy your mysql backup folder to the folder /$backupfolder."
-    echo "Folder not found. Please copy your mysql backup folder to the folder /$backupfolder." | addate >> /$backupfolder/restore_log.txt 2>&1
-    echo ""
-    select mysql in "Retry" "Skip"; do
-        case $mysql in
-            Retry) echo "Looking for file.."; echo ""; restore_mysql; break;;
-            Skip) echo "Skipping"; break;;
-            *) echo "Skipping"; break;;
-        esac
-    done
-  fi
+  unset backup_files
+  files=0
+  while [ "$files" != "0" ] || [[ ! "${backup_files}" =~ ".xbstream" ]]; do 
+	  read -p "Please define the folder that should be restored. Don't forget to add a '*.xbstream' at the end: " backup_files; 
+	  files=$(ls ${backup_files} 2> /dev/null | wc -l);
+  done
+  echo "Rebuilding backup files to folder '${PWD}/restore'. Please follow further steps later to restore the database completely"
+  sudo /opt/mysql_restore ${backup_files}
 }
 
 if [ -n "/$backupfolder" ]; then

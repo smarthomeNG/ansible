@@ -210,34 +210,11 @@ backup_all() {
 }
 
 backup_mysql() {
-  echo ""
-  defaultuser='root'
-  defaultpwd='smarthome'
-  read -p "Please provide the username of your database (default is $defaultuser): " USER
-  USER=${USER:=$defaultuser}
-  read -p "Please provide the password of your database (default is $defaultpwd): " PASSWORD
-  PASSWORD=${PASSWORD:=$defaultpwd}
-  FOLDER='/'$backupfolder'/mysql/'`date +"%Y%m%d"`'/INC'
-  echo "Backup of mysql is saved in /$backupfolder/mysql/. Please make sure there is enough free diskspace."
-  echo "Connecting to database with user $USER and password $PASSWORD. This might take a long time - be patient."
-  sudo mkdir /$backupfolder >/dev/null 2>&1
-  sudo mkdir /$backupfolder/mysql | adddate >> /$backupfolder/backup_log.txt 2>&1
-  sudo systemctl start mysql | adddate >> /$backupfolder/backup_log.txt 2>&1
-  if [ -d "$FOLDER" ]; then
-    if test -n "$(find ${FOLDER} -maxdepth 1 -name 'base*' -print -quit)"; then
-      echo "Creating incremental backup in existing folder $FOLDER" | adddate &>> /$backupfolder/backup_log.txt 2>&1
-      /usr/local/bin/pyxtrabackup-inc /$backupfolder/mysql/ --user=$USER --password=$PASSWORD --no-compress --incremental | adddate &>> /$backupfolder/backup_log.txt 2>&1
-    else
-      echo "Creating full backup in existing folder $FOLDER" | adddate &>> /$backupfolder/backup_log.txt 2>&1
-      /usr/local/bin/pyxtrabackup-inc /$backupfolder/mysql/ --user=$USER --password=$PASSWORD --no-compress | adddate &>> /$backupfolder/backup_log.txt 2>&1
-    fi
-  else
-    echo "Creating new backup in newly created folder" | adddate &>> /$backupfolder/backup_log.txt 2>&1
-    /usr/local/bin/pyxtrabackup-inc /$backupfolder/mysql/ --user=$USER --password=$PASSWORD --no-compress | adddate &>> /$backupfolder/backup_log.txt 2>&1
-  fi
-  echo ""
-  echo "Backup finished. Please copy the complete mysql folder from /$backupfolder to your external backup disk."
-  echo "Backup finished. Please copy the complete mysql folder from /$backupfolder to your external backup disk." | adddate >> /$backupfolder/backup_log.txt 2>&1
+  echo "Running mariadb-backup now. Check the file /etc/cron.hourly/mysql_backup for the target directory"
+  echo "Running mariadb-backup now. Check the file /etc/cron.hourly/mysql_backup for the target directory" | adddate >> /$backupfolder/backup_log.txt 2>&1
+  sudo /etc/cron.hourly/mysql_backup
+  echo "Backup finished. Please copy the relevant folder to your external backup disk."
+  echo "Backup finished. Please copy the relevant to your external backup disk." | adddate >> /$backupfolder/backup_log.txt 2>&1
 
 }
 
