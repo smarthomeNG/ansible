@@ -35,8 +35,8 @@ if [[ $RUNBACKUPS == True ]] && (command -v /usr/bin/mariabackup > /dev/null 2>&
 	
 	sanity_check () {
 		# Check user running the script
-		if [ "$(id --user --name)" != "$backup_owner" ] && [ "${USER}" != "root" ]; then
-			error "Script can only be run as the \"$backup_owner\" user"
+		if [ "$(id --user --name)" != "$backup_owner" ]; then
+				exec sudo -H -u ${backup_owner} $0 "$@"
 		fi
 
 	}
@@ -79,7 +79,7 @@ if [[ $RUNBACKUPS == True ]] && (command -v /usr/bin/mariabackup > /dev/null 2>&
 	take_backup () {
 		# Make sure today's backup directory is available and take the actual backup
 		mkdir -p "${todays_dir}"
-		find "${todays_dir}" -type f -name "*.incomplete" -delete
+		cd /var/log/mysql/ && find "${todays_dir}" -type f -name "*.incomplete" -delete
 		mariabackup "${mariabackup_args[@]}" --target-dir="${todays_dir}" > "${todays_dir}/${backup_type}-${now}.xbstream.incomplete" 2>> $log_file
 
 		mv "${todays_dir}/${backup_type}-${now}.xbstream.incomplete" "${todays_dir}/${backup_type}-${now}.xbstream"
