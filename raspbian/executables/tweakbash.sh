@@ -1,5 +1,5 @@
 #!/bin/bash
-PATH=$PATH:/usr/lib/knxd:/opt/susvd:/opt/:/opt/setup:/usr/local/xtrabackup/bin
+PATH=$PATH:/usr/lib/knxd:/opt/susvd:/opt/:/opt/setup:/home/smarthome/.local/bin
 export MAKEFLAGS="-j 4"
 
 # Color Tweaks
