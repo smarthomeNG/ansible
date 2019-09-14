@@ -82,11 +82,11 @@ if [ $py = "Update" ]; then
   echo "Updating SmarthomeNG requirements"
   sudo /usr/local/smarthome/tools/build_requirements.py
   echo "Updating all modules except scipy (as there are huge problems with the update)"
-  sudo pip3 install --upgrade pip
-  sudo pip3 freeze --local | sed '/scipy.*/d' | sed '/zwave.*/d' | sed -rn 's/^([^=# \t\\][^ \t=]*)=.*/echo; echo Processing \1 ...; pip3 install -U \1/p' |sh
-  #sudo pip3 freeze --local | sed -rn 's/^([^=# \t\\][^ \t=]*)=.*/echo; echo Processing \1 ...; pip3 install -U \1/p' |sh
+  pip3 install --user --upgrade pip
+  pip3 freeze --local | sed '/scipy.*/d' | sed '/zwave.*/d' | sed -rn 's/^([^=# \t\\][^ \t=]*)=.*/echo; echo Processing \1 ...; pip3 install  --user -U \1/p' |sh
+  SCIPY_VERSION=$(pip3 list|grep scipy|awk '{print $2}')
   echo "Reverting modules to SmarthomeNG requirements"
-  #sudo sed -i 's/pyatv==0.3.9/#pyatv==0.3.9/g' /usr/local/smarthome/requirements/all.txt 2>&1
-  sudo pip3 install --upgrade -r /usr/local/smarthome/requirements/all.txt
+  sudo sed -i 's/'scipy.*'/scipy>='${SCIPY_VERSION}',<='${SCIPY_VERSION}'/g' /usr/local/smarthome/requirements/all.txt 2>&1
+  pip3 install --user --upgrade -r /usr/local/smarthome/requirements/all.txt
 fi
 echo "Finished Updating"
