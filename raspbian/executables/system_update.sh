@@ -1,6 +1,6 @@
 #!/bin/bash
 echo "Updating System Packages"
-sudo apt-get update 
+sudo apt-get update
 sudo apt-get dist-upgrade
 echo "Do you want to update SmarthomeNG?"
 echo "WARNING: Any changes to the source code/plugins you made manually are lost. Back them up now and proceed later."
@@ -61,13 +61,13 @@ select sv in "Update" "Skip"; do
     esac
 done
 if [ $sv = "Update" ]; then
-  echo 'Updating smartVISU2.9 Develop'
-  cd /var/www/html/smartVISU2.9
+  echo 'Updating smartvisu Develop'
+  cd /var/www/html/smartvisu
   sudo git pull origin develop
-  sudo touch /var/www/html/smartVISU2.9/config.ini
-  sudo chown smarthome:www-data /var/www/html/smartVISU2.9 -R
-  sudo chmod 0775 /var/www/html/smartVISU2.9 -R
-  sudo chmod 0660 /var/www/html/smartVISU2.9/config.ini
+  sudo touch /var/www/html/smartvisu/config.ini
+  sudo chown smarthome:www-data /var/www/html/smartvisu -R
+  sudo chmod 0775 /var/www/html/smartvisu -R
+  sudo chmod 0660 /var/www/html/smartvisu/config.ini
 fi
 echo "Do you want to update Python Modules?"
 py="Skip"
@@ -82,11 +82,13 @@ if [ $py = "Update" ]; then
   echo "Updating SmarthomeNG requirements"
   sudo /usr/local/smarthome/tools/build_requirements.py
   echo "Updating all modules except scipy (as there are huge problems with the update)"
-  pip3 install --user --upgrade pip
-  pip3 freeze --local | sed '/scipy.*/d' | sed '/zwave.*/d' | sed -rn 's/^([^=# \t\\][^ \t=]*)=.*/echo; echo Processing \1 ...; pip3 install  --user -U \1/p' |sh
-  SCIPY_VERSION=$(pip3 list|grep scipy|awk '{print $2}')
+  echo "Change to user smarthome"
+
+  runuser -l smarthome -c "pip3 install --user --upgrade pip"
+  runuser -l smarthome -c "pip3 freeze --local" | sed '/scipy.*/d' | sed '/zwave.*/d' | sed -rn 's/^([^=# \t\\][^ \t=]*)=.*/echo; echo Processing \1 ...; runuser -l smarthome -c "pip3 install  --user -U \1"/p' |sh
+  SCIPY_VERSION=$(runuser -l smarthome -c "pip3 list"|grep scipy|awk '{print $2}')
   echo "Reverting modules to SmarthomeNG requirements"
-  sudo sed -i 's/'scipy.*'/scipy>='${SCIPY_VERSION}',<='${SCIPY_VERSION}'/g' /usr/local/smarthome/requirements/all.txt 2>&1
-  pip3 install --user --upgrade -r /usr/local/smarthome/requirements/all.txt
+  sudo sed -i 's/'scipy.*'/scipy>='${SCIPY_VERSION}',<='${SCIPY_VERSION}'/g' /usr/local/smarthome/requirements/conf_all.txt 2>&1
+  runuser -l smarthome -c "pip3 install --user --upgrade -r /usr/local/smarthome/requirements/conf_all.txt"
 fi
 echo "Finished Updating"

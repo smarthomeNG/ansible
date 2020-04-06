@@ -46,8 +46,9 @@ select wlan in "Setup" "Skip"; do
     esac
 done
 
+HOST=$(hostname)
 echo ""
-echo "Do you want to change the hostname of your Raspi or keep SmarthomeNG?"
+echo "Do you want to change the hostname of your Raspi or keep $HOST?"
 select name in "Change" "Skip"; do
     case $name in
         Change ) echo "Changing hostname..."; break;;
@@ -75,8 +76,10 @@ if [[ -n ${swapsize//[0-9]/} || $swapsize == 0 ]]; then
     echo "Swapping is disabled."
     sudo dphys-swapfile swapoff
     sudo systemctl disable dphys-swapfile
+	sudo rm /var/swap
 else
     sudo systemctl stop dphys-swapfile
+	sudo /sbin/dphys-swapfile setup
     sudo sed -i 's/'CONF_SWAPSIZE=[[:space:]]*[[:digit:]]*'/'CONF_SWAPSIZE=''${swapsize}'/g' /etc/dphys-swapfile 2>&1
     sleep 3
     sudo dphys-swapfile swapon
