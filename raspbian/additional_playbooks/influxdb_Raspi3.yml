@@ -12,6 +12,12 @@
       state: latest
       update_cache: yes
 
+  - name: Install client
+    apt:
+      name: influxdb-client
+      state: latest
+      update_cache: yes
+
   - name: Install python
     pip:
       name: influxdb

@@ -12,13 +12,6 @@
   - name: Install Avahi-Utils
     apt: name=avahi-utils force=no state=latest update_cache=yes
 
-  - name: Install NodeJS
-    apt: name=nodejs force=yes state=latest update_cache=yes
-
-  - name: Install npm
-    apt: name=npm force=yes state=latest
-    ignore_errors: yes
-
   - name: Update npm
     command: npm install npm@latest -g
 
@@ -30,7 +23,7 @@
   - name: Rebuild npm
     shell: npm rebuild
     args:
-      chdir: /usr/local/lib/node_modules/homebridge
+      chdir: /usr/lib/node_modules/homebridge
     register: rebuildnpm
     ignore_errors: true
   - debug: var=rebuildnpm
@@ -48,21 +41,12 @@
 
   - name: Install people
     shell: npm install -g homebridge-people
-    register: npm
-
-  - debug: var=npm
 
   - name: Install Forever
     shell: npm install -g forever
-    register: npm
-
-  - debug: var=npm
 
   - name: Install Plugin
     shell: npm install -g homebridge-smarthomeng --unsafe-perm
-    register: npm
-
-  - debug: var=npm
 
   - name: dir
     file:
