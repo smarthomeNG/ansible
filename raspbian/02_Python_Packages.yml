@@ -13,6 +13,7 @@
       "python3-wheel",
       "python3-setuptools",
       "python-six",
+      "enum34",
       "python-idna"
       ]
 
@@ -24,6 +25,7 @@
 
     pythoninstall:
       ["RPi.GPIO",
+      "pgen",
       "requests",
       "pymodbus",
       "pymysql",
@@ -34,11 +36,34 @@
       "yolk3k",
       "snmp",
       "knxPython",
-      "spur"
+      "spur",
+      "python-miio"
       ]
 
 
   tasks:
+  - name: Create Group
+    group:
+      name: smarthome
+      state: present
+
+  - name: Create User
+    user:
+      name: smarthome
+      shell: /bin/bash
+      groups: smarthome
+      append: no
+      update_password: always
+      password: ""
+      comment: 'SmarthomeNG User'
+
+  - name: Groups
+    user:
+      name: smarthome
+      shell: /bin/bash
+      groups: www-data, sudo, i2c, adm, audio, video, plugdev, input, netdev, spi, gpio, dialout
+      append: yes
+
   - name: remove apt
     apt:
       name: "{{ item }}"
@@ -94,8 +119,9 @@
       name: "{{ item }}"
       executable: pip3
       state: latest
+      extra_args: --user
     become: true
-    become_user: root
+    become_user: smarthome   
     with_items: "{{ pythoninstall }}"
 
   - name: pygobjectfiles

@@ -37,7 +37,8 @@
       "snmpd",
       "snmp",
       "fake-hwclock",
-      "libudev-dev"
+      "libudev-dev",
+      "libkrb5-dev"
       ]
 
 
@@ -87,6 +88,14 @@
       regexp: '"gb"'
       replace: '"de"'
     ignore_errors: yes
+
+  - name: wpasupplicant
+    copy:
+      src: configs/wpa_supplicant.conf
+      dest: /etc/wpa_supplicant/wpa_supplicant.conf
+      mode: 0644
+      owner: root
+      group: root
 
   - name: crda
     replace:
@@ -324,7 +333,7 @@
   - name: hosts public
     replace:
       destfile: /etc/hosts
-      regexp: "^127.0.[0-1].1\traspberrypi"
+      regexp: "^127.0.[0-1].1(.*)raspberrypi"
       replace: "127.0.0.1\tSmartHomeNG"
     ignore_errors: yes
 

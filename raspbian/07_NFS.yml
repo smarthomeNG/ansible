@@ -9,6 +9,28 @@
     new: '0/24'
 
   tasks:
+  - name: Create Group
+    group:
+      name: smarthome
+      state: present
+
+  - name: Create User
+    user:
+      name: smarthome
+      shell: /bin/bash
+      groups: smarthome
+      append: no
+      update_password: always
+      password: ""
+      comment: 'SmarthomeNG User'
+
+  - name: Groups
+    user:
+      name: smarthome
+      shell: /bin/bash
+      groups: www-data, sudo, i2c, adm, audio, video, plugdev, input, netdev, spi, gpio, dialout
+      append: yes
+   
   - name: Install NFS
     apt: name=nfs-kernel-server force=no state=latest
 
@@ -52,8 +74,8 @@
     with_items:
       - '/usr/local/smarthome {{ NewIP }}(no_subtree_check,rw,async,no_wdelay,crossmnt,insecure,no_root_squash,sec=sys,all_squash,anonuid={{ smarthomeuid.stdout }},anongid={{ smarthomegid.stdout }}) 10.8.0.0/24(no_subtree_check,rw,async,no_wdelay,crossmnt,insecure,no_root_squash,sec=sys,all_squash,anonuid={{ smarthomeuid.stdout }},anongid={{ smarthomegid.stdout }})'
       - '/var/log {{ NewIP }}(no_subtree_check,rw,async,no_wdelay,crossmnt,insecure,no_root_squash,sec=sys,all_squash,anonuid=0,anongid=0) 10.8.0.0/24(no_subtree_check,rw,async,no_wdelay,crossmnt,insecure,no_root_squash,sec=sys,all_squash,anonuid=0,anongid=0)'
-      - '/var/www/html/smartVISU {{ NewIP }}(no_subtree_check,rw,async,no_wdelay,crossmnt,insecure,no_root_squash,sec=sys,all_squash,anonuid={{ smarthomeuid.stdout }},anongid={{ wwwgid.stdout }}) 10.8.0.0/24(no_subtree_check,rw,async,no_wdelay,crossmnt,insecure,no_root_squash,sec=sys,all_squash,anonuid={{ smarthomeuid.stdout }},anongid={{ wwwgid.stdout }})'
-      - '/var/www/html/smartVISU2.9 {{ NewIP }}(no_subtree_check,rw,async,no_wdelay,crossmnt,insecure,no_root_squash,sec=sys,all_squash,anonuid={{ smarthomeuid.stdout }},anongid={{ wwwgid.stdout }}) 10.8.0.0/24(no_subtree_check,rw,async,no_wdelay,crossmnt,insecure,no_root_squash,sec=sys,all_squash,anonuid={{ smarthomeuid.stdout }},anongid={{ wwwgid.stdout }})'
+      - '/var/www/html/smartvisu2.8 {{ NewIP }}(no_subtree_check,rw,async,no_wdelay,crossmnt,insecure,no_root_squash,sec=sys,all_squash,anonuid={{ smarthomeuid.stdout }},anongid={{ wwwgid.stdout }}) 10.8.0.0/24(no_subtree_check,rw,async,no_wdelay,crossmnt,insecure,no_root_squash,sec=sys,all_squash,anonuid={{ smarthomeuid.stdout }},anongid={{ wwwgid.stdout }})'
+      - '/var/www/html/smartvisu {{ NewIP }}(no_subtree_check,rw,async,no_wdelay,crossmnt,insecure,no_root_squash,sec=sys,all_squash,anonuid={{ smarthomeuid.stdout }},anongid={{ wwwgid.stdout }}) 10.8.0.0/24(no_subtree_check,rw,async,no_wdelay,crossmnt,insecure,no_root_squash,sec=sys,all_squash,anonuid={{ smarthomeuid.stdout }},anongid={{ wwwgid.stdout }})'
       - '/var/www/html {{ NewIP }}(no_subtree_check,rw,async,no_wdelay,crossmnt,insecure,no_root_squash,sec=sys,all_squash,anonuid={{ wwwuid.stdout }},anongid={{ wwwgid.stdout }}) 10.8.0.0/24(no_subtree_check,rw,async,no_wdelay,crossmnt,insecure,no_root_squash,sec=sys,all_squash,anonuid={{ wwwuid.stdout }},anongid={{ wwwgid.stdout }})'
       - '/home/smarthome {{ NewIP }}(no_subtree_check,rw,async,no_wdelay,crossmnt,insecure,no_root_squash,sec=sys,all_squash,anonuid={{ smarthomeuid.stdout }},anongid={{ smarthomegid.stdout }}) 10.8.0.0/24(no_subtree_check,rw,async,no_wdelay,crossmnt,insecure,no_root_squash,sec=sys,all_squash,anonuid={{ smarthomeuid.stdout }},anongid={{ smarthomegid.stdout }})'
 

@@ -64,6 +64,11 @@
       name: knxd
       state: latest
 
+  - name: Install knxdtools
+    apt:
+      name: knxd-tools
+      state: latest
+
   - name: knxd conf add
     copy:
       src: configs/knxd.conf

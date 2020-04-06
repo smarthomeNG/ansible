@@ -6,7 +6,28 @@
   become: true
 
   tasks:
+  - name: Create Group
+    group:
+      name: smarthome
+      state: present
 
+  - name: Create User
+    user:
+      name: smarthome
+      shell: /bin/bash
+      groups: smarthome
+      append: no
+      update_password: always
+      password: ""
+      comment: 'SmarthomeNG User'
+
+  - name: Groups
+    user:
+      name: smarthome
+      shell: /bin/bash
+      groups: www-data, sudo, i2c, adm, audio, video, plugdev, input, netdev, spi, gpio, dialout
+      append: yes
+      
   - name: Install openvpn
     apt: name=openvpn force=no state=latest install_recommends=yes
 
