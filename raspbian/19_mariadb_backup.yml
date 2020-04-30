@@ -9,7 +9,7 @@
   - name: Install backup
     apt:
       name: mariadb-backup
-      
+
   - name: Copy script
     copy:
       src: executables/mysql_restore.sh
@@ -17,6 +17,14 @@
       mode: 0775
       owner: mysql
       group: mysql
+
+  - name: mybackup_cnf
+    copy:
+      src: configs/mysql.cnf
+      dest: /etc/mysql/backup-my.cnf
+      owner: mysql
+      group: mysql
+      mode: 0644
 
   - name: Copy cron
     copy:

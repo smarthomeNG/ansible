@@ -35,12 +35,12 @@
       shell: /bin/bash
       groups: www-data, sudo, i2c, adm, audio, video, plugdev, input, netdev, spi, gpio, dialout
       append: yes
-  
+
   - name: avoid service start
     file:
       path: /usr/sbin/rc-policy.d
       state: touch
-        
+
   - name: install apt
     apt:
       name: "{{ item }}"
@@ -55,11 +55,27 @@
       owner: smarthome
       group: smarthome
 
+  - name: create systemd dir
+    file:
+      path: /etc/systemd/system/owserver.service.d/
+      state: directory
+
+  - name: Copy service_conf
+    copy:
+      src: configs/service_onewire_fix.conf
+      dest: /etc/systemd/system/owserver.service.d/
+      owner: smarthome
+      group: smarthome
+      mode: 0644
+
   - name: disable onewire
     systemd: enabled=no name=owserver.service
 
   - name: disable owhttpd
     systemd: enabled=no name=owhttpd.service
+
+  - name: disable owftpd
+    systemd: enabled=no name=owftpd.service
 
   - name: remove file
     file:

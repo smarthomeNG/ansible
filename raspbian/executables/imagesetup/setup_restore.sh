@@ -25,7 +25,7 @@ restore_all() {
       echo "Generating locales and setting standard language now (is active after logout and login)"
       sudo locale-gen
       currentlang=$(cat /$backupfolder/locales.txt | tail -n1)
-      update-locale LANG=$currentlang
+      sudo update-locale LANG=$currentlang
       echo ""
       echo "Activating services now..."
       while read p; do
@@ -88,8 +88,8 @@ restore_mysql() {
   sudo systemctl stop mysql
   unset backup_files
   files=0
-  while [ "$files" != "0" ] || [[ ! "${backup_files}" =~ ".xbstream" ]]; do 
-	  read -p "Please define the folder that should be restored. Don't forget to add a '*.xbstream' at the end: " backup_files; 
+  while [ "$files" != "0" ] || [[ ! "${backup_files}" =~ ".xbstream" ]]; do
+	  read -p "Please define the folder that should be restored. Don't forget to add a '*.xbstream' at the end: " backup_files;
 	  files=$(ls ${backup_files} 2> /dev/null | wc -l);
   done
   echo "Rebuilding backup files to folder '${PWD}/restore'. Please follow further steps later to restore the database completely"

@@ -27,7 +27,7 @@
       shell: /bin/bash
       groups: www-data, sudo, i2c, adm, audio, video, plugdev, input, netdev, spi, gpio, dialout
       append: yes
-      
+
   - name: Install mysql server
     apt: name=mariadb-server force=no state=latest install_recommends=yes update_cache=yes
 
@@ -97,7 +97,7 @@
       owner: mysql
       group: mysql
       mode: 0644
-      
+
   - name: link conf
     file:
       src: /etc/mysql/debian.cnf
@@ -208,18 +208,17 @@
     register: a2enconf
   - debug: var=a2enconf
 
-  - name: phplink
-    file:
-      src: /usr/share/phpmyadmin
-      dest: /var/www/html/phpmyadmin
-      owner: smarthome
-      group: www-data
-      state: link
-
   - name: fix php7.3
     command: sed -i "s/|\s*\((count(\$analyzed_sql_results\['select_expr'\]\)/| (\1)/g" /usr/share/phpmyadmin/libraries/sql.lib.php
     become: true
     become_user: root
+    ignore_errors: yes
+
+  - name: fixpart2
+    replace:
+      destfile: /usr/share/phpmyadmin/libraries/plugin_interface.lib.php
+      regexp: "if ($options != null && count($options) > 0) {"
+      replace: "if ($options != null && count((array)$options) > 0) {"
     ignore_errors: yes
 
   - name: Restart apache

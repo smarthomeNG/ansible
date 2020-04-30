@@ -256,13 +256,6 @@
       line: 'i2c-bcm2708'
     when: test_grep2.stdout == ""
 
-  - name: Root Password to root
-    user:
-      name: root
-      shell: /bin/bash
-      update_password: always
-      password: $6$VVOVNwyHjK4u$yia53qHOkybIY1u9umm5pThwAeV0OPt5N0WTZnWhqPMygdWHvibStfgngOqWVQmhSi30Szn9tLNn/zjkiwl.11
-
   - name: Create sh Group
     group:
       name: smarthome
@@ -480,6 +473,12 @@
 
   - name: rsyslog
     systemd: state=restarted name=rsyslog.service
+
+  - name: Country Wifi
+    shell: iw reg set DE
+
+  - name: Unblock Wifi
+    shell: rfkill unblock 0
 
   - name: Copy Update script
     copy:

@@ -1,7 +1,7 @@
 #!/bin/bash
 NODERED_e=$(systemctl is-enabled nodered 2>&1 | tail -n 1)&> /dev/null
 echo ""
-echo "NODERED: Auto restart system on overload (currently $NODERED_e)"
+echo "NODERED: visual programming tool for wiring up devices (currently $NODERED_e)"
 select nodered in "Enable" "Disable" "Skip"; do
     case $nodered in
         Enable ) sudo systemctl enable nodered; sudo systemctl restart nodered; break;;

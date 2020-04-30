@@ -55,8 +55,8 @@
 
   - name: pause
     pause:
-      seconds: 10
-      
+      seconds: 20
+
   - name: datasource1
     uri:
       url: http://{{ hostvars[inventory_hostname]['ansible_default_ipv4']['address'] }}/grafana/api/datasources/name/smarthome
@@ -153,7 +153,6 @@
       status_code: 200
       body_format: json
       force_basic_auth: yes
-      HEADER_Content-Type: "application/json"
     with_items: "{{ dashboards }}"
     register: db
     ignore_errors: yes
@@ -166,5 +165,5 @@
       user: "smarthome"
       password: "smarthome"
       force_basic_auth: yes
-      HEADER_Content-Type: "application/json"
+      body_format: json
     ignore_errors: yes

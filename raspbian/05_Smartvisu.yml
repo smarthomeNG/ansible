@@ -33,8 +33,8 @@
       shell: /bin/bash
       groups: www-data, sudo, i2c, adm, audio, video, plugdev, input, netdev, spi, gpio, dialout
       append: yes
-      
-  - name: Git Smartvisu develop
+
+  - name: Git Smartvisu 2.9
     git:
       repo: 'https://github.com/Martin-Gleiss/smartvisu'
       dest: "{{ smartvisupath2 }}"
@@ -43,19 +43,22 @@
     register: git
   - debug: var=git
 
-  - name: Create dir
+  - name: Copy Smartvisu 2.8
+    unarchive:
+      remote_src: yes
+      src: https://github.com/Martin-Gleiss/smartvisu/releases/download/v2.8/smartvisu-v2.8_latest.zip
+      dest: /var/www/html
+
+  - name: Rename sv2.8
+    command: mv /var/www/html/smartvisu-master /var/www/html/smartvisu2.8
+
+  - name: Change dir
     file:
       path: /var/www/html/smartvisu2.8
       owner: smarthome
       group: www-data
       mode: 0775
       state: directory
-
-  - name: Copy Smartvisu 2.8
-    unarchive:
-      remote_src: yes
-      src: https://github.com/Martin-Gleiss/smartvisu/releases/download/v2.8/smartvisu-v2.8_latest.zip
-      dest: /var/www/html/smartvisu2.8
 
   - name: ignore perm2
     command: git config core.fileMode false chdir=/var/www/html/smartvisu

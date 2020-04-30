@@ -45,7 +45,7 @@
     become_user: smarthome
     become: true
     become_method: su
-    async: 4000
+    async: 1000
     poll: 0
     when: nodered_installed.stat.exists == False
     register: nodered_installer
@@ -55,6 +55,9 @@
     register: job_result
     until: job_result.finished
     retries: 80
+    become_user: smarthome
+    become: true
+    become_method: su
 
   - name: Copy service
     copy:

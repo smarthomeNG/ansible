@@ -19,6 +19,22 @@ shopt -u nullglob
 
 full_backup_dir="${full_dirs[0]}"
 
+sanity_check () {
+    # Check user running the script
+    if [ "${USER}" != "${backup_owner}" ] && [ "${USER}" != "root" ]; then
+        error "Script can only be run as the \"${backup_owner}\" user"
+    fi
+
+    # Check whether any arguments were passed
+    if [ "${number_of_args}" -lt 1 ] || [[ ! "${@}" =~ ".xbstream" ]]; then
+        error "Script requires at least one \".xbstream\" file as an argument."
+		error "Example command: mysql_restore /var/backups/mysql/$(date +%Y%m%d)/*.xbstream"
+    fi
+
+}
+
+sanity_check "$@"
+
 printf "Starting SQL Restore\n" | adddate > $log_file 2>&1
 
 # Use this to echo to standard error
@@ -30,19 +46,7 @@ error () {
 
 trap 'error "An unexpected error occurred.  Try checking the \"${log_file}\" file for more information."' ERR | adddate >> $log_file 2>&1
 
-sanity_check () {
-    # Check user running the script
-    if [ "${USER}" != "${backup_owner}" ] && [ "${USER}" != "root" ]; then
-        error "Script can only be run as the \"${backup_owner}\" user"
-    fi
-	
-    # Check whether any arguments were passed
-    if [ "${number_of_args}" -lt 1 ] || [[ ! "${@}" =~ ".xbstream" ]]; then
-        error "Script requires at least one \".xbstream\" file as an argument."
-		error "Example command: mysql_restore.sh /var/backups/mysql/$(date +%Y%m%d)/*.xbstream"
-    fi
 
-}
 
 do_extraction () {
 	files=$(ls ${@} 2> /dev/null | wc -l);
@@ -65,8 +69,8 @@ do_extraction () {
 
 				# Extract the directory structure from the backup file
 				mkdir --verbose -p "${restore_dir}" | adddate >> $log_file 2>&1
-				xbstream -x -C "${restore_dir}" < "${file}" | adddate >> $log_file 2>&1
-				
+				mbstream -x -C "${restore_dir}" < "${file}" | adddate >> $log_file 2>&1
+
 				mariabackup_args=(
 					"--parallel=${processors}"
 				)
@@ -102,7 +106,7 @@ prepare_backup () {
     mariabackup --prepare --target-dir="${full_backup_dir}" 2>> $log_file
 }
 
-sanity_check "$@" && do_extraction "$@" && prepare_backup "$@"
+do_extraction "$@" && prepare_backup "$@"
 
 ok_count="$(grep -c 'completed OK' "${log_file}")"
 
@@ -113,10 +117,10 @@ to verify before continuing.
 
 If everything looks correct, you can apply the restored files.
 
-First, stop MySQL 
+First, stop MySQL
 
         sudo systemctl stop mysql
-		
+
 Move or remove the contents of the MySQL data directory. Use one of the two commands:
 
         sudo mv /var/lib/mysql/ /tmp/
@@ -127,7 +131,7 @@ Then, recreate the data directory and copy the backup files, adjust permission a
         sudo mkdir /var/lib/mysql
         sudo mariabackup --copy-back --target-dir=${PWD}/$(basename "${full_backup_dir}")
         sudo chown -R mysql:mysql /var/lib/mysql
-        sudo find /var/lib/mysql -type d -exec chmod 750 {} \\;
+        sudo find /var/lib/mysql -type d -exec chmod 750 {} \;
         sudo systemctl start mysql
 		sudo mysql_upgrade --force
 		sudo rm ${PWD}/restore -R

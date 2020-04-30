@@ -20,7 +20,8 @@
       "yolk3k",
       "cython",
       "recommonmark",
-      "sphinx-rtd-theme"
+      "sphinx-rtd-theme",
+      "sphinx==2.4"
       ]
 
   tasks:
@@ -55,6 +56,20 @@
   - name: zwave
     pip:
       name: /opt/python_openzwave-0.4.19-cp37-cp37m-linux_armv7l.whl
+      executable: pip3
+      extra_args: --user
+    become: true
+    become_user: smarthome
+
+  - name: BluepyWheel
+    copy:
+      src: packages/bluepy-1.3.0-cp37-cp37m-linux_armv7l.whl
+      dest: /opt/bluepy-1.3.0-cp37-cp37m-linux_armv7l.whl
+      mode: 0777
+
+  - name: Bluepy
+    pip:
+      name: /opt/bluepy-1.3.0-cp37-cp37m-linux_armv7l.whl
       executable: pip3
       extra_args: --user
     become: true
@@ -131,24 +146,6 @@
   - name: sh ignore perm
     command: git config core.fileMode false chdir=/usr/local/smarthome/
 
-  - name: Copy logic yaml
-    copy:
-      remote_src: True
-      src: /usr/local/smarthome/etc/logic.yaml.default
-      dest: /usr/local/smarthome/etc/logic.yaml
-
-  - name: Copy smarthome yaml
-    copy:
-      remote_src: True
-      src: /usr/local/smarthome/etc/smarthome.yaml.default
-      dest: /usr/local/smarthome/etc/smarthome.yaml
-
-  - name: Copy logging yaml
-    copy:
-      remote_src: True
-      src: /usr/local/smarthome/etc/logging.yaml.default
-      dest: /usr/local/smarthome/etc/logging.yaml
-
   - name: Change requirements
     file:
       path: /usr/local/smarthome/tools/build_requirements.py
@@ -159,7 +156,7 @@
 
   - name: Install requirements
     pip:
-        requirements: /usr/local/smarthome/requirements/conf_all.txt
+        requirements: /usr/local/smarthome/requirements/base.txt
         executable: pip3
         state: latest
         extra_args: --user
@@ -190,7 +187,9 @@
     systemd: enabled=yes name=smarthome.service
 
   - name: List Modules
-    command: "yolk --list"
+    command: "su smarthome -c 'yolk --list'"
     register: pip3
     ignore_errors: yes
+    become: true
+    become_user: smarthome
   - debug: var=pip3
