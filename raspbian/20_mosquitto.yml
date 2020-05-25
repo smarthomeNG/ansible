@@ -6,18 +6,39 @@
   become: true
 
   tasks:
-  - name: Install paho-mqtt
-    pip: name=paho-mqtt executable=pip3
+  - name: Create Group
+    group:
+      name: smarthome
+      state: present
 
+  - name: Create User
+    user:
+      name: smarthome
+      shell: /bin/bash
+      groups: smarthome
+      append: no
+      update_password: always
+      password: ""
+      comment: 'SmarthomeNG User'
+
+  - name: Groups
+    user:
+      name: smarthome
+      shell: /bin/bash
+      groups: www-data, sudo, i2c, adm, audio, video, plugdev, input, netdev, spi, gpio, dialout
+      append: yes
+      
+  - name: Install paho-mqtt
+    pip:
+      name: paho-mqtt
+      executable: pip3
+      state: latest
+      extra_args: --user
+    become: true
+    become_user: smarthome
+    
   - name: Create deb-files directory
     file: path=/etc/deb-files/ state=directory mode=0755
-
-  - name: Copy deb files
-    copy:
-      src: "{{ item }}"
-      dest: /etc/deb-files/
-    with_fileglob:
-      - packages/mosquitto*
 
   - name: Create User
     user:

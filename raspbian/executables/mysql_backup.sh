@@ -23,6 +23,15 @@ if [[ $RUNBACKUPS == True ]] && (command -v /usr/bin/mariabackup > /dev/null 2>&
 	now="$(date +%m-%d-%Y_%H-%M-%S)"
 	processors="$(nproc --all)"
 
+  sanity_check () {
+    # Check user running the script
+    if [ "$(id --user --name)" != "$backup_owner" ]; then
+        exec sudo -H -u ${backup_owner} $0 "$@"
+    fi
+
+  }
+  sanity_check
+  
 	# Use this to echo to standard error
 	error () {
 		printf "%s: %s\n" "$(basename "${BASH_SOURCE}")" "${1}" | adddate >> $log_file 2>&1
@@ -32,14 +41,6 @@ if [[ $RUNBACKUPS == True ]] && (command -v /usr/bin/mariabackup > /dev/null 2>&
 
 	trap 'error "An unexpected error occurred."' ERR | adddate >> $log_file 2>&1
 	echo "MySQL Backup running." | adddate >> $log_file 2>&1
-	
-	sanity_check () {
-		# Check user running the script
-		if [ "$(id --user --name)" != "$backup_owner" ]; then
-				exec sudo -H -u ${backup_owner} $0 "$@"
-		fi
-
-	}
 
 	set_options () {
 		# List the mariabackup arguments
@@ -85,7 +86,7 @@ if [[ $RUNBACKUPS == True ]] && (command -v /usr/bin/mariabackup > /dev/null 2>&
 		mv "${todays_dir}/${backup_type}-${now}.xbstream.incomplete" "${todays_dir}/${backup_type}-${now}.xbstream"
 	}
 
-	sanity_check && set_options && rotate_old && take_backup
+	set_options && rotate_old && take_backup
 
 	# Check success and print message
 	if tail -1 "${log_file}" | grep -q "completed OK"; then

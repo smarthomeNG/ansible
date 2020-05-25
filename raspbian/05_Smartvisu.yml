@@ -7,58 +7,61 @@
 
   vars:
 
-    smartvisupath: /var/www/html/smartVISU
-    smartvisupath2: /var/www/html/smartVISU2.9
+    smartvisupath: /var/www/html/smartvisu2.8
+    smartvisupath2: /var/www/html/smartvisu
     htmlpath: /var/www/html
 
   tasks:
-  - name: Git Smartvisu develop
+  - name: Create Group
+    group:
+      name: smarthome
+      state: present
+
+  - name: Create User
+    user:
+      name: smarthome
+      shell: /bin/bash
+      groups: smarthome
+      append: no
+      update_password: always
+      password: ""
+      comment: 'SmarthomeNG User'
+
+  - name: Groups
+    user:
+      name: smarthome
+      shell: /bin/bash
+      groups: www-data, sudo, i2c, adm, audio, video, plugdev, input, netdev, spi, gpio, dialout
+      append: yes
+
+  - name: Git Smartvisu 2.9
     git:
       repo: 'https://github.com/Martin-Gleiss/smartvisu'
       dest: "{{ smartvisupath2 }}"
-      version: develop
-      force: yes
-    register: git
-  - debug: var=git
-
-  - name: Git Smartvisu master
-    git:
-      repo: 'https://github.com/Martin-Gleiss/smartvisu'
-      dest: "{{ smartvisupath }}"
       version: master
       force: yes
     register: git
   - debug: var=git
 
-  - name: ignore perm2
-    command: git config core.fileMode false chdir=/var/www/html/smartVISU
-
-  - name: ignore perm29
-    command: git config core.fileMode false chdir=/var/www/html/smartVISU2.9
-
-  - name: base-quad
+  - name: Copy Smartvisu 2.8
     unarchive:
-      src: configs/base_quad.tar
-      dest: /var/www/html/smartVISU2.9/pages/base/
-    register: quad
-  - debug: var=quad
+      remote_src: yes
+      src: https://github.com/Martin-Gleiss/smartvisu/releases/download/v2.8/smartvisu-v2.8_latest.zip
+      dest: /var/www/html
 
-  - name: pages-quad
-    unarchive:
-      src: configs/pages_quad.tar
-      dest: /var/www/html/smartVISU2.9/pages/
-    register: quad2
-  - debug: var=quad2
+  - name: Rename sv2.8
+    command: mv /var/www/html/smartvisu-master /var/www/html/smartvisu2.8
 
-  - name: Copy cover
-    copy:
-      src: configs/cover_empty.jpg
-      dest: /var/www/html/smartVISU2.9/pics
-      mode: 0660
+  - name: Change dir
+    file:
+      path: /var/www/html/smartvisu2.8
       owner: smarthome
       group: www-data
-    register: config
-  - debug: var=config
+      mode: 0775
+      state: directory
+
+  - name: ignore perm2
+    command: git config core.fileMode false chdir=/var/www/html/smartvisu
 
   - name: Change Owner
     file:

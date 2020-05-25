@@ -86,10 +86,18 @@ raspiversion=0
 case $raspi in
     a02082 ) raspiversion=3;;
     a22082 ) raspiversion=3;;
-    a01041 ) raspiversion=3;;
+    a020a0 ) raspiversion=3;;
+    a32082 ) raspiversion=3;;
+    a020d3 ) raspiversion=3;;
+    9020e0 ) raspiversion=3;;
+    a02100 ) raspiversion=3;; 
+    a03111 ) raspiversion=4;;
+    b03111 ) raspiversion=4;;
+    c03111 ) raspiversion=4;;
 esac
-if [[ $raspiversion == "3" ]]; then
-  echo "It looks like you have a Raspberry Pi Version 3. Installing InfluxDB"
+if [[ $raspiversion -ge "3" ]]; then
+  echo ""
+  echo "It looks like you have a Raspberry Pi Version 3 or higher. Installing InfluxDB"
   install_influxdb
 
 else

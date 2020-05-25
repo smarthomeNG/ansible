@@ -38,7 +38,7 @@
 
   - name: Copy easyrsa
     unarchive:
-      src: https://github.com/OpenVPN/easy-rsa/releases/download/v3.0.6/EasyRSA-unix-v3.0.6.tgz
+      src: https://github.com/OpenVPN/easy-rsa/releases/download/v3.0.7/EasyRSA-3.0.7.tgz
       dest: /etc/ssl/easy-rsa
       remote_src: yes
       validate_certs: False
@@ -270,6 +270,40 @@
       owner: smarthome
       group: www-data
       mode: 0770
+
+  - name: create php_systemd dir
+    file:
+      path: /etc/systemd/system/php7.3-fpm.service.d/
+      state: directory
+
+  - name: Copy php_service_conf
+    copy:
+      src: configs/service_php_directory.conf
+      dest: /etc/systemd/system/php7.3-fpm.service.d/
+      owner: www-data
+      group: www-data
+      mode: 0664
+
+  - name: create nginx_systemd dir
+    file:
+      path: /etc/systemd/system/nginx.service.d/
+      state: directory
+
+  - name: Copy service_conf
+    copy:
+      src: configs/service_nginx_fix.conf
+      dest: /etc/systemd/system/nginx.service.d/
+      owner: smarthome
+      group: smarthome
+      mode: 0664
+
+  - name: Copy dnsresolvers
+    copy:
+      src: executables/dnsresolvers.sh
+      dest: /opt/
+      owner: smarthome
+      group: smarthome
+      mode: 0777
 
   - name: Restart php
     systemd: state=restarted name=php7.3-fpm.service

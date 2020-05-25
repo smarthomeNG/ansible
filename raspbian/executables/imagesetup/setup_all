@@ -26,6 +26,7 @@ $OPT_FOLDER/setup_watchdog.sh
 $OPT_FOLDER/setup_openvpn.sh
 $OPT_FOLDER/setup_homebridge.sh
 $OPT_FOLDER/setup_influxdb.sh
+$OPT_FOLDER/setup_nodered.sh
 
 echo ""
 echo "SMARTHOME IMAGE setup is done. You can rerun this script at any time."

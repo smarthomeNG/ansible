@@ -14,6 +14,12 @@
       group: root
       mode: 0644
 
+  - name: conf
+    lineinfile:
+      path: /etc/lirc/lircd.conf
+      create: yes
+      line: 'include "lircd.conf.d/*.conf"'
+
   - name: Copy options
     copy:
       src: configs/lirc_options.conf
@@ -33,10 +39,26 @@
       src: packages/lirc_0.10.1-1_armhf.deb
       dest: /etc/deb-files/
 
+  - name: Create Group
+    group:
+      name: smarthome
+      state: present
+
+  - name: Create User
+    user:
+      name: smarthome
+      shell: /bin/bash
+      groups: smarthome
+      append: no
+      update_password: always
+      password: ""
+      comment: 'SmarthomeNG User'
+
   - name: Groups
     user:
       name: smarthome
-      groups: video
+      shell: /bin/bash
+      groups: www-data, sudo, i2c, adm, audio, video, plugdev, input, netdev, spi, gpio, dialout, video
       append: yes
 
   - name: Install

@@ -3,7 +3,7 @@ RSA_FOLDER=etc/ssl/easy-rsa
 KEY_FOLDER=etc/ssl/ca/
 backupfolder='home/smarthome/backup'
 sudo mkdir /$backupfolder >/dev/null 2>&1
-sudo touch $backupfolder/backup_log.txt 2>&1
+sudo touch /$backupfolder/backup_log.txt 2>&1
 
 adddate() {
     while IFS= read -r line; do
@@ -93,6 +93,7 @@ backup_all() {
 
   echo "Backed up ufw"
   sudo tar vprf $backupfolder/image_backup.tar etc/apt/apt.conf.d/20auto-upgrades | adddate_copy >> $backupfolder/backup_log.txt 2>&1
+  sudo tar vprf $backupfolder/image_backup.tar etc/hostname | adddate_copy >> $backupfolder/backup_log.txt 2>&1
   sudo tar vprf $backupfolder/image_backup.tar etc/hosts | adddate_copy >> $backupfolder/backup_log.txt 2>&1
   sudo tar vprf $backupfolder/image_backup.tar etc/dphys-swapfile | adddate_copy >> $backupfolder/backup_log.txt 2>&1
 
@@ -191,8 +192,8 @@ backup_all() {
   cleanup disabled 2>&1
   sudo mv /$backupfolder/enabled_new.txt /$backupfolder/enabled.txt 2>&1
   sudo mv /$backupfolder/disabled_new.txt /$backupfolder/disabled.txt 2>&1
-  sudo tar vprf $backupfolder/image_backup.tar $backupfolder/enabled.txt | adddate_copy >> $backupfolder/backup_log.txt 2>&1
-  sudo tar vprf $backupfolder/image_backup.tar $backupfolder/disabled.txt | adddate_copy >> $backupfolder/backup_log.txt 2>&1
+  sudo tar vprf $backupfolder/image_backup.tar $backupfolder/enabled.txt | adddate_copy >> /$backupfolder/backup_log.txt 2>&1
+  sudo tar vprf $backupfolder/image_backup.tar $backupfolder/disabled.txt | adddate_copy >> /$backupfolder/backup_log.txt 2>&1
   rm /$backupfolder/disabled.txt 2>&1
   rm /$backupfolder/enabled.txt 2>&1
   rm /$backupfolder/locales.txt 2>&1
@@ -210,6 +211,10 @@ backup_all() {
 }
 
 backup_mysql() {
+  if [ ! -f "$backupfolder/backup_log.txt" ]; then
+    sudo chown smarthome:users /$backupfolder -R
+    echo "Running mariadb-backup now." | adddate > /$backupfolder/backup_log.txt 2>&1
+  fi
   echo "Running mariadb-backup now. Check the file /etc/cron.hourly/mysql_backup for the target directory"
   echo "Running mariadb-backup now. Check the file /etc/cron.hourly/mysql_backup for the target directory" | adddate >> /$backupfolder/backup_log.txt 2>&1
   sudo /etc/cron.hourly/mysql_backup
@@ -219,10 +224,14 @@ backup_mysql() {
 }
 
 backup_influxdb() {
-    echo ""
-    echo "Backup of influxdb is running and stored to /$backupfolder/"; echo "";
-	sudo mkdir /$backupfolder >/dev/null 2>&1
-	sudo /usr/bin/influxd backup -portable -database smarthome /$backupfolder/influxdb | adddate >> $backupfolder/backup_log.txt 2>&1
+  echo ""
+  echo "Backup of influxdb is running and stored to /$backupfolder/"; echo "";
+  if [ ! -f "$backupfolder/backup_log.txt" ]; then
+    sudo chown smarthome:users /$backupfolder -R
+    echo "Backup of influxdb is running and stored to /$backupfolder/" | adddate > /$backupfolder/backup_log.txt 2>&1
+  fi
+
+	sudo /usr/bin/influxd backup -portable -database smarthome /$backupfolder/influxdb | adddate >> /$backupfolder/backup_log.txt 2>&1
 	cd /
 	if [ -z "$backupfolder/influxdb" ]; then
 		sudo tar vprf $backupfolder/influxdb_backup.tar $backupfolder/influxdb | adddate_copy >> /$backupfolder/backup_log.txt 2>&1

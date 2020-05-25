@@ -47,7 +47,7 @@ install_knxd() {
           case $knxd_install in
               $KNXD_o ) echo "Installing old version $KNXD_o"; knxd_old; break;;
               $KNXD_n) echo "Installing new version $KNXD_n"; knxd_new; break;;
-              $KNXD_buster) echo "Installing system version $KNXD_buster"; knxd_buster; break;;
+              $KNXD_buster) echo "Installing latest buster version $KNXD_buster"; knxd_buster; break;;
               Skip ) echo "Skipping knxd install"; break;;
               *) echo "Skipping knxd install"; break;;
           esac

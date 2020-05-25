@@ -6,6 +6,8 @@ After=knxd.socket
 
 [Service]
 Type=forking
+WorkingDirectory=/usr/local/smarthome
+TimeoutStartSec=900
 ExecStart=/usr/bin/python3 /usr/local/smarthome/bin/smarthome.py
 User=smarthome
 PIDFile=/usr/local/smarthome/var/run/smarthome.pid

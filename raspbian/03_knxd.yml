@@ -6,6 +6,16 @@
   become: true
 
   tasks:
+  - name: Create User
+    user:
+      name: smarthome
+      shell: /bin/bash
+      groups: www-data, sudo, i2c, adm, audio, video, plugdev, input, netdev, spi, gpio, dialout
+      append: yes
+      update_password: always
+      password: ""
+      comment: 'SmarthomeNG User'
+      
   - name: Create deb-files directory
     file:
       path: /etc/deb-files/
@@ -62,6 +72,11 @@
   - name: Install knxd
     apt:
       name: knxd
+      state: latest
+
+  - name: Install knxdtools
+    apt:
+      name: knxd-tools
       state: latest
 
   - name: knxd conf add
@@ -123,16 +138,6 @@
   - name: Restart knxd service
     systemd: state=restarted name=knxd.service daemon-reload=yes
     when: knxd_socket
-
-  - name: Create User
-    user:
-      name: smarthome
-      shell: /bin/bash
-      groups: www-data, sudo, i2c, adm, audio, video, plugdev, input, netdev, spi, gpio, dialout
-      append: yes
-      update_password: always
-      password: ""
-      comment: 'SmarthomeNG User'
 
   - name: chmod conf
     file:

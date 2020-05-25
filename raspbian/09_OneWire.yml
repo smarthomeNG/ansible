@@ -5,12 +5,47 @@
   become_user: root
   become: true
 
-  tasks:
-  - name: Install owserver
-    apt: name=owserver force=no state=latest
+  vars:
+    packages:
+      ["owserver",
+      "ow-shell",
+      "owhttpd",
+      "owftpd"
+      ]
 
-  - name: Install owhttpd
-    apt: name=owhttpd force=no state=latest
+  tasks:
+  - name: Create Group
+    group:
+      name: smarthome
+      state: present
+
+  - name: Create User
+    user:
+      name: smarthome
+      shell: /bin/bash
+      groups: smarthome
+      append: no
+      update_password: always
+      password: ""
+      comment: 'SmarthomeNG User'
+
+  - name: Groups
+    user:
+      name: smarthome
+      shell: /bin/bash
+      groups: www-data, sudo, i2c, adm, audio, video, plugdev, input, netdev, spi, gpio, dialout
+      append: yes
+
+  - name: avoid service start
+    file:
+      path: /usr/sbin/rc-policy.d
+      state: touch
+
+  - name: install apt
+    apt:
+      name: "{{ item }}"
+      state: latest
+    with_items: "{{ packages }}"
 
   - name: Copy conf
     copy:
@@ -20,8 +55,29 @@
       owner: smarthome
       group: smarthome
 
+  - name: create systemd dir
+    file:
+      path: /etc/systemd/system/owserver.service.d/
+      state: directory
+
+  - name: Copy service_conf
+    copy:
+      src: configs/service_onewire_fix.conf
+      dest: /etc/systemd/system/owserver.service.d/
+      owner: smarthome
+      group: smarthome
+      mode: 0644
+
   - name: disable onewire
     systemd: enabled=no name=owserver.service
 
   - name: disable owhttpd
     systemd: enabled=no name=owhttpd.service
+
+  - name: disable owftpd
+    systemd: enabled=no name=owftpd.service
+
+  - name: remove file
+    file:
+      path: /usr/sbin/rc-policy.d
+      state: absent
