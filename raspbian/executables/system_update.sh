@@ -60,15 +60,43 @@ select sv in "Update" "Skip"; do
         *) echo "Skipping"; break;;
     esac
 done
+
 if [ $sv = "Update" ]; then
-  echo 'Updating smartvisu Develop'
-  cd /var/www/html/smartvisu
-  sudo git pull origin develop
+  version=$(cd /var/www/html/smartvisu && git status |grep "[bB]ranch"|head -n1|awk -F' ' '{print $NF}')
+  echo "Do you want to update to the latest Master or Develop version?"
+  echo "WARNING: Any changes to the widgets, etc. you made manually are lost. Back them up now and proceed later."
+  echo "Currently $version is installed."
+  unset tree
+  select tree in "Master" "Develop"; do
+      case $tree in
+          "Master" ) break;;
+          "Develop" ) break;;
+          *) echo "Skipping"; break;;
+      esac
+  done
+  if [ $tree = "Develop" ]; then
+    echo 'Updating smartvisu to latest develop version'
+    cd /var/www/html/smartvisu
+    sudo git stash
+    sudo git checkout develop
+    sudo git pull origin develop
+  elif [ $tree = "Master" ]; then
+    echo 'Updating smartvisu to latest master version'
+    cd /var/www/html/smartvisu
+    sudo git stash
+    sudo git checkout master
+    sudo git pull origin master
+  fi
   sudo touch /var/www/html/smartvisu/config.ini
   sudo chown smarthome:www-data /var/www/html/smartvisu -R
-  sudo chmod 0775 /var/www/html/smartvisu -R
-  sudo chmod 0660 /var/www/html/smartvisu/config.ini
+  sudo find . -type d -exec chmod g+rwsx {} + 2>&1
+  sudo find . -type f -exec chmod g+r {} + 2>&1
+  sudo find . -name *.ini -exec chmod g+rw {} + 2>&1
+  sudo find . -name *.var -exec chmod g+rw {} + 2>&1
+  #sudo chmod 0775 /var/www/html/smartvisu -R
+  #sudo chmod 0660 /var/www/html/smartvisu/config.ini
 fi
+
 echo "Do you want to update Python Modules?"
 py="Skip"
 select py in "Update" "Skip"; do
