@@ -1,0 +1,13 @@
+---
+- name: ssh_noroot
+  hosts: all
+  remote_user: root
+  become_user: root
+  become: true
+
+  tasks:
+  - name: Change ssh
+    replace:
+      destfile: /etc/ssh/sshd_config
+      regexp: "PermitRootLogin yes"
+      replace: "#PermitRootLogin prohibit-password"

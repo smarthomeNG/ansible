@@ -1,0 +1,23 @@
+---
+- name: Tweaks
+  hosts: all
+  remote_user: root
+  become_user: root
+  become: true
+
+  tasks:
+  - name: Root Password to root
+    user:
+      name: root
+      shell: /bin/bash
+      update_password: always
+      password: $6$VVOVNwyHjK4u$yia53qHOkybIY1u9umm5pThwAeV0OPt5N0WTZnWhqPMygdWHvibStfgngOqWVQmhSi30Szn9tLNn/zjkiwl.11
+
+  - name: Change ssh
+    replace:
+      destfile: /etc/ssh/sshd_config
+      regexp: "#PermitRootLogin prohibit-password"
+      replace: "PermitRootLogin yes"
+
+  - name: Restart ssh
+    systemd: state=restarted name=ssh.service
