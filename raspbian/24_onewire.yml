@@ -46,6 +46,7 @@
       name: "{{ item }}"
       state: latest
     with_items: "{{ packages }}"
+    ignore_errors: yes
 
   - name: Copy conf
     copy:
