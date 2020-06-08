@@ -2,8 +2,6 @@
 RSA_FOLDER=etc/ssl/easy-rsa
 KEY_FOLDER=etc/ssl/ca/
 backupfolder='home/smarthome/backup'
-sudo mkdir /$backupfolder >/dev/null 2>&1
-sudo touch /$backupfolder/backup_log.txt 2>&1
 
 adddate() {
     while IFS= read -r line; do
@@ -47,6 +45,7 @@ cleanup() {
 backup_all() {
   cd /
   sudo mkdir /$backupfolder >/dev/null 2>&1
+  sudo chown smarthome:smarthome /$backupfolder >/dev/null 2>&1
   echo "Starting backup. Be patient."
   echo "Starting backup. Be patient." | adddate > $backupfolder/backup_log.txt 2>&1
   sudo tar vcpf $backupfolder/image_backup.tar $backupfolder/backup_log.txt | adddate_copy >> $backupfolder/backup_log.txt 2>&1
@@ -252,7 +251,7 @@ backup_overwrite() {
 	  echo "There seems to be an older backup existing. Previously created backups in $backupfolder will be overwritten. Are you sure?"
 	  select overwrite in "Overwrite" "Skip"; do
 		case $overwrite in
-			Overwrite ) echo "Backup is running."; echo ""; rm /$backupfolder/ -R; backup_all; break;;
+			Overwrite ) echo "Backup is running."; echo ""; sudo rm /$backupfolder/ -R; backup_all; break;;
 			Skip) echo "Skipping"; break;;
 			*) echo "Skipping"; break;;
 		esac
