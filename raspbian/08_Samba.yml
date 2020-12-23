@@ -79,6 +79,20 @@
       group: smarthome
       mode: 0644
 
+  - name: smbd service
+    replace:
+      destfile: /lib/systemd/system/smbd.service
+      regexp: "PIDFile=/var/run/samba/smbd.pid"
+      replace: "PIDFile=/run/samba/smbd.pid"
+    ignore_errors: yes
+
+  - name: nmbd service
+    replace:
+      destfile: /lib/systemd/system/nmbd.service
+      regexp: "PIDFile=/var/run/samba/nmbd.pid"
+      replace: "PIDFile=/run/samba/nmbd.pid"
+    ignore_errors: yes
+
   - name: Restart smbd
     systemd: state=restarted name=smbd
     notify: Enable smbd

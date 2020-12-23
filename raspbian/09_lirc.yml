@@ -31,14 +31,6 @@
   - name: Install xsltproc
     apt: name=xsltproc force=no state=latest install_recommends=yes
 
-  - name: Create deb-files directory
-    file: path=/etc/deb-files/ state=directory mode=0755
-
-  - name: Copy deb file
-    copy:
-      src: packages/lirc_0.10.1-1_armhf.deb
-      dest: /etc/deb-files/
-
   - name: Create Group
     group:
       name: smarthome
@@ -61,8 +53,48 @@
       groups: www-data, sudo, i2c, adm, audio, video, plugdev, input, netdev, spi, gpio, dialout, video
       append: yes
 
-  - name: Install
-    apt: name=lirc force=yes state=latest install_recommends=no
+  - name: Create deb-files directory
+    file: path=/etc/deb-files/ state=directory mode=0755
+
+  - name: Copy deb file
+    copy:
+      src: packages/lirc_0.10.1-1_armhf.deb
+      dest: /etc/deb-files/
+
+  - name: Copy deb lib
+    copy:
+      src: packages/liblirc0_0.10.1-6.2~deb10u1_armhf.deb
+      dest: /etc/deb-files/
+
+  - name: Copy deb client
+    copy:
+      src: packages/liblircclient0_0.10.1-6.2~deb10u1_armhf.deb
+      dest: /etc/deb-files/
+
+  - name: Copy deb patched
+    copy:
+      src: packages/lirc_0.10.1-6.2~deb10u1_armhf.deb
+      dest: /etc/deb-files/
+
+#  - name: Install
+#    apt: name=lirc force=yes state=latest install_recommends=no
+
+  - name: install liblirc
+    apt:
+      deb: /etc/deb-files/liblirc0_0.10.1-6.2~deb10u1_armhf.deb
+
+  - name: install liblircclient
+    apt:
+      deb: /etc/deb-files/liblircclient0_0.10.1-6.2~deb10u1_armhf.deb
+
+  - name: install lircpatched
+    apt:
+      deb: /etc/deb-files/lirc_0.10.1-6.2~deb10u1_armhf.deb
+
+  - name: Avoid automatic update
+    copy:
+      src: configs/apt_lirc.conf
+      dest: /etc/apt/preferences.d/lirc
 
   - name: create directory
     file:

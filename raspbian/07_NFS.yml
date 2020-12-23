@@ -30,7 +30,7 @@
       shell: /bin/bash
       groups: www-data, sudo, i2c, adm, audio, video, plugdev, input, netdev, spi, gpio, dialout
       append: yes
-   
+
   - name: Install NFS
     apt: name=nfs-kernel-server force=no state=latest
 
@@ -92,6 +92,13 @@
     ignore_errors: yes
     register: exportfs
   - debug: var=exportfs
+
+  - name: rpc service
+    replace:
+      destfile: /lib/systemd/system/rpc-statd.service
+      regexp: "PIDFile=/var/run/rpc.statd.pid"
+      replace: "PIDFile=/run/rpc.statd.pid"
+    ignore_errors: yes
 
   - name: Enable rpcbind
     systemd: enabled=yes name=rpcbind

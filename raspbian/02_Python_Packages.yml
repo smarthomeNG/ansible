@@ -64,6 +64,19 @@
       groups: www-data, sudo, i2c, adm, audio, video, plugdev, input, netdev, spi, gpio, dialout
       append: yes
 
+  - name: Copy python3.8.6
+    unarchive:
+      src: packages/python-3.8.6_compiled.tgz
+      dest: /home/smarthome
+      owner: smarthome
+      group: smarthome
+      mode: 0755
+
+  - name: install python3.8.6
+    make:
+      chdir: /home/smarthome/python-3.8.6
+      target: install
+
   - name: remove apt
     apt:
       name: "{{ item }}"
@@ -96,16 +109,10 @@
       state: latest
       install_recommends: no
 
-  - name: download get-pip
-    get_url:
-      url: https://bootstrap.pypa.io/get-pip.py
-      dest: /opt/
-
   - name: Install pip3
-    command: "python3 /opt/get-pip.py"
-
-  - name: Install pip
-    command: "python2.7 /opt/get-pip.py"
+    apt:
+      name: python3-pip
+      state: present
 
   - name: remove modules
     pip:
@@ -121,7 +128,7 @@
       state: latest
       extra_args: --user
     become: true
-    become_user: smarthome   
+    become_user: smarthome
     with_items: "{{ pythoninstall }}"
 
   - name: pygobjectfiles

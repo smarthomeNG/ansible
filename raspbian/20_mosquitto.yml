@@ -27,7 +27,7 @@
       shell: /bin/bash
       groups: www-data, sudo, i2c, adm, audio, video, plugdev, input, netdev, spi, gpio, dialout
       append: yes
-      
+
   - name: Install paho-mqtt
     pip:
       name: paho-mqtt
@@ -36,7 +36,7 @@
       extra_args: --user
     become: true
     become_user: smarthome
-    
+
   - name: Create deb-files directory
     file: path=/etc/deb-files/ state=directory mode=0755
 
@@ -80,7 +80,7 @@
       block: |
         log_dest syslog
         log_type notice
-        log_facility 0
+        #log_facility 0
         log_timestamp false
     ignore_errors: yes
 
@@ -95,6 +95,12 @@
           stop
         }
     ignore_errors: yes
+
+  - name: Groups logcheck
+    user:
+      name: logcheck
+      groups: mosquitto
+      append: yes
 
   - name: rsyslog
     systemd: state=restarted name=rsyslog.service
