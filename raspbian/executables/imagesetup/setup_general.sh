@@ -58,7 +58,7 @@ select name in "Change" "Skip"; do
 done
 if [[ $name == "Change" ]]; then
   read -p "Please define your hostname (without any spaces): " newhost
-  sudo sed -i '3,$s/127.0.0.1.*/127.0.0.1\t'${newhost}'/' /etc/hosts &> /dev/null
+  sudo sed -i '3,$s/127.0.1.1.*/127.0.1.1\t'${newhost}'/' /etc/hosts &> /dev/null
   sudo hostnamectl set-hostname ${newhost}
   echo "Changes hostname to $newhost"
 fi

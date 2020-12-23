@@ -202,7 +202,7 @@ backup_all() {
   echo ""
   echo "Encrypting tar file as there are certificates and other private information stored. This might take longer."
   echo "Please provide a password and remember that for the restore process!"
-  sudo openssl enc -e -aes256 -out /$backupfolder/image_backup_encrypted.tar -in /$backupfolder/image_backup.tar
+  sudo openssl enc -e -iter -out /$backupfolder/image_backup_encrypted.tar -in /$backupfolder/image_backup.tar
   echo ""
   echo "Encryption done. Please copy the file /$backupfolder/image_backup_encrypted.tar to a save place."
   echo "Deleting unencrypted file."
@@ -216,7 +216,10 @@ backup_mysql() {
   fi
   echo "Running mariadb-backup now. Check the file /etc/cron.hourly/mysql_backup for the target directory"
   echo "Running mariadb-backup now. Check the file /etc/cron.hourly/mysql_backup for the target directory" | adddate >> /$backupfolder/backup_log.txt 2>&1
+  bkp=$(grep RUNBACKUPS= /etc/cron.hourly/mysql_backup | awk -F= '{ print $2 }')
+  sudo sed -i 's/RUNBACKUPS=False/RUNBACKUPS=True/g' /etc/cron.hourly/mysql_backup 2>&1
   sudo /etc/cron.hourly/mysql_backup
+  sudo sed -i 's/RUNBACKUPS=True/RUNBACKUPS='${bkp}'/g' /etc/cron.hourly/mysql_backup 2>&1
   echo "Backup finished. Please copy the relevant folder to your external backup disk."
   echo "Backup finished. Please copy the relevant to your external backup disk." | adddate >> /$backupfolder/backup_log.txt 2>&1
 
