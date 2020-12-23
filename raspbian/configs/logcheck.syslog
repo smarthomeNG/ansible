@@ -5,10 +5,12 @@
 ^\w{3}(.*)[0-9]{1,2}\s[:0-9]{8}\s[._[:alnum:]-]+\savahi-daemon\[[0-9]+\]\:\sReceived packet
 ^\w{3}(.*)[0-9]{1,2}\s[:0-9]{8}\s[._[:alnum:]-](.*)Cleanup of Temporary Directories(.*)
 ^\w{3}(.*)[0-9]{1,2}\s[:0-9]{8}\s[._[:alnum:]-](.*)background program processing daemon(.*)
-^\w{3}(.*)[0-9]{1,2}\s[:0-9]{8}\s[._[:alnum:]-](.*)(Started|Stopped|Starting|Stopping|Reloading|Reloaded)
+^\w{3}(.*)[0-9]{1,2}\s[:0-9]{8}\s[._[:alnum:]-](.*)(Started|Stopped|Starting|Stopping|Reloading|Reloaded|Succeeded)
 ^\w{3}(.*)[0-9]{1,2}\s[:0-9]{8}\s[._[:alnum:]-](.*)gpiomem-bcm2835 20200000.gpiomem: gpiomem device opened.
 ^\w{3}(.*)[0-9]{1,2}\s[:0-9]{8}\s[._[:alnum:]-]+\sirsend:\slirc_command_run
-^\w{3}(.*)[0-9]{1,2}\s[:0-9]{8}\s[._[:alnum:]-](.*)rsyslogd was HUPed
+^\w{3}(.*)[0-9]{1,2}\s[:0-9]{8}\s[._[:alnum:]-]+\srsyslogd\:(.*)rsyslogd was HUPed
+^\w{3}(.*)[0-9]{1,2}\s[:0-9]{8}\s[._[:alnum:]-]+\srsyslogd\:(.*)action(.*)resumed
+^\w{3}(.*)[0-9]{1,2}\s[:0-9]{8}\s[._[:alnum:]-]+\savahi-daemon\[[0-9]+\]\:\s
 ^\w{3}(.*)[0-9]{1,2}\s[:0-9]{8}\s[._[:alnum:]-]+\s+rpc.mountd\[[0-9]*\]\:\s+authenticated mount request
 ^\w{3}(.*)[0-9]{1,2}\s[:0-9]{8}\s[._[:alnum:]-]+\s+systemd\[[0-9]*\]\:\s+(Listening on|Closed) GnuPG
 ^\w{3}(.*)[0-9]{1,2}\s[:0-9]{8}\s[._[:alnum:]-]+\s+systemd\[[0-9]*\]\:\s+Received SIGRTMIN\+24 from PID [0-9]+ \(kill\)\.$
@@ -16,6 +18,7 @@
 ^\w{3}(.*)[0-9]{1,2}\s[:0-9]{8}\s[._[:alnum:]-]+\s+systemd-timesyncd\[[0-9]*\]\:\s+Synchronized to time server
 ^\w{3}(.*)[0-9]{1,2}\s[:0-9]{8}\s[._[:alnum:]-]+\s+systemd\[[0-9]*\]\:\s+apt-daily-upgrade.timer
 ^\w{3}(.*)[0-9]{1,2}\s[:0-9]{8}\s[._[:alnum:]-]+\s+systemd\[[0-9]*\]\:\s+apt-daily
+^\w{3}(.*)[0-9]{1,2}\s[:0-9]{8}\s[._[:alnum:]-]+\s+systemd\-networkd\[[0-9]*\]\:\s+(.*)Gained
 ^\w{3}(.*)[0-9]{1,2}\s[:0-9]{8}\s[._[:alnum:]-]+\s+jackd\[[0-9]*\]\:\s+JackEngine\:\:XRun
 ^\w{3}(.*)[0-9]{1,2}\s[:0-9]{8}\s[._[:alnum:]-]+\s+jackd\[[0-9]*\]\:\s+JackAudioDriver\:\:ProcessGraphAsyncMaster
 ^\w{3}(.*)[0-9]{1,2}\s[:0-9]{8}\s[._[:alnum:]-]+\s+systemd\[[0-9]*\]\:\s+certbot.timer
@@ -24,3 +27,22 @@
 ^\w{3}(.*)[0-9]{1,2}\s[:0-9]{8}\s[._[:alnum:]-]+\s+sshd\[[0-9]*\]\:\s+pam_systemd(.*)Failed to release session
 ^\w{3}(.*)[0-9]{1,2}\s[:0-9]{8}\s[._[:alnum:]-]+\s+dnsmasq\[[0-9]*\]\:\s+(forwarded|reply|cached|query)
 ^\w{3}(.*)[0-9]{1,2}\s[:0-9]{8}\s[._[:alnum:]-]+\s+dnsmasq\[[0-9]*\]\:\s+local\.list
+^\w{3}(.*)[0-9]{1,2}\s[:0-9]{8}\s[._[:alnum:]-]+\sfreeradius\[(.*)\]:(.*)Version
+^\w{3}(.*)[0-9]{1,2}\s[:0-9]{8}\s[._[:alnum:]-]+\sfreeradius\[(.*)\]:(.*)The FreeRADIUS server project and contributors
+^\w{3}(.*)[0-9]{1,2}\s[:0-9]{8}\s[._[:alnum:]-]+\sfreeradius\[(.*)\]:(.*)There is NO warranty; not even for MERCHANTABILITY or FITNESS FOR A
+^\w{3}(.*)[0-9]{1,2}\s[:0-9]{8}\s[._[:alnum:]-]+\sfreeradius\[(.*)\]:(.*)PARTICULAR PURPOSE
+^\w{3}(.*)[0-9]{1,2}\s[:0-9]{8}\s[._[:alnum:]-]+\sfreeradius\[(.*)\]:(.*)You may redistribute
+^\w{3}(.*)[0-9]{1,2}\s[:0-9]{8}\s[._[:alnum:]-]+\sfreeradius\[(.*)\]:(.*)GNU General Public License
+^\w{3}(.*)[0-9]{1,2}\s[:0-9]{8}\s[._[:alnum:]-]+\sfreeradius\[(.*)\]:(.*)For more information about these matters, see the file named COPYRIGHT
+^\w{3}(.*)[0-9]{1,2}\s[:0-9]{8}\s[._[:alnum:]-]+\sfreeradius\[(.*)\]:(.*)Debugger not attached
+^\w{3}(.*)[0-9]{1,2}\s[:0-9]{8}\s[._[:alnum:]-]+\sfreeradius\[(.*)\]:(.*)Creating attribute Unix-Group
+^\w{3}(.*)[0-9]{1,2}\s[:0-9]{8}\s[._[:alnum:]-]+\sfreeradius\[(.*)\]:(.*)'User-Password' suppressed, will not appear in detail output
+^\w{3}(.*)[0-9]{1,2}\s[:0-9]{8}\s[._[:alnum:]-]+\sfreeradius\[(.*)\]:(.*)using internal authentication
+^\w{3}(.*)[0-9]{1,2}\s[:0-9]{8}\s[._[:alnum:]-]+\sfreeradius\[(.*)\]:(.*)Using cached TLS configuration from previous invocation
+^\w{3}(.*)[0-9]{1,2}\s[:0-9]{8}\s[._[:alnum:]-]+\sfreeradius\[(.*)\]:(.*)Configuration appears to be OK
+^\w{3}(.*)[0-9]{1,2}\s[:0-9]{8}\s[._[:alnum:]-]+\sfreeradius\[(.*)\]:(.*)Skipping IP addresses and Ports
+^\w{3}(.*)[0-9]{1,2}\s[:0-9]{8}\s[._[:alnum:]-]+\sfreeradius\[(.*)\]:(.*)Skipping contents of 'if' as it is always 'false'
+^\w{3}(.*)[0-9]{1,2}\s[:0-9]{8}\s[._[:alnum:]-]+\sfreeradius\[(.*)\]:(.*)loaded and linked
+^\w{3}(.*)[0-9]{1,2}\s[:0-9]{8}\s[._[:alnum:]-]+\snetfilter-persistent\[(.*)\]:(.*)Automatic flush disabled
+^\w{3}(.*)[0-9]{1,2}\s[:0-9]{8}\s[._[:alnum:]-]+\snetfilter-persistent\[(.*)\]:(.*)run-parts
+^\w{3}(.*)[0-9]{1,2}\s[:0-9]{8}\s[._[:alnum:]-]+\snetfilter-persistent\[(.*)\]:(.*)skipping IPv6 \(no rules to load\)

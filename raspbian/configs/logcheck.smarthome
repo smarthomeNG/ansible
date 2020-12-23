@@ -6,7 +6,9 @@
 ^[0-9\-]{10}[ :0-9]{9}[,0-9]{0,4} ERROR(.*)No route to host
 (.*)TypeError: 'NoneType' object is not subscriptable(.*)
 ^[0-9\-]{10}[ :0-9]{9}[,0-9]{0,4} ERROR(.*)horizon
-^[0-9\-]{10}[ :0-9]{9}[,0-9]{0,4} WARNING\s\Main(.*)CLI: You should set a password for this plugin.
-^[0-9\-]{10}[ :0-9]{9}[,0-9]{0,4} ERROR(.*)Needing more worker threads than the specified maximum
+^[0-9\-]{10}[ :0-9]{9}[,0-9]{0,4} WARNING\s+plugins.cli\s+CLI: You should set a password for this plugin.
 ^[0-9\-]{10}[ :0-9]{9}[,0-9]{0,4} ERROR(.*)telegram.ext.updater Error while getting Updates: Timed out
-^[0-9\-]{10}[ :0-9]{9}[,0-9]{0,4} WARNING(.*)plugins.telegram Update None caused error Timed out
+^[0-9\-]{10}[ :0-9]{9}[,0-9]{0,4} WARNING\s+plugins.telegram Update None caused error Timed out
+^[0-9\-]{10}[ :0-9]{9}[,0-9]{0,4} ERROR\s+plugins.xiaomi_vac Xiaomi_Robvac: Error Unable to discover the device(.*) for [0-3] time
+^[0-9\-]{10}[ :0-9]{9}[,0-9]{0,4} ERROR\s+plugins.unifi\s+Poll failed(.*) for [0-3] time
+^[0-9\-]{10}[ :0-9]{9}[,0-9]{0,4} WARNING\s+lib.smarthome.main(.*)initialization finished

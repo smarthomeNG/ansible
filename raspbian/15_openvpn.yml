@@ -1,6 +1,6 @@
 ---
 - name: Install OpenVPN
-  hosts: all
+  hosts: image
   remote_user: root
   become_user: root
   become: true
@@ -27,7 +27,7 @@
       shell: /bin/bash
       groups: www-data, sudo, i2c, adm, audio, video, plugdev, input, netdev, spi, gpio, dialout
       append: yes
-      
+
   - name: Install openvpn
     apt: name=openvpn force=no state=latest install_recommends=yes
 
@@ -39,7 +39,7 @@
 
   - name: Copy easyrsa
     unarchive:
-      src: https://github.com/OpenVPN/easy-rsa/releases/download/v3.0.6/EasyRSA-unix-v3.0.6.tgz
+      src: https://github.com/OpenVPN/easy-rsa/releases/download/v3.0.8/EasyRSA-3.0.8.tgz
       dest: /etc/ssl/easy-rsa
       remote_src: yes
       validate_certs: False
@@ -105,10 +105,10 @@
 
   - name: Wait
     wait_for_connection:
-      connect_timeout: 20
-      sleep: 5
-      delay: 5
-      timeout: 300
+      connect_timeout: 40
+      sleep: 15
+      delay: 15
+      timeout: 400
     when: ready is changed
 
   - name: run iptables

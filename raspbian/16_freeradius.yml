@@ -1,6 +1,6 @@
 ---
 - name: Install freeradius
-  hosts: all
+  hosts: image
   remote_user: root
   become_user: root
   become: true
@@ -15,7 +15,7 @@
 
   - name: Copy easyrsa
     unarchive:
-      src: https://github.com/OpenVPN/easy-rsa/releases/download/v3.0.6/EasyRSA-unix-v3.0.6.tgz
+      src: https://github.com/OpenVPN/easy-rsa/releases/download/v3.0.8/EasyRSA-3.0.8.tgz
       dest: /etc/ssl/easy-rsa
       remote_src: yes
       validate_certs: False
@@ -108,7 +108,7 @@
       name: pi
       groups: freerad
       append: yes
-      
+
   - name: Create Group
     group:
       name: smarthome
@@ -136,3 +136,22 @@
       name: logcheck
       groups: freerad
       append: yes
+
+  - name: logrotate1
+    replace:
+      destfile: /etc/logrotate.d/freeradius
+      regexp: "copytruncate"
+      replace: "#copytruncate"
+    ignore_errors: yes
+
+  - name: logrotate2
+    blockinfile:
+      path: "/etc/logrotate.d/freeradius"
+      insertafter: "#copytruncate"
+      block: |
+        prerotate
+               /bin/systemctl stop freeradius
+        endscript
+        postrotate
+               /bin/systemctl start freeradius
+        endscript

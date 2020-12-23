@@ -216,8 +216,8 @@ check process Samba with pidfile "/var/run/samba/smbd.pid"
 #System
 check system localhost
  group system
- if loadavg (1min) > 20 then alert
- if loadavg (5min) > 40 then alert
+ if loadavg (1min) > 40 then alert
+ if loadavg (5min) > 50 then alert
  if memory usage > 75% then alert
  if swap usage > 35% then alert
  if cpu usage (user) > 85% then alert

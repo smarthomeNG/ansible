@@ -117,7 +117,7 @@ create_servercerts () {
         sudo sed -i 's/'EASYRSA_REQ_EMAIL[[:space:]]*\".*\"'/'EASYRSA_REQ_EMAIL'\t'\"${mail}\"'/g' $RSA_FOLDER/vars 2>&1
         sudo sed -i 's/#set_var EASYRSA_REQ_EMAIL/set_var EASYRSA_REQ_EMAIL/g' $RSA_FOLDER/vars 2>&1
         unset domain
-        domain_regex="(^([a-zA-Z](([a-zA-Z0-9\-]){0,61}[a-zA-Z])\.){1,2}[a-zA-Z]{2,}$)"
+        domain_regex="(^([a-zA-Z](([a-zA-Z0-9\-]){0,61}[a-zA-Z0-9])\.){1,2}[a-zA-Z]{2,}$)"
         while ! [[ "$domain" =~ $domain_regex ]]; do
             read -p "Please define your common=domain name (xxx.domain.tld): " domain
         done
@@ -172,10 +172,11 @@ create_servercerts () {
         fi
         sudo ./easyrsa init-pki
         sudo touch $RSA_FOLDER/pki/index.txt.attr
+        sudo sed -i 's/RANDFILE[[:space:]]\+= \/etc\/ssl\/easy-rsa\/pki\/.rnd//g' $RSA_FOLDER/pki/safessl-easyrsa.cnf 2>&1    
         if [[ $dh == "Create" ]]; then
             sudo ./easyrsa gen-dh
             echo ""
-            echo "Make sure the process was writing at least 10 lines with ... and +. Otherwise Ctrl-C and restart setup_nginx.sh."
+            echo "Make sure the process was writing at least 10 lines with ... and +. Otherwise Ctrl-C and restart setup_nginx.sh or setup_certs.sh."
             echo ""
         elif [[ $dh == "Keep" ]]; then
             sudo mv /tmp/dh.pem $RSA_FOLDER/pki/

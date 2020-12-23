@@ -1,13 +1,14 @@
 ---
 - name: fail2ban
-  hosts: all
+  hosts: image
   remote_user: root
   become_user: root
   become: true
 
   vars:
     packages:
-      ["fail2ban"
+      ["fail2ban",
+      "whois"
       ]
 
   tasks:
@@ -28,6 +29,11 @@
       dest: /etc/fail2ban/filter.d/nginx-https-auth.conf
       src: configs/fail2ban_https.conf
 
+  - name: copy_404
+    copy:
+      dest: /etc/fail2ban/filter.d/nginx-http-404.conf
+      src: configs/fail2ban_http_404.conf
+
   - name: update_auth
     lineinfile:
       path: /etc/fail2ban/filter.d/nginx-http-auth.conf
@@ -39,6 +45,13 @@
       destfile: /lib/systemd/system/fail2ban.service
       regexp: '^PIDFile=/var/run/fail2ban/fail2ban.pid'
       replace: 'PIDFile=/run/fail2ban/fail2ban.pid'
+    ignore_errors: yes
+
+  - name: update service2
+    replace:
+      destfile: /lib/systemd/system/fail2ban.service
+      regexp: '^ExecStartPre=/bin/mkdir -p /var/run/fail2ban'
+      replace: 'ExecStartPre=/bin/mkdir -p /run/fail2ban'
     ignore_errors: yes
 
   - name: link_badbots
@@ -86,3 +99,16 @@
 
   - name: disable fail2ban
     systemd: enabled=no name=fail2ban
+
+  - name: logrotate
+    lineinfile:
+      destfile: /etc/logrotate.d/fail2ban
+      line: "notifempty"
+      insertafter: "compress"
+
+  - name: fix tmpfiles folder
+    replace:
+      destfile: /usr/lib/tmpfiles.d/fail2ban-tmpfiles.conf
+      regexp: '/var/run/'
+      replace: '/run/'
+    ignore_errors: yes

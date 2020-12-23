@@ -1,6 +1,6 @@
 ---
 - name: Install ansible
-  hosts: all
+  hosts: image
   remote_user: root
   become_user: root
   become: true
@@ -20,7 +20,7 @@
       ]
 
     packages:
-      ["grafana_6.2.5_armhf.deb"
+      [
       ]
 
   tasks:
@@ -45,7 +45,7 @@
       shell: /bin/bash
       groups: www-data, sudo, i2c, adm, audio, video, plugdev, input, netdev, spi, gpio, dialout
       append: yes
-      
+
   - name: ansible
     apt: name=ansible force=no state=latest
 

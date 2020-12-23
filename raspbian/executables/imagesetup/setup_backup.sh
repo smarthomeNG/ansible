@@ -2,8 +2,6 @@
 RSA_FOLDER=etc/ssl/easy-rsa
 KEY_FOLDER=etc/ssl/ca/
 backupfolder='home/smarthome/backup'
-sudo mkdir /$backupfolder >/dev/null 2>&1
-sudo touch /$backupfolder/backup_log.txt 2>&1
 
 adddate() {
     while IFS= read -r line; do
@@ -47,6 +45,7 @@ cleanup() {
 backup_all() {
   cd /
   sudo mkdir /$backupfolder >/dev/null 2>&1
+  sudo chown smarthome:smarthome /$backupfolder >/dev/null 2>&1
   echo "Starting backup. Be patient."
   echo "Starting backup. Be patient." | adddate > $backupfolder/backup_log.txt 2>&1
   sudo tar vcpf $backupfolder/image_backup.tar $backupfolder/backup_log.txt | adddate_copy >> $backupfolder/backup_log.txt 2>&1
@@ -203,7 +202,7 @@ backup_all() {
   echo ""
   echo "Encrypting tar file as there are certificates and other private information stored. This might take longer."
   echo "Please provide a password and remember that for the restore process!"
-  sudo openssl enc -e -aes256 -out /$backupfolder/image_backup_encrypted.tar -in /$backupfolder/image_backup.tar
+  sudo openssl enc -e -iter -out /$backupfolder/image_backup_encrypted.tar -in /$backupfolder/image_backup.tar
   echo ""
   echo "Encryption done. Please copy the file /$backupfolder/image_backup_encrypted.tar to a save place."
   echo "Deleting unencrypted file."
@@ -217,7 +216,10 @@ backup_mysql() {
   fi
   echo "Running mariadb-backup now. Check the file /etc/cron.hourly/mysql_backup for the target directory"
   echo "Running mariadb-backup now. Check the file /etc/cron.hourly/mysql_backup for the target directory" | adddate >> /$backupfolder/backup_log.txt 2>&1
+  bkp=$(grep RUNBACKUPS= /etc/cron.hourly/mysql_backup | awk -F= '{ print $2 }')
+  sudo sed -i 's/RUNBACKUPS=False/RUNBACKUPS=True/g' /etc/cron.hourly/mysql_backup 2>&1
   sudo /etc/cron.hourly/mysql_backup
+  sudo sed -i 's/RUNBACKUPS=True/RUNBACKUPS='${bkp}'/g' /etc/cron.hourly/mysql_backup 2>&1
   echo "Backup finished. Please copy the relevant folder to your external backup disk."
   echo "Backup finished. Please copy the relevant to your external backup disk." | adddate >> /$backupfolder/backup_log.txt 2>&1
 
@@ -252,7 +254,7 @@ backup_overwrite() {
 	  echo "There seems to be an older backup existing. Previously created backups in $backupfolder will be overwritten. Are you sure?"
 	  select overwrite in "Overwrite" "Skip"; do
 		case $overwrite in
-			Overwrite ) echo "Backup is running."; echo ""; rm /$backupfolder/ -R; backup_all; break;;
+			Overwrite ) echo "Backup is running."; echo ""; sudo rm /$backupfolder/ -R; backup_all; break;;
 			Skip) echo "Skipping"; break;;
 			*) echo "Skipping"; break;;
 		esac

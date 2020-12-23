@@ -1,6 +1,6 @@
 ---
 - name: Install Logcheck
-  hosts: all
+  hosts: image
   remote_user: root
   become_user: root
   become: true
@@ -9,7 +9,7 @@
   tasks:
   - name: Install logcheck
     apt: name=logcheck force=no state=latest install_recommends=yes
-    
+
   - name: Create Group
     group:
       name: smarthome
@@ -47,54 +47,63 @@
   - name: Copy Logcheck sh
     copy:
       src: configs/logcheck.smarthome
-      dest: /etc/logcheck/ignore.d.server/smarthome
+      dest: /etc/logcheck/ignore.d.server/local-smarthome
       owner: root
       group: logcheck
       mode: 0644
 
-  - name: Logcheck Radius
-    blockinfile:
-      path: /etc/logcheck/ignore.d.server/radius
-      create: yes
+  - name: Copy Logcheck exim4
+    copy:
+      src: configs/logcheck.exim4
+      dest: /etc/logcheck/ignore.d.server/local-exim4
       owner: root
       group: logcheck
       mode: 0644
-      block: |
-        ^\w{3}(.*)[0-9]{1,2}\s[:0-9]{8}\s[._[:alnum:]-]+\s:\sAuth(.*)OK
-        ^\w{3}(.*)[0-9]{1,2}\s[:0-9]{8}\s[._[:alnum:]-]+\s:\sInfo
 
-  - name: Logcheck Exim4
-    lineinfile:
-      path: /etc/logcheck/ignore.d.server/exim4
-      line: '^[0-9]{4}\-[0-9]{1,2}\-[0-9]{1,2}\s+[:0-9]{8}\s+[-[:alnum:]]+ [=-]> (.*)OK\s+,\s+completed'
-
-  - name: Logcheck Apache2
-    blockinfile:
-      path: /etc/logcheck/ignore.d.server/apache2
-      create: yes
+  - name: Copy Logcheck radius
+    copy:
+      src: configs/logcheck.exim4
+      dest: /etc/logcheck/ignore.d.server/local-radius
       owner: root
       group: logcheck
       mode: 0644
-      block: |
-        ^\[\w{3}\s+\w{3}\s+[0-9]{1,2}\s+[:.0-9]{15}\s+[0-9]{4}\]\s+\[(.*)\:notice\]\s+\[pid(.*)\](.*)\:\s+Graceful restart
-        ^\[\w{3}\s+\w{3}\s+[0-9]{1,2}\s+[:.0-9]{15}\s+[0-9]{4}\]\s+\[(.*)\:notice\]\s+\[pid(.*)\](.*)\:(.*)resuming normal
-        ^\[\w{3}\s+\w{3}\s+[0-9]{1,2}\s+[:.0-9]{15}\s+[0-9]{4}\]\s+\[(.*)\:notice\]\s+\[pid(.*)\](.*)\:\s+Command line: '/usr/sbin/apache2'
 
-  - name: Logcheck Monit
-    blockinfile:
-      path: /etc/logcheck/ignore.d.server/monit
-      create: yes
+  - name: Copy Logcheck apache
+    copy:
+      src: configs/logcheck.exim4
+      dest: /etc/logcheck/ignore.d.server/local-apache2
       owner: root
       group: logcheck
       mode: 0644
-      block: |
-        ^\[\w{3,4}\s+\w{3}\s+[0-9]{1,2}\s+[:0-9]{8}\]\s+info
-        Reinitializing Monit
+
+  - name: Copy Logcheck monit
+    copy:
+      src: configs/logcheck.monit
+      dest: /etc/logcheck/ignore.d.server/local-monit
+      owner: root
+      group: logcheck
+      mode: 0644
 
   - name: Copy Logcheck auth
     copy:
       src: configs/logcheck.auth
-      dest: /etc/logcheck/ignore.d.server/auth
+      dest: /etc/logcheck/ignore.d.server/local-auth
+      owner: root
+      group: logcheck
+      mode: 0644
+
+  - name: Copy Logcheck nginx
+    copy:
+      src: configs/logcheck.nginx
+      dest: /etc/logcheck/ignore.d.server/local-nginx
+      owner: root
+      group: logcheck
+      mode: 0644
+
+  - name: Copy Logcheck fail2ban
+    copy:
+      src: configs/logcheck.fail2ban
+      dest: /etc/logcheck/ignore.d.server/local-fail2ban
       owner: root
       group: logcheck
       mode: 0644
@@ -102,7 +111,7 @@
   - name: Copy Logcheck syslog
     copy:
       src: configs/logcheck.syslog
-      dest: /etc/logcheck/ignore.d.server/syslog
+      dest: /etc/logcheck/ignore.d.server/local-syslog
       owner: root
       group: logcheck
       mode: 0644
@@ -110,7 +119,7 @@
   - name: Copy Logcheck lirc
     copy:
       src: configs/logcheck.lirc
-      dest: /etc/logcheck/ignore.d.server/lirc
+      dest: /etc/logcheck/ignore.d.server/local-lirc
       owner: root
       group: logcheck
       mode: 0644
@@ -118,10 +127,16 @@
   - name: Copy Logcheck mosquitto
     copy:
       src: configs/logcheck.mosquitto
-      dest: /etc/logcheck/ignore.d.server/mosquitto
+      dest: /etc/logcheck/ignore.d.server/local-mosquitto
       owner: root
       group: logcheck
       mode: 0644
+
+  - name: Groups logcheck
+    user:
+      name: logcheck
+      groups: adm, smarthome
+      append: yes
 
   - name: change prio
     replace:

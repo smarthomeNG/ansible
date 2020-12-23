@@ -1,5 +1,5 @@
 #!/bin/bash
-PATH=$PATH:/usr/lib/knxd:/opt/susvd:/opt/:/opt/setup:/home/smarthome/.local/bin
+PATH=$PATH:/usr/lib/knxd:/opt/susvd:/opt/:/opt/setup:/home/smarthome/.local/bin:/home/smarthome/node_modules/.bin:/root/node_modules/.bin
 export MAKEFLAGS="-j 4"
 
 # Color Tweaks

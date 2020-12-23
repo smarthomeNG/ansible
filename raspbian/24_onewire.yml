@@ -1,6 +1,6 @@
 ---
 - name: Install OneWire
-  hosts: all
+  hosts: image
   remote_user: root
   become_user: root
   become: true
@@ -36,10 +36,14 @@
       groups: www-data, sudo, i2c, adm, audio, video, plugdev, input, netdev, spi, gpio, dialout
       append: yes
 
-  - name: avoid service start
-    file:
-      path: /usr/sbin/rc-policy.d
-      state: touch
+  - name: policy_on
+    blockinfile:
+      path: /usr/sbin/policy-rc.d
+      create: yes
+      mode: 777
+      block: |
+        #!/bin/sh
+        exit 101
 
   - name: install apt
     apt:
@@ -47,6 +51,11 @@
       state: latest
     with_items: "{{ packages }}"
     ignore_errors: yes
+
+  - name: policy_off
+    file:
+      path: /usr/sbin/policy-rc.d
+      state: absent
 
   - name: Copy conf
     copy:

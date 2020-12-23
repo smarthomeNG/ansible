@@ -1,6 +1,6 @@
 ---
 - name: Tweaks
-  hosts: all
+  hosts: image
   remote_user: root
   become_user: root
   become: true
@@ -10,11 +10,9 @@
       ["tcpdump",
       "unzip",
       "screen",
-      "rpi-update",
       "dos2unix",
       "telnet",
       "ufw",
-      "python3-dev",
       "unattended-upgrades",
       "apt-listchanges",
       "atop",
@@ -38,7 +36,10 @@
       "snmp",
       "fake-hwclock",
       "libudev-dev",
-      "libkrb5-dev"
+      "libkrb5-dev",
+      "libgirepository1.0-dev", # for python PygObject
+      "libglib2.0-dev", # for python PygObject
+      "libcairo2-dev" # for python PygObject
       ]
 
 
@@ -226,7 +227,7 @@
       backrefs: True
       state: present
       regexp: '(.*)$'
-      line: '\1 rootdelay=5 consoleblank=0 cgroup_memory=1 cgroup_enable=memory'
+      line: '\1 rootdelay=5 consoleblank=0 cgroup_memory=1 cgroup_enable=memory init=/usr/lib/raspi-config/init_resize.sh'
     when: test_grep1.stdout == ""
 
   - name: edit config
@@ -327,7 +328,7 @@
     replace:
       destfile: /etc/hosts
       regexp: "^127.0.[0-1].1(.*)raspberrypi"
-      replace: "127.0.0.1\tSmartHomeNG"
+      replace: "127.0.1.1\tSmartHomeNG"
     ignore_errors: yes
 
   - name: Colorize
@@ -440,14 +441,9 @@
   - name: debdir
     file: path=/etc/deb-files/ state=directory mode=0755
 
-  - name: copy checkinstall
-    copy:
-      src: packages/checkinstall_1.6.3-1_armhf.deb
-      dest: /etc/deb-files/
-
   - name: install checkinstall
     apt:
-      deb: /etc/deb-files/checkinstall_1.6.3-1_armhf.deb
+      name=checkinstall force=yes state=latest install_recommends=no
 
   - name: copy conf
     copy:
@@ -469,6 +465,20 @@
           action(type="omfile" file="/var/log/ufw.log" template="FileFormat_timestamp")
           stop
         }
+    ignore_errors: yes
+
+  - name: fix snmpd1
+    replace:
+      destfile: /etc/default/snmpd
+      regexp: "export MIBS="
+      replace: "#export MIBS="
+    ignore_errors: yes
+
+  - name: fix snmpd2
+    replace:
+      destfile: /etc/default/snmpd
+      regexp: "-smux,mteTrigger,mteTriggerConf"
+      replace: "-smux"
     ignore_errors: yes
 
   - name: rsyslog
@@ -517,14 +527,14 @@
   - name: unattended_config_mail1
     replace:
       destfile: /etc/apt/apt.conf.d/50unattended-upgrades
-      regexp: '^//Unattended-Upgrade::Mail "root";'
+      regexp: '^//Unattended-Upgrade::Mail "";'
       replace: 'Unattended-Upgrade::Mail "root";'
     ignore_errors: yes
 
   - name: unattended_config_mail2
     replace:
       destfile: /etc/apt/apt.conf.d/50unattended-upgrades
-      regexp: '^//Unattended-Upgrade::MailOnlyOnError "true";'
+      regexp: '^//Unattended-Upgrade::MailOnlyOnError "false";'
       replace: 'Unattended-Upgrade::MailOnlyOnError "true";'
     ignore_errors: yes
 
