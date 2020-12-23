@@ -1,6 +1,6 @@
 ---
 - name: Tweaks
-  hosts: all
+  hosts: image_start
   remote_user: root
   become_user: root
   become: true

@@ -1,6 +1,6 @@
 ---
 - name: Install Monit
-  hosts: all
+  hosts: image
   remote_user: root
   become_user: root
   become: true
@@ -31,7 +31,7 @@
       shell: /bin/bash
       groups: www-data, sudo, i2c, adm, audio, video, plugdev, input, netdev, spi, gpio, dialout
       append: yes
-   
+
   - name: Install monit
     apt:
       name: monit

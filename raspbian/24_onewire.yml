@@ -1,6 +1,6 @@
 ---
 - name: Install OneWire
-  hosts: all
+  hosts: image
   remote_user: root
   become_user: root
   become: true
@@ -44,7 +44,7 @@
       block: |
         #!/bin/sh
         exit 101
-      
+
   - name: install apt
     apt:
       name: "{{ item }}"
@@ -56,7 +56,7 @@
     file:
       path: /usr/sbin/policy-rc.d
       state: absent
-        
+
   - name: Copy conf
     copy:
       src: configs/owfs.conf
