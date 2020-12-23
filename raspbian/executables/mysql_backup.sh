@@ -3,6 +3,9 @@
 # Simple cron script to create backup of SQL databases
 
 RUNBACKUPS=False
+if [[ $RUNBACKUPS == False ]]; then
+  exit 0
+fi
 
 adddate() {
     while IFS= read -r line; do
@@ -11,6 +14,7 @@ adddate() {
 }
 
 export LC_ALL=C
+log_file="/var/log/mysql/mariabackup.log"
 
 if [[ $RUNBACKUPS == True ]] && (command -v /usr/bin/mariabackup > /dev/null 2>&1 && pgrep -x mysqld > /dev/null 2>&1 && ! pgrep mariabackup  > /dev/null 2>&1); then
 	days_of_backups=3  # Must be less than 7
@@ -18,7 +22,6 @@ if [[ $RUNBACKUPS == True ]] && (command -v /usr/bin/mariabackup > /dev/null 2>&
 	parent_dir="/var/backups/mysql"
 	defaults_file="/etc/mysql/debian.cnf"
 	todays_dir="${parent_dir}/$(date +%Y%m%d)"
-	log_file="/var/log/mysql/mariabackup.log"
 	encryption_key_file="${parent_dir}/encryption_key"
 	now="$(date +%m-%d-%Y_%H-%M-%S)"
 	processors="$(nproc --all)"
@@ -31,7 +34,7 @@ if [[ $RUNBACKUPS == True ]] && (command -v /usr/bin/mariabackup > /dev/null 2>&
 
   }
   sanity_check
-  
+
 	# Use this to echo to standard error
 	error () {
 		printf "%s: %s\n" "$(basename "${BASH_SOURCE}")" "${1}" | adddate >> $log_file 2>&1
@@ -95,5 +98,8 @@ if [[ $RUNBACKUPS == True ]] && (command -v /usr/bin/mariabackup > /dev/null 2>&
 	else
 		error "Backup failure! Check ${log_file} for more information" | adddate >> $log_file 2>&1
 	fi
+else
+  echo "MySQL not running - nothing to backup."
+  echo "MySQL not running - nothing to backup." | adddate >> $log_file 2>&1
 fi
 exit
