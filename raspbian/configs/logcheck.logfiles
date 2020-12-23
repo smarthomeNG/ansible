@@ -1,4 +1,3 @@
-/var/log/boot.log
 /var/log/cron.log
 #/var/log/lirc/lirc.log
 #/var/log/mosquitto/mosquitto.log
