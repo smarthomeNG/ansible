@@ -73,7 +73,7 @@ $(tput sgr0)"
 FIRSTBOOT_e=$(systemctl is-enabled firstboot 2>&1 | tail -n 1) &> /dev/null
 
 if [ -e /var/log/firstboot.log ] && [[ $FIRSTBOOT_e == "disabled" ]] ; then
-  echo "$(tput setaf 2)Welcome to Smarthome Image 10.1.7 - At your first boot these changes were made:"
+  echo "$(tput setaf 2)Welcome to Smarthome Image 10.1.8 - At your first boot these changes were made:"
   echo "$(</var/log/firstboot.log)"
   echo "$(tput sgr0)"
   sudo mv /var/log/firstboot.log /var/log/firstboot_finished.log

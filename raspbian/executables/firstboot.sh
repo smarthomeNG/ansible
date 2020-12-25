@@ -82,7 +82,7 @@ RES='Created new SSH host keys. Copy /etc/ssh/ssh_host_rsa_key to your client an
 sudo echo ${RES} >> /var/log/firstboot.log
 #sudo raspi-config nonint do_expand_rootfs
 #sudo partprobe
-RES='Expanded SD disk to full capacity.'
-sudo echo ${RES}
-sudo echo ${RES} >> /var/log/firstboot.log
+#RES='Expanded SD disk to full capacity.'
+#sudo echo ${RES}
+#sudo echo ${RES} >> /var/log/firstboot.log
 #sudo reboot
