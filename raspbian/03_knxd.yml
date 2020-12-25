@@ -15,7 +15,7 @@
       update_password: always
       password: ""
       comment: 'SmarthomeNG User'
-
+      
   - name: Create deb-files directory
     file:
       path: /etc/deb-files/

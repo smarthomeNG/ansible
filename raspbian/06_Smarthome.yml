@@ -9,7 +9,10 @@
     apt_install:
       [
       "rlwrap", #easier telnet / cli usage
+      "gfortran", # scipy build
       "libatlas-base-dev", #uzsu / scipy
+      "libxslt1-dev", #lxml package
+      "libxml2-dev", #lxml package
       "graphviz", #uzsu
       "rrdtool", #rrd
       "librrd-dev", #rrd, maybe not necessary
