@@ -123,4 +123,4 @@
       mode: 0644
 
   - name: disable openvpn
-    systemd: enabled=no name=openvpn.service
+    systemd: enabled=no name=openvpn@server.service

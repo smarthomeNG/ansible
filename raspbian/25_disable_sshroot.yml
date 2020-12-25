@@ -6,6 +6,20 @@
   become: true
 
   tasks:
+  - name: Clean apt
+    command: apt-get -y clean
+
+  - name: Autoclean apt
+    command: apt-get -y autoclean
+
+  - name: Purge python cache
+    command: pip3 purge cache
+    become: true
+    become_user: smarthome
+
+  - name: Purge root python cache
+    command: pip3 purge cache
+
   - name: Change ssh
     replace:
       destfile: /etc/ssh/sshd_config

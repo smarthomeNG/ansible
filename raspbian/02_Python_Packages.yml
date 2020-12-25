@@ -24,7 +24,8 @@
       ]
 
     pythoninstall:
-      ["RPi.GPIO",
+      ["pip",
+      "RPi.GPIO",
       "pgen",
       "requests",
       "pymodbus",
@@ -37,7 +38,8 @@
       "snmp",
       "knxPython",
       "spur",
-      "python-miio"
+      "python-miio",
+      "numpy",
       ]
 
 
@@ -76,6 +78,11 @@
     make:
       chdir: /home/smarthome/python-3.8.6
       target: install
+
+  - name: delete pythonfolder
+    file:
+      state: absent
+      path: /home/smarthome/python-3.8.6
 
   - name: remove apt
     apt:
@@ -131,6 +138,19 @@
     become_user: smarthome
     with_items: "{{ pythoninstall }}"
 
+  - name: Copy scipy
+    copy:
+      src: packages/scipy-1.1.0-cp38-cp38-linux_armv7l.whl
+      dest: /etc/deb-files/
+
+  - name: Install scipy
+    pip:
+      name: /etc/deb-files/scipy-1.1.0-cp38-cp38-linux_armv7l.whl
+      executable: pip3
+      extra_args: --user
+    become: true
+    become_user: smarthome
+
   - name: pygobjectfiles
     find:
       paths: /usr/lib/python3/dist-packages/
@@ -145,3 +165,11 @@
     ignore_errors: yes
     register: deleted
   - debug: var=deleted
+
+  - name: Purge python cache
+    command: pip3 purge cache
+    become: true
+    become_user: smarthome
+
+  - name: Purge root python cache
+    command: pip3 purge cache
