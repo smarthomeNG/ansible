@@ -5,13 +5,13 @@ backupfolder='home/smarthome/backup'
 
 adddate() {
     while IFS= read -r line; do
-        echo "$(date) $line"
+        echo "$(date +'%B %02d %X') $line"
     done
 }
 
 adddate_copy() {
     while IFS= read -r line; do
-        echo "$(date) Copy $line"
+        echo "$(date +'%B %02u %X') Copy $line"
     done
 }
 
@@ -78,7 +78,7 @@ backup_all() {
 	sudo tar vprf $backupfolder/image_backup.tar $KEY_FOLDER | adddate_copy >> $backupfolder/backup_log.txt 2>&1
 	echo "Backed up certifictes"
   fi
-  if [ -z "etc/letsencryp" ]; then
+  if [ -z "etc/letsencrypt" ]; then
 	  sudo tar vprf $backupfolder/image_backup.tar etc/letsencrypt/ | adddate_copy >> $backupfolder/backup_log.txt 2>&1
 	  sudo tar vprf $backupfolder/image_backup.tar var/www/letsencrypt/.well-known/ | adddate_copy >> $backupfolder/backup_log.txt 2>&1
 	  sudo tar vprf $backupfolder/image_backup.tar var/www/letsencrypt | adddate_copy >> $backupfolder/backup_log.txt 2>&1

@@ -15,19 +15,26 @@
       update_password: always
       password: ""
       comment: 'SmarthomeNG User'
-      
+
   - name: Create deb-files directory
     file:
       path: /etc/deb-files/
       state: directory
       mode: 0755
 
-  - name: Copy knxd deb files
+  - name: Copy knxd deb files 0.12
     copy:
       src: "{{ item }}"
       dest: /etc/deb-files/
     with_fileglob:
-      - packages/knxd*
+      - packages/knxd*_0.12*
+
+  - name: Copy knxd deb files 0.14
+    copy:
+      src: "{{ item }}"
+      dest: /etc/deb-files/
+    with_fileglob:
+      - packages/knxd*_0.14*
 
   - name: Copy eibd deb
     copy:
@@ -69,15 +76,27 @@
       line: 'EIBD Log'
       mode: 0777
 
-  - name: Install knxd
-    apt:
-      name: knxd
-      state: latest
+  - name: List knxd 0.14 deb files
+    shell: ls knxd_0.14*.deb
+    args:
+      chdir: /etc/deb-files/
+    register: knxd_files
 
-  - name: Install knxdtools
-    apt:
-      name: knxd-tools
-      state: latest
+  - name: Install knxd
+    apt: deb="/etc/deb-files/{{ item.1 }}" force=yes state=present
+    with_indexed_items: "{{ knxd_files.stdout_lines }}"
+    register: knxd
+  - debug: var=knxd
+
+#  - name: Install knxd
+#    apt:
+#      name: knxd
+#      state: latest
+
+#  - name: Install knxdtools
+#    apt:
+#      name: knxd-tools
+#      state: latest
 
   - name: knxd conf add
     copy:

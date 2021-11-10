@@ -1,0 +1,6 @@
+^\w{3} [ :0-9]{11} [._[:alnum:]-]+ dhcpcd[[[:digit:]]+]:(.*)adding (default |)(route|address)
+^\w{3} [ :0-9]{11} [._[:alnum:]-]+ dhcpcd[[[:digit:]]+]:(.*)is reachable again
+^\w{3} [ :0-9]{11} [._[:alnum:]-]+ dhcpcd[[[:digit:]]+]:(.*)Router Advertisement from
+^\w{3} [ :0-9]{11} [._[:alnum:]-]+ dhcpcd[[[:digit:]]+]:(.*)hardware address(.*))claims
+^\w{3} [ :0-9]{11} [._[:alnum:]-]+ dhcpcd[[[:digit:]]+]:(.*)expired
+^\w{3} [ :0-9]{11} [._[:alnum:]-]+ dhcpcd[[[:digit:]]+]:(.*)deleting route

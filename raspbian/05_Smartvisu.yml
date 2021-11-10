@@ -49,6 +49,12 @@
       src: https://github.com/Martin-Gleiss/smartvisu/releases/download/v2.8/smartvisu-v2.8_latest.zip
       dest: /var/www/html
 
+  - name: Remove dir
+    file:
+      path: /var/www/html/smartvisu2.8
+      state: absent
+    ignore_errors: yes
+
   - name: Rename sv2.8
     command: mv /var/www/html/smartvisu-master /var/www/html/smartvisu2.8
 

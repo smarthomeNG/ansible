@@ -96,6 +96,11 @@
       src: configs/apt_lirc.conf
       dest: /etc/apt/preferences.d/lirc
 
+  - name: Copy logrotate
+    copy:
+      src: configs/logrotate_lircd
+      dest: /etc/logrotate.d/lircd
+
   - name: create directory
     file:
       path: /var/log/lirc
@@ -109,18 +114,25 @@
       path: "/etc/rsyslog.d/lirc.conf"
       create: yes
       block: |
+        template(name="FileFormat_timestamp" type="string" string= "%TIMESTAMP% %HOSTNAME% %syslogtag% %pri-text%%msg:::sp-if-no-1st-sp%%msg:::drop-last-lf%\n")
         if $programname == 'lircd' then {
-          action(type="omfile" file="/var/log/lirc/lirc.log")
+          action(type="omfile" file="/var/log/lirc.log" template="FileFormat_timestamp" FileCreateMode="0644" FileGroup="adm" FileOwner="smarthome")
           stop
         }
     ignore_errors: yes
 
-  - name: Change helper service
-    replace:
-      destfile: /lib/systemd/system/lircd-setup.service
-      regexp: 'ExecStart=/usr/sbin/lircd-setup'
-      replace: 'ExecStart=/usr/local/sbin/lircd-setup'
-    ignore_errors: yes
+  - name: create systemd dir lirc
+    file:
+      path: /etc/systemd/system/lircd.service.d/
+      state: directory
+
+  - name: Copy service_conf lirc
+    copy:
+      src: configs/service_lirc_fix.conf
+      dest: /etc/systemd/system/lircd.service.d/
+      owner: smarthome
+      group: smarthome
+      mode: 0644
 
   - name: reload
     command: 'systemctl daemon-reload'
@@ -134,10 +146,10 @@
       chdir: /sbin
 
   - name: Restart Socket
-    systemd: state=restarted name=lircd.socket
+    systemd: daemon_reload=yes state=restarted name=lircd.socket
 
   - name: Restart Service
-    systemd: state=restarted name=lircd.service
+    systemd: daemon_reload=yes state=restarted name=lircd.service
 
   - name: disable lircd-setup
     systemd: enabled=no name=lircd-setup.service

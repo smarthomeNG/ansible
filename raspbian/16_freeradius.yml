@@ -37,6 +37,18 @@
       replace: "auth = yes"
     ignore_errors: yes
 
+  - name: log2
+    replace:
+      destfile: /etc/freeradius/3.0/radiusd.conf
+      regexp: "destination = files"
+      replace: "destination = syslog"
+
+  - name: log3
+    replace:
+      destfile: /etc/freeradius/3.0/radiusd.conf
+      regexp: "logdir = /var/log/freeradius"
+      replace: "logdir = /var/log"
+
   - name: Copy eap
     copy:
       src: configs/freeradius_eap.conf
@@ -137,6 +149,18 @@
       groups: freerad
       append: yes
 
+  - name: logfile
+    blockinfile:
+      path: "/etc/rsyslog.d/freeradius.conf"
+      create: yes
+      block: |
+        $Template freeradius,"%TIMESTAMP% %HOSTNAME% %syslogtag% %pri-text:R,ERE,2,FIELD:([a-z]*\.)(.*)--end%:%msg:R,ERE,1,FIELD:(.*)--end:sp-if-no-1st-sp%%msg:R,ERE,1,FIELD:(.*)--end:drop-last-lf%\n"
+        if $programname == 'freeradius' or $programname == 'radiusd' or $msg contains 'FreeRADIUS' or $msg contains 'freeradius' then {
+          action(type="omfile" file="/var/log/freeradius.log" template="freeradius" FileCreateMode="0644" FileGroup="adm" FileOwner="freerad")
+          stop
+        }
+    ignore_errors: yes
+
   - name: logrotate1
     replace:
       destfile: /etc/logrotate.d/freeradius
@@ -150,8 +174,12 @@
       insertafter: "#copytruncate"
       block: |
         prerotate
-               /bin/systemctl stop freeradius
+            pid_file="/run/freeradius/freeradius.pid"
+            if test -e "${pid_file}"; then touch "${pid_file}.ACTIVE"; fi
+            /bin/systemctl stop freeradius
         endscript
         postrotate
-               /bin/systemctl start freeradius
+            pid_file="/run/freeradius/freeradius.pid.ACTIVE"
+            if test -e "${pid_file}"; then /bin/systemctl start freeradius.service 1>/dev/null; fi
+            if test -e "${pid_file}"; then /usr/bin/rm "${pid_file}" 1>/dev/null; fi
         endscript

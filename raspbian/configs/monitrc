@@ -1,7 +1,7 @@
 set daemon 90
    with start delay 90
 
-set logfile /var/log/monit.log
+set logfile syslog
 set mailserver
     localhost
     PORT 25
@@ -15,7 +15,7 @@ allow 10.0.0.0/8
 allow localhost
 
 # Avahi daemon
- check process avahi with pidfile /var/run/avahi-daemon/pid
+ check process avahi with pidfile /run/avahi-daemon/pid
    group system
    start program = "/bin/systemctl start avahi-daemon"
    stop  program = "/bin/systemctl stop avahi-daemon"
@@ -38,7 +38,7 @@ allow localhost
    if failed gid root then unmonitor
 
 #CRON
-check process cron with pidfile /var/run/crond.pid
+check process cron with pidfile /run/crond.pid
    group system
    depends on cron_rc
    start program = "/bin/systemctl start cron"
@@ -76,7 +76,7 @@ check process knxd matching "knxd"
  if 20 restarts within 45 cycles then unmonitor
 
 #WWW
-check process nginx with pidfile /var/run/nginx.pid
+check process nginx with pidfile /run/nginx.pid
  start program = "/bin/systemctl start nginx"
  stop program = "/bin/systemctl stop nginx"
  restart program = "/bin/systemctl restart nginx"
@@ -85,11 +85,11 @@ check process nginx with pidfile /var/run/nginx.pid
  if 15 restarts within 25 cycles then unmonitor
 
 #PHP
-check process php-fpm with pidfile /var/run/php/php7.3-fpm.pid
+check process php-fpm with pidfile /run/php/php7.3-fpm.pid
   start program = "/bin/systemctl start php7.3-fpm"
   stop program = "/bin/systemctl stop php7.3-fpm"
   restart program = "/bin/systemctl restart php7.3-fpm"
-  if failed unixsocket /var/run/php/php7.3-fpm.sock then restart
+  if failed unixsocket /run/php/php7.3-fpm.sock then restart
   if 15 restarts within 25 cycles then unmonitor
 
 #SMARTHOME
@@ -102,7 +102,7 @@ check process smarthome with pidfile /usr/local/smarthome/var/run/smarthome.pid
  if 20 restarts within 45 cycles then unmonitor
 
 #SSH
-check process sshd with pidfile /var/run/sshd.pid
+check process sshd with pidfile /run/sshd.pid
   start program = "/bin/systemctl start ssh"
   stop program = "/bin/systemctl stop ssh"
   restart program = "/bin/systemctl restart ssh"
@@ -110,29 +110,54 @@ check process sshd with pidfile /var/run/sshd.pid
   if 10 restarts within 15 cycles then unmonitor
 
 # SAMBA
-check process Samba with pidfile "/var/run/samba/smbd.pid"
-    start program = "/bin/systemctl start smbd"
-    stop program = "/bin/systemctl stop smbd"
-    restart program = "/bin/systemctl restart smbd"
-    if failed host 127.0.0.1 port 139 type tcp for 2 cycles then restart
-    if 10 restarts within 15 cycles then unmonitor
+ check process smbd with pidfile /run/samba/smbd.pid
+   group samba
+   start program = "/bin/systemctl start smbd"
+   stop program = "/bin/systemctl stop smbd"
+   #if failed host 127.0.0.1 port 139 type tcp then restart
+   if 5 restarts within 5 cycles then timeout
+   depends on smbd_bin
+
+ check process nmbd with pidfile /run/samba/nmbd.pid
+   group samba
+   start program = "/bin/systemctl start nmbd"
+   stop  program = "/bin/systemctl stop nmbd"
+   #if failed host 127.0.0.1 port 138 type udp then restart
+   #if failed host 127.0.0.1 port 137 type udp then restart
+   if 5 restarts within 5 cycles then timeout
+   depends on nmbd_bin
+
+ check file nmbd_bin with path /usr/sbin/nmbd
+   group samba
+   if failed checksum then unmonitor
+   if failed permission 755 then unmonitor
+   if failed uid root then unmonitor
+   if failed gid root then unmonitor
+
+ check file smbd_bin with path /usr/sbin/smbd
+   group samba
+   if failed checksum then unmonitor
+   if failed permission 755 then unmonitor
+   if failed uid root then unmonitor
+   if failed gid root then unmonitor
 
 ##LIRC
-#check process lirc with pidfile /var/run/lirc/lircd.pid
+#check process lirc with pidfile /run/lirc/lircd.pid
+# not every "0-5 0 * * *"
 # start program = "/bin/systemctl start lircd"
 # stop program = "/bin/systemctl stop lircd"
 # restart program = "/bin/systemctl restart lircd"
 # if 20 restarts within 45 cycles then unmonitor
 
 ##WATCHDOG
-#check process watchdog with pidfile /var/run/watchdog.pid
+#check process watchdog with pidfile /run/watchdog.pid
 # start program = "/bin/systemctl start watchdog"
 # stop program = "/bin/systemctl start watchdog"
 # restart program = "/bin/systemctl restart watchdog"
 # if 20 restarts within 45 cycles then unmonitor
 
 ##EXIM
-#check process exim4 with pidfile /var/run/exim4/exim.pid
+#check process exim4 with pidfile /run/exim4/exim.pid
 #   group exim
 #   start program = "/bin/systemctl start exim4"
 #   stop program = "/bin/systemctl stop exim4"
@@ -148,14 +173,15 @@ check process Samba with pidfile "/var/run/samba/smbd.pid"
 #   if failed gid root then unmonitor
 
 ##SUSV
-#check process susvd with pidfile /var/run/susvd.pid
+#check process susvd with pidfile /run/susvd.pid
 #start program = "/bin/systemctl start susvd"
 #stop program = "/bin/systemctl stop susvd"
 #restart program = "/bin/systemctl restart susvd"
 # if 10 restarts within 15 cycles then unmonitor
 
 ##RADIUS
-#check process freeradius with pidfile /var/run/freeradius/freeradius.pid
+#check process freeradius with pidfile /run/freeradius/freeradius.pid
+# not every "0-5 0 * * *"
 # start program = "/bin/systemctl start freeradius"
 # stop program = "/bin/systemctl stop freeradius"
 # restart program = "/bin/systemctl restart freeradius"
@@ -196,10 +222,10 @@ check process Samba with pidfile "/var/run/samba/smbd.pid"
 #    start program = "/bin/systemctl start mysql" with timeout 60 seconds
 #    stop program = "/bin/systemctl stop mysql"
 #    restart program = "/bin/systemctl restart mysql"
-#    if failed unixsocket /var/run/mysqld/mysqld.sock then restart
+#    if failed unixsocket /run/mysqld/mysqld.sock then restart
 
 ##GRAFANA
-#check process grafana-server with pidfile /var/run/grafana/grafana-server.pid
+#check process grafana-server with pidfile /run/grafana/grafana-server.pid
 #  start program = "/bin/systemctl start grafana-server"
 #  stop program = "/bin/systemctl stop grafana-server"
 #  restart program = "/bin/systemctl restart grafana-server"
@@ -207,6 +233,7 @@ check process Samba with pidfile "/var/run/samba/smbd.pid"
 
 ##OPENVPN
 #check process openvpn with pidfile /run/openvpn/server.pid
+#  not every "0 0 * * *"
 #  start program = "/bin/systemctl start openvpn@server" with timeout 60 seconds
 #  stop program = "/bin/systemctl stop openvpn@server"
 #  restart program = "/bin/systemctl restart openvpn@server"

@@ -1,0 +1,9 @@
+/var/log/letsencrypt/letsencrypt.log {
+        weekly
+        missingok
+        rotate 7
+        dateext
+        dateformat .%Y-%m-%d.log
+        notifempty
+        create 0640 www-data adm
+}

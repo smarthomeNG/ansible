@@ -22,7 +22,7 @@
   - name: copy_jail
     copy:
       dest: /etc/fail2ban/jail.local
-      src: configs/fail2ban.conf
+      src: configs/fail2ban_jail.conf
 
   - name: copy_https
     copy:
@@ -33,6 +33,11 @@
     copy:
       dest: /etc/fail2ban/filter.d/nginx-http-404.conf
       src: configs/fail2ban_http_404.conf
+
+  - name: copy_http
+    copy:
+      dest: /etc/fail2ban/filter.d/nginx-http-auth2.conf
+      src: configs/fail2ban_http_2.conf
 
   - name: update_auth
     lineinfile:
@@ -59,6 +64,24 @@
       dest: /etc/fail2ban/filter.d/nginx-badbots.conf
       src: /etc/fail2ban/filter.d/apache-badbots.conf
       state: link
+
+  - name: Change logtarget
+    replace:
+      destfile: /etc/fail2ban/fail2ban.conf
+      regexp: "logtarget = (.*)"
+      replace: 'logtarget = sysout[format="%%(levelname)-7s %%(message)s"]'
+
+  - name: logfile
+    blockinfile:
+      path: "/etc/rsyslog.d/fail2ban.conf"
+      create: yes
+      block: |
+        template(name="FileFormat_timestamp" type="string" string= "%TIMESTAMP% %HOSTNAME% %syslogtag% %pri-text%%msg:::sp-if-no-1st-sp%%msg:::drop-last-lf%\n")
+        if $programname startswith 'fail2ban' then {
+          action(type="omfile" file="/var/log/fail2ban.log" template="FileFormat_timestamp" FileCreateMode="0644" FileGroup="adm")
+          stop
+        }
+    ignore_errors: yes
 
   - name: copy_nohome
     copy:
@@ -100,11 +123,11 @@
   - name: disable fail2ban
     systemd: enabled=no name=fail2ban
 
-  - name: logrotate
-    lineinfile:
-      destfile: /etc/logrotate.d/fail2ban
-      line: "notifempty"
-      insertafter: "compress"
+  - name: Copy logrotate
+    copy:
+      src: configs/logrotate_fail2ban
+      dest: /etc/logrotate.d/fail2ban
+      mode: 0644
 
   - name: fix tmpfiles folder
     replace:

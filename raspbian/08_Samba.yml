@@ -53,48 +53,36 @@
     register: create_user_output
     changed_when: "'Added user' in create_user_output.stdout"
 
-  - name: create systemd dir smb
-    file:
-      path: /etc/systemd/system/smbd.service.d/
-      state: directory
-
-  - name: Copy service_conf smb
-    copy:
-      src: configs/service_smbd_fix.conf
-      dest: /etc/systemd/system/smbd.service.d/
-      owner: smarthome
-      group: smarthome
-      mode: 0644
-
-  - name: create systemd dir nmb
-    file:
-      path: /etc/systemd/system/nmbd.service.d/
-      state: directory
-
-  - name: Copy service_conf nmb
-    copy:
-      src: configs/service_nmbd_fix.conf
-      dest: /etc/systemd/system/nmbd.service.d/
-      owner: smarthome
-      group: smarthome
-      mode: 0644
-
-  - name: smbd service
+  - name: Change smbd_service
     replace:
       destfile: /lib/systemd/system/smbd.service
       regexp: "PIDFile=/var/run/samba/smbd.pid"
       replace: "PIDFile=/run/samba/smbd.pid"
-    ignore_errors: yes
 
-  - name: nmbd service
+  - name: Change nmbd_service
     replace:
       destfile: /lib/systemd/system/nmbd.service
       regexp: "PIDFile=/var/run/samba/nmbd.pid"
       replace: "PIDFile=/run/samba/nmbd.pid"
+
+  - name: logfile
+    blockinfile:
+      path: "/etc/rsyslog.d/samba.conf"
+      create: yes
+      block: |
+        template(name="FileFormat_timestamp" type="string" string= "%TIMESTAMP% %HOSTNAME% %syslogtag% %pri-text%%msg:::sp-if-no-1st-sp%%msg:::drop-last-lf%\n")
+        if $syslogfacility-text == 'daemon' and ($programname == 'smbd' or $msg contains 'Samba' or $programname == 'smbd_audit') then {
+          action(type="omfile" file="/var/log/samba.log" template="FileFormat_timestamp" FileCreateMode="0644" FileGroup="adm")
+          stop
+        }
+        if $programname == 'nmbd' then {
+          action(type="omfile" file="/var/log/samba.log" template="FileFormat_timestamp" FileCreateMode="0644" FileGroup="adm")
+          stop
+        }
     ignore_errors: yes
 
   - name: Restart smbd
-    systemd: state=restarted name=smbd
+    systemd: daemon_reload=yes state=restarted name=smbd
     notify: Enable smbd
 
   handlers:

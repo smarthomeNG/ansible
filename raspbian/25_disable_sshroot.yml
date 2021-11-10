@@ -13,12 +13,14 @@
     command: apt-get -y autoclean
 
   - name: Purge python cache
-    command: pip3 purge cache
+    command: pip3 cache purge
     become: true
     become_user: smarthome
+    ignore_errors: true
 
   - name: Purge root python cache
-    command: pip3 purge cache
+    command: pip3 cache purge
+    ignore_errors: true
 
   - name: Change ssh
     replace:

@@ -51,7 +51,7 @@ if [ $sh = "Update" ]; then
   sudo chmod +x /usr/local/smarthome/bin/smarthome.py
 fi
 
-echo "Do you want to update SmartVISU 2.9?"
+echo "Do you want to update smartvisu?"
 sv="Skip"
 select sv in "Update" "Skip"; do
     case $sv in

@@ -33,6 +33,7 @@
       "cmake",
       "mlocate",
       "snmpd",
+      "snmp-mibs-downloader",
       "snmp",
       "fake-hwclock",
       "libudev-dev",
@@ -64,6 +65,15 @@
       state: latest
     with_items: "{{ packages }}"
 
+  - name: remove pulseaudio
+    apt:
+      name: "pulseaudio*"
+      state: absent
+      purge: yes
+
+  - name: apt autoremove
+    apt: autoremove=yes
+
   - name: set timezone to Central Europe
     timezone:
       name: Europe/Vienna
@@ -73,7 +83,7 @@
       name: en_GB.UTF-8
       state: present
 
-  - name: install locale
+  - name: install german locale
     locale_gen:
       name: de_DE.UTF-8
       state: present
@@ -191,7 +201,7 @@
     systemd: enabled=yes name=ssh.service
 
   - name: Restart sshd
-    systemd: state=restarted name=ssh
+    systemd: daemon_reload=yes state=restarted name=ssh
 
   - name: Enable network online
     systemd: enabled=yes name=systemd-networkd-wait-online.service
@@ -246,7 +256,7 @@
         #dtparam=watchdog=on
 
   - name: Test for entry
-    shell: grep "^i2c-bcm2708" /etc/modules
+    shell: grep "^i2c-bcm2708" /etc/modules | cat
     register: test_grep2
     ignore_errors: yes
 
@@ -411,6 +421,14 @@
       owner: smarthome
       group: smarthome
 
+  - name: Copy logrotate
+    copy:
+      src: configs/logrotate.conf
+      dest: /etc/
+      mode: 0644
+      owner: root
+      group: root
+
   - name: disable systemslice
     blockinfile:
       path: /etc/rsyslog.d/ignore-systemd-session-slice.conf
@@ -438,6 +456,13 @@
     register: cronlog
   - debug: var=cronlog
 
+  - name: no user log
+    replace:
+      destfile: /etc/rsyslog.conf
+      regexp: "^user."
+      replace: "#user."
+    ignore_errors: yes
+
   - name: debdir
     file: path=/etc/deb-files/ state=directory mode=0755
 
@@ -460,12 +485,37 @@
       path: "/etc/rsyslog.d/ufw.conf"
       create: yes
       block: |
-        template(name="FileFormat_timestamp" type="string" string= "%TIMESTAMP% %HOSTNAME% %syslogtag%%msg:::sp-if-no-1st-sp%%msg:::drop-last-lf%\n")
+        template(name="FileFormat_timestamp" type="string" string= "%TIMESTAMP% %HOSTNAME% %syslogtag% %pri-text%%msg:::sp-if-no-1st-sp%%msg:::drop-last-lf%\n")
         if $programname == 'ufw' or $msg contains 'UFW' then {
           action(type="omfile" file="/var/log/ufw.log" template="FileFormat_timestamp")
           stop
         }
     ignore_errors: yes
+
+  - name: rngd logfile
+    blockinfile:
+      path: "/etc/rsyslog.d/rngd.conf"
+      create: yes
+      block: |
+        template(name="FileFormat_timestamp" type="string" string= "%TIMESTAMP% %HOSTNAME% %syslogtag% %pri-text%%msg:::sp-if-no-1st-sp%%msg:::drop-last-lf%\n")
+        if $programname == 'rngd' then {
+          action(type="omfile" file="/var/log/rng.log" template="FileFormat_timestamp")
+          stop
+        }
+    ignore_errors: yes
+
+  - name: create systemd dir snmpd
+    file:
+      path: /etc/systemd/system/snmpd.service.d/
+      state: directory
+
+  - name: Copy service_conf snmpd
+    copy:
+      src: configs/service_snmpd_fix.conf
+      dest: /etc/systemd/system/snmpd.service.d/
+      owner: root
+      group: adm
+      mode: 0644
 
   - name: fix snmpd1
     replace:
@@ -479,6 +529,28 @@
       destfile: /etc/default/snmpd
       regexp: "-smux,mteTrigger,mteTriggerConf"
       replace: "-smux"
+    ignore_errors: yes
+
+  - name: fix snmpd3
+    replace:
+      destfile: /etc/snmp/snmp.conf
+      regexp: "^mibs"
+      replace: "#mibs"
+    ignore_errors: yes
+
+  - name: Install snmp_mibs
+    apt: name=snmp-mibs-downloader force=no state=latest
+
+  - name: snmp logfile
+    blockinfile:
+      path: "/etc/rsyslog.d/samba.conf"
+      create: yes
+      block: |
+        template(name="FileFormat_timestamp" type="string" string= "%TIMESTAMP% %HOSTNAME% %syslogtag% %pri-text%%msg:::sp-if-no-1st-sp%%msg:::drop-last-lf%\n")
+        if $programname == 'snmpd' then {
+          action(type="omfile" file="/var/log/snmp.log" template="FileFormat_timestamp" FileCreateMode="0644" FileGroup="adm")
+          stop
+        }
     ignore_errors: yes
 
   - name: rsyslog
@@ -544,6 +616,25 @@
       regexp: '^//Unattended-Upgrade::Remove-Unused-Dependencies "false";'
       replace: 'Unattended-Upgrade::Remove-Unused-Dependencies "true";'
     ignore_errors: yes
+
+  - name: create systemd dir unattendedupgrades
+    file:
+      path: /etc/systemd/system/unattended-upgrades.service.d/
+      state: directory
+
+  - name: Copy service_conf unattendedupgrades
+    copy:
+      src: configs/service_unattendedupgrades_fix.conf
+      dest: /etc/systemd/system/unattended-upgrades.service.d/
+      owner: root
+      group: adm
+      mode: 0644
+
+  - name: logrotate
+    lineinfile:
+      path: /etc/logrotate.d/rsyslog
+      regexp: 'compress'
+      state: absent
 
   - name: Swap
     replace:

@@ -65,58 +65,36 @@
 
   - name: Download GeoIP
     get_url:
-      url: https://dl.miyuru.lk/geoip/maxmind/country/maxmind4.dat.gz
+      url: https://mailfud.org/geoip-legacy/GeoIP.dat.gz
       dest: /usr/share/GeoIP
     ignore_errors: yes
 
   - name: Download GeoIP6
     get_url:
-      url: https://dl.miyuru.lk/geoip/maxmind/country/maxmind6.dat.gz
+      url: https://mailfud.org/geoip-legacy/GeoIPv6.dat.gz
       dest: /usr/share/GeoIP
     ignore_errors: yes
 
   - name: Extract GeoIP
-    command: "gunzip -f maxmind4.dat.gz"
+    command: "gunzip -f GeoIP.dat.gz"
     args:
       chdir: /usr/share/GeoIP/
     ignore_errors: yes
 
   - name: Extract GeoIPv6
-    command: "gunzip -f maxmind6.dat.gz"
+    command: "gunzip -f GeoIPv6.dat.gz"
     args:
       chdir: /usr/share/GeoIP/
     ignore_errors: yes
 
-  - name: Movev4
-    copy:
-      remote_src: yes
-      src: /usr/share/GeoIP/maxmind4.dat
-      dest: /usr/share/GeoIP/GeoIP.dat
-
-  - name: Movev6
-    copy:
-      remote_src: yes
-      src: /usr/share/GeoIP/maxmind6.dat
-      dest: /usr/share/GeoIP/GeoIPv6.dat
-
   - name: Deletev4gz
     file:
-      path: /usr/share/GeoIP/maxmind4.dat.gz
+      path: /usr/share/GeoIP/GeoIP.dat.gz
       state: absent
 
   - name: Deletev6gz
     file:
-      path: /usr/share/GeoIP/maxmind6.dat.gz
-      state: absent
-
-  - name: Deletev4
-    file:
-      path: /usr/share/GeoIP/maxmind4.dat
-      state: absent
-
-  - name: Deletev6
-    file:
-      path: /usr/share/GeoIP/maxmind6.dat
+      path: /usr/share/GeoIP/GeoIPv6.dat.gz
       state: absent
 
   - name: letsencrypt add
@@ -169,7 +147,7 @@
       group: www-data
 
   - name: Restart1
-    systemd: state=restarted name=nginx
+    systemd: daemon_reload=yes state=restarted name=nginx
 
   - name: Password1
     command: "htpasswd -cb /etc/nginx/.smartvisu smarthome smarthome"
@@ -212,6 +190,24 @@
       destfile: /etc/php/7.3/fpm/php.ini
       regexp: ";cgi.fix_pathinfo=1"
       replace: "cgi.fix_pathinfo=0"
+
+  - name: Change log
+    replace:
+      destfile: /etc/php/7.3/fpm/php-fpm.conf
+      regexp: "error_log = /var/log/php7.3-fpm.log"
+      replace: "error_log = syslog"
+
+  - name: logfile
+    blockinfile:
+      path: "/etc/rsyslog.d/php.conf"
+      create: yes
+      block: |
+        template(name="FileFormat_timestamp" type="string" string= "%TIMESTAMP% %HOSTNAME% %syslogtag% %pri-text%%msg:::sp-if-no-1st-sp%%msg:::drop-last-lf%\n")
+        if $programname startswith 'php' then {
+          action(type="omfile" file="/var/log/php7.3-fpm.log" template="FileFormat_timestamp" FileCreateMode="0644" FileGroup="adm" FileOwner="www-data")
+          stop
+        }
+    ignore_errors: yes
 
   - name: Git crypto
     git:
@@ -305,8 +301,62 @@
       group: smarthome
       mode: 0777
 
+  - name: logfile
+    blockinfile:
+      path: "/etc/rsyslog.d/nginx.conf"
+      create: yes
+      block: |
+        template(name="FileFormat_timestamp_nginx" type="string" string= "%TIMESTAMP% %HOSTNAME% %syslogtag%%msg:::sp-if-no-1st-sp%%msg:::drop-last-lf%\n")
+        $Template nginxerror,"%TIMESTAMP% %HOSTNAME% %syslogtag:R,ERE,1,BLANK:(.*)(\:)--end%[%msg:R,ERE,2,FIELD:([0-9]*#)([0-9]*)(.*)--end%]:%msg:R,ERE,3,BLANK:([0-9]{4}/[0-9]{2}/[0-9]{2}\s+[:0-9]{8}\s+\[error\]\s+([0-9]*#[0-9]*\:\s)(.*))--end:sp-if-no-1st-sp%%msg:R,ERE,3,BLANK:([0-9]{4}/[0-9]{2}/[0-9]{2}\s+[:0-9]{8}\s+\[error\]\s+([0-9]*#[0-9]*\:\s)(.*))--end:drop-last-lf%\n"
+        $Template nginxalert,"%TIMESTAMP% %HOSTNAME% %syslogtag:R,ERE,1,BLANK:(.*)(\:)--end%[%msg:R,ERE,2,FIELD:([0-9]*#)([0-9]*)(.*)--end%]:%msg:R,ERE,3,BLANK:([0-9]{4}/[0-9]{2}/[0-9]{2}\s+[:0-9]{8}\s+\[alert\]\s+([0-9]*#[0-9]*\:\s)(.*))--end:sp-if-no-1st-sp%%msg:R,ERE,3,BLANK:([0-9]{4}/[0-9]{2}/[0-9]{2}\s+[:0-9]{8}\s+\[alert\]\s+([0-9]*#[0-9]*\:\s)(.*))--end:drop-last-lf%\n"
+        $Template nginxcritical,"%TIMESTAMP% %HOSTNAME% %syslogtag:R,ERE,1,BLANK:(.*)(\:)--end%[%msg:R,ERE,2,FIELD:([0-9]*#)([0-9]*)(.*)--end%]:%msg:R,ERE,3,BLANK:([0-9]{4}/[0-9]{2}/[0-9]{2}\s+[:0-9]{8}\s+\[crit\]\s+([0-9]*#[0-9]*\:\s)(.*))--end:sp-if-no-1st-sp%%msg:R,ERE,3,BLANK:([0-9]{4}/[0-9]{2}/[0-9]{2}\s+[:0-9]{8}\s+\[crit\]\s+([0-9]*#[0-9]*\:\s)(.*))--end:drop-last-lf%\n"
+        $Template nginxemergency,"%TIMESTAMP% %HOSTNAME% %syslogtag%%msg:R,ERE,2,FIELD:(nginx\:\s+)(.*)--end:sp-if-no-1st-sp%%msg:R,ERE,2,FIELD:(nginx\:\s+)(.*)--end:drop-last-lf%\n"
+        $Template nginxwarn,"%TIMESTAMP% %HOSTNAME% %syslogtag:R,ERE,1,BLANK:(.*)(\:)--end%[%msg:R,ERE,2,FIELD:([0-9]*#)([0-9]*)(.*)--end%]:%msg:R,ERE,3,BLANK:([0-9]{4}/[0-9]{2}/[0-9]{2}\s+[:0-9]{8}\s+\[warn\]\s+([0-9]*#[0-9]*\:\s)(.*))--end:sp-if-no-1st-sp%%msg:R,ERE,3,BLANK:([0-9]{4}/[0-9]{2}/[0-9]{2}\s+[:0-9]{8}\s+\[warn\]\s+([0-9]*#[0-9]*\:\s)(.*))--end:drop-last-lf%\n"
+
+        if $syslogfacility-text == 'local7' and $syslogseverity-text == 'info' and $programname == 'nginx' then {
+          action(type="omfile" file="/var/log/nginx/access.log" template="FileFormat_timestamp_nginx"  FileCreateMode="0644" FileGroup="adm" FileOwner="www-data")
+          stop
+        }
+        if $syslogfacility-text == 'local7' and $syslogseverity-text == 'alert' and $programname == 'nginx' and $msg contains 'alert' then {
+          action(type="omfile" file="/var/log/nginx/error.log" template="nginxalert"  FileCreateMode="0644" FileGroup="adm" FileOwner="www-data")
+          stop
+        }
+        if $syslogfacility-text == 'local7' and $syslogseverity-text == 'warn' and $programname == 'nginx' and $msg contains 'warn' then {
+          action(type="omfile" file="/var/log/nginx/error.log" template="nginxwarn"  FileCreateMode="0644" FileGroup="adm" FileOwner="www-data")
+          stop
+        }
+        if $syslogfacility-text == 'local7' and $syslogseverity-text == 'error' and $programname == 'nginx' and $msg contains 'error' then {
+          action(type="omfile" file="/var/log/nginx/error.log" template="nginxerror"  FileCreateMode="0644" FileGroup="adm" FileOwner="www-data")
+          stop
+        }
+        if $syslogfacility-text == 'local7' and $syslogseverity-text == 'crit' and $programname == 'nginx' and $msg contains 'crit' then {
+          action(type="omfile" file="/var/log/nginx/error.log" template="nginxcritical"  FileCreateMode="0644" FileGroup="adm" FileOwner="www-data")
+          stop
+        }
+        if ($programname == 'nginx' and $msg contains 'nginx.conf test failed') or ($syslogseverity-text > 'crit' and $programname == 'nginx' and $msg contains 'emerg') then {
+          action(type="omfile" file="/var/log/nginx/error.log" template="nginxemergency"  FileCreateMode="0644" FileGroup="adm" FileOwner="www-data")
+          stop
+        }
+  - name: Copy logrotate
+    copy:
+      src: configs/logrotate_nginx
+      dest: /etc/logrotate.d/nginx
+      mode: 0644
+
+  - name: Copy certbot
+    copy:
+      src: configs/logrotate_certbot
+      dest: /etc/logrotate.d/certbot
+      mode: 0644
+
+  - name: logrotate_php
+    lineinfile:
+      path: /etc/logrotate.d/php7.3-fpm
+      regexp: 'compress'
+      state: absent
+
   - name: Restart php
-    systemd: state=restarted name=php7.3-fpm.service
+    systemd: daemon_reload=yes state=restarted name=php7.3-fpm.service
 
   - name: Restart nginx
     systemd: state=restarted name=nginx

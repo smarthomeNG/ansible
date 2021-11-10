@@ -58,40 +58,22 @@
       name: mosquitto-clients
       force: yes
 
-  - name: Create User
-    user:
-      name: mosquitto
-      shell: /dev/null
-      groups: users
-      createhome: no
-      comment: 'Mosquitto User'
-
-  - name: create directory
-    file:
-      path: /var/log/mosquitto
-      state: directory
-      mode: 0755
+  - name: Copy conf
+    copy:
+      src: configs/mosquitto.conf
+      dest: /etc/mosquitto/
       owner: mosquitto
-      group: mosquitto
-
-  - name: logdest
-    blockinfile:
-      path: "/etc/mosquitto/mosquitto.conf"
-      block: |
-        log_dest syslog
-        log_type notice
-        #log_facility 0
-        log_timestamp false
-    ignore_errors: yes
+      group: adm
+      mode: 0644
 
   - name: logfile
     blockinfile:
       path: "/etc/rsyslog.d/mosquitto.conf"
       create: yes
       block: |
-        template(name="FileFormat_timestamp" type="string" string= "%TIMESTAMP% %HOSTNAME% %syslogtag%%msg:::sp-if-no-1st-sp%%msg:::drop-last-lf%\n")
+        template(name="FileFormat_timestamp" type="string" string= "%TIMESTAMP% %HOSTNAME% %syslogtag% %pri-text%%msg:::sp-if-no-1st-sp%%msg:::drop-last-lf%\n")
         if $programname == 'mosquitto' or $msg contains 'Mosquitto' then {
-          action(type="omfile" file="/var/log/mosquitto/mosquitto.log" template="FileFormat_timestamp")
+          action(type="omfile" file="/var/log/mosquitto.log" template="FileFormat_timestamp" FileCreateMode="0644" FileGroup="adm" FileOwner="smarthome")
           stop
         }
     ignore_errors: yes
@@ -102,5 +84,27 @@
       groups: mosquitto
       append: yes
 
+  - name: Groups logcheck
+    user:
+      name: logcheck
+      groups: adm
+      append: yes
+
+  - name: create systemd dir mosquitto
+    file:
+      path: /etc/systemd/system/mosquitto.service.d/
+      state: directory
+
+  - name: Copy service_conf mosquitto
+    copy:
+      src: configs/service_mosquitto_fix.conf
+      dest: /etc/systemd/system/mosquitto.service.d/
+      owner: mosquitto
+      group: adm
+      mode: 0644
+
   - name: rsyslog
-    systemd: state=restarted name=rsyslog.service
+    systemd: daemon_reload=yes state=restarted name=rsyslog.service
+
+  - name: restart
+    systemd: daemon_reload=yes state=restarted name=mosquitto.service

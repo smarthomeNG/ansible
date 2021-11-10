@@ -1,0 +1,11 @@
+/var/log/monit.log {
+        rotate 14
+        daily
+        minsize 1M
+        missingok
+        create 640 root adm
+        notifempty
+        postrotate
+                if [ "$(systemctl is-active monit)" == "active" ]; then invoke-rc.d monit reload > /dev/null; fi
+        endscript
+}

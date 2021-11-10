@@ -93,12 +93,31 @@
     register: exportfs
   - debug: var=exportfs
 
-  - name: rpc service
-    replace:
-      destfile: /lib/systemd/system/rpc-statd.service
-      regexp: "PIDFile=/var/run/rpc.statd.pid"
-      replace: "PIDFile=/run/rpc.statd.pid"
-    ignore_errors: yes
+  - name: create rpc_systemd dir
+    file:
+      path: /etc/systemd/system/rpc-statd.service.d/
+      state: directory
+
+  - name: Copy service_rpc
+    copy:
+      src: configs/service_rpc-statd_fix.conf
+      dest: /etc/systemd/system/rpc-statd.service.d/
+      owner: smarthome
+      group: smarthome
+      mode: 0664
+
+  - name: create blkmap_systemd dir
+    file:
+      path: /etc/systemd/system/nfs-blkmap.service.d/
+      state: directory
+
+  - name: Copy service_blkmap
+    copy:
+      src: configs/service_nfs-blkmap_fix.conf
+      dest: /etc/systemd/system/nfs-blkmap.service.d/
+      owner: smarthome
+      group: smarthome
+      mode: 0664
 
   - name: Enable rpcbind
     systemd: enabled=yes name=rpcbind

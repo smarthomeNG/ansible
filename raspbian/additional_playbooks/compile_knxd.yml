@@ -32,7 +32,7 @@
     git:
       repo: 'https://github.com/knxd/knxd.git'
       dest: /root/knxd
-      version: master
+      version: debian
     register: git
   - debug: var=git
 

@@ -52,6 +52,12 @@
       regexp: "/var/log/influxdb/influxd.log"
       replace: "/var/log/influxdb.log"
 
+  - name: logrotate2
+    lineinfile:
+      path: /etc/logrotate.d/influxdb
+      regexp: 'compress'
+      state: absent
+
   - name: Create db
     shell: influx -execute "CREATE DATABASE smarthome"
     async: 40

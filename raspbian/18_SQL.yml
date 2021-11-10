@@ -90,6 +90,22 @@
       recurse: yes
       state: directory
 
+  - name: Nocompress logrotate
+    replace:
+      destfile: /etc/logrotate.d/mysql-server
+      regexp: "compress"
+      replace: "#compress"
+
+  - name: tweak logrotate
+    blockinfile:
+      path: /etc/logrotate.d/mysql-server
+      create: no
+      insertafter: missingok
+      block: |
+        notifempty
+        dateext
+        dateformat .%Y-%m-%d.log
+
   - name: conf
     copy:
       src: configs/mysql.cnf
@@ -111,6 +127,39 @@
       destfile: /etc/mysql/mariadb.conf.d/50-server.cnf
       regexp: "^bind-address"
       replace: "#bind-address"
+    ignore_errors: yes
+
+  - name: syslog
+    replace:
+      destfile: /etc/mysql/mariadb.conf.d/50-server.cnf
+      regexp: "^log_error = /var/log/mysql/error.log"
+      replace: "#log_error = /var/log/mysql/error.log"
+    ignore_errors: yes
+
+  - name: logfile
+    blockinfile:
+      path: "/etc/rsyslog.d/mysql.conf"
+      create: yes
+      block: |
+        $Template FileFormat_sql,"%TIMESTAMP% %HOSTNAME% %syslogtag% %pri-text%%msg:R,ERE,3,FIELD:(([0-9]{4}-[0-9]{2}-[0-9]{2}\s+[:0-9]{8}\s+[:0-9]{1}\s+\[Note\]\s+)(.*))--end:sp-if-no-1st-sp%%msg:R,ERE,3,FIELD:(([0-9]{4}-[0-9]{2}-[0-9]{2}\s+[:0-9]{8}\s+[:0-9]{1}\s+\[Note\]\s+)(.*))--end:drop-last-lf%\n"
+        $Template FileFormat_sql_warning,"%TIMESTAMP% %HOSTNAME% %syslogtag% %pri-text%%msg:R,ERE,3,FIELD:(([0-9]{4}-[0-9]{2}-[0-9]{2}\s+[:0-9]{8}\s+[:0-9]{1}\s+\[Warning\]\s+)(.*))--end:sp-if-no-1st-sp%%msg:R,ERE,3,FIELD:(([0-9]{4}-[0-9]{2}-[0-9]{2}\s+[:0-9]{8}\s+[:0-9]{1}\s+\[Warning\]\s+)(.*))--end:drop-last-lf%\n"
+        $Template FileFormat_sql_error,"%TIMESTAMP% %HOSTNAME% %syslogtag% %pri-text%%msg:R,ERE,3,FIELD:(([0-9]{4}-[0-9]{2}-[0-9]{2}\s+[:0-9]{8}\s+[:0-9]{1}\s+\[Error\]\s+)(.*))--end:sp-if-no-1st-sp%%msg:R,ERE,3,FIELD:(([0-9]{4}-[0-9]{2}-[0-9]{2}\s+[:0-9]{8}\s+[:0-9]{1}\s+\[Error\]\s+)(.*))--end:drop-last-lf%\n"
+        if $programname startswith 'mysql' and ($msg contains_i 'shutdown' or $msg contains_i 'starting as process' or $msg contains_i 'Shutdown') then {
+          action(type="omfile" file="/var/log/mysql/error.log" template="FileFormat_sql" FileCreateMode="0644" FileGroup="adm")
+          stop
+        }
+        if $programname startswith 'mysql' and $syslogseverity-text != 'error' and $msg contains '[Note]' then {
+          action(type="omfile" file="/var/log/mysql/mysql.log" template="FileFormat_sql" FileCreateMode="0644" FileGroup="adm")
+          stop
+        }
+        if $programname startswith 'mysql' and ($syslogseverity-text == 'err' or $msg contains '[Error]') then {
+          action(type="omfile" file="/var/log/mysql/error.log" template="FileFormat_sql_error" FileCreateMode="0644" FileGroup="adm")
+          stop
+        }
+        if $programname startswith 'mysql' and ($syslogseverity-text == 'warning' or $msg contains '[Warning]' or $msg contains '[Error]') then {
+          action(type="omfile" file="/var/log/mysql/error.log" template="FileFormat_sql_warning" FileCreateMode="0644" FileGroup="adm")
+          stop
+        }
     ignore_errors: yes
 
   - name: exec

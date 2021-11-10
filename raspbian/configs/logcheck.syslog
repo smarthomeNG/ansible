@@ -3,6 +3,7 @@
 ^\w{3}(.*)[0-9]{1,2}\s[:0-9]{8}\s[._[:alnum:]-]+\s— MARK --
 ^\w{3}(.*)[0-9]{1,2}\s[:0-9]{8}\s[._[:alnum:]-]+\srpc.mountd\[[0-9]+\]\:\sauthenticated
 ^\w{3}(.*)[0-9]{1,2}\s[:0-9]{8}\s[._[:alnum:]-]+\savahi-daemon\[[0-9]+\]\:\sReceived packet
+^\w{3}(.*)[0-9]{1,2}\s[:0-9]{8}\s[._[:alnum:]-]+\savahi-daemon\[[0-9]+\]\:\sRegistering new address
 ^\w{3}(.*)[0-9]{1,2}\s[:0-9]{8}\s[._[:alnum:]-](.*)Cleanup of Temporary Directories(.*)
 ^\w{3}(.*)[0-9]{1,2}\s[:0-9]{8}\s[._[:alnum:]-](.*)background program processing daemon(.*)
 ^\w{3}(.*)[0-9]{1,2}\s[:0-9]{8}\s[._[:alnum:]-](.*)(Started|Stopped|Starting|Stopping|Reloading|Reloaded|Succeeded)
@@ -10,6 +11,9 @@
 ^\w{3}(.*)[0-9]{1,2}\s[:0-9]{8}\s[._[:alnum:]-]+\sirsend:\slirc_command_run
 ^\w{3}(.*)[0-9]{1,2}\s[:0-9]{8}\s[._[:alnum:]-]+\srsyslogd\:(.*)rsyslogd was HUPed
 ^\w{3}(.*)[0-9]{1,2}\s[:0-9]{8}\s[._[:alnum:]-]+\srsyslogd\:(.*)action(.*)resumed
+^\w{3}(.*)[0-9]{1,2}\s[:0-9]{8}\s[._[:alnum:]-]+\srsyslogd\:(.*)exiting on signal 15
+^\w{3}(.*)[0-9]{1,2}\s[:0-9]{8}\s[._[:alnum:]-]+\srsyslogd\:(.*)Acquired UNIX socket
+^\w{3}(.*)[0-9]{1,2}\s[:0-9]{8}\s[._[:alnum:]-]+\srsyslogd\:(.*)start$
 ^\w{3}(.*)[0-9]{1,2}\s[:0-9]{8}\s[._[:alnum:]-]+\savahi-daemon\[[0-9]+\]\:\s
 ^\w{3}(.*)[0-9]{1,2}\s[:0-9]{8}\s[._[:alnum:]-]+\s+rpc.mountd\[[0-9]*\]\:\s+authenticated mount request
 ^\w{3}(.*)[0-9]{1,2}\s[:0-9]{8}\s[._[:alnum:]-]+\s+systemd\[[0-9]*\]\:\s+(Listening on|Closed) GnuPG
@@ -27,22 +31,19 @@
 ^\w{3}(.*)[0-9]{1,2}\s[:0-9]{8}\s[._[:alnum:]-]+\s+sshd\[[0-9]*\]\:\s+pam_systemd(.*)Failed to release session
 ^\w{3}(.*)[0-9]{1,2}\s[:0-9]{8}\s[._[:alnum:]-]+\s+dnsmasq\[[0-9]*\]\:\s+(forwarded|reply|cached|query)
 ^\w{3}(.*)[0-9]{1,2}\s[:0-9]{8}\s[._[:alnum:]-]+\s+dnsmasq\[[0-9]*\]\:\s+local\.list
-^\w{3}(.*)[0-9]{1,2}\s[:0-9]{8}\s[._[:alnum:]-]+\sfreeradius\[(.*)\]:(.*)Version
-^\w{3}(.*)[0-9]{1,2}\s[:0-9]{8}\s[._[:alnum:]-]+\sfreeradius\[(.*)\]:(.*)The FreeRADIUS server project and contributors
-^\w{3}(.*)[0-9]{1,2}\s[:0-9]{8}\s[._[:alnum:]-]+\sfreeradius\[(.*)\]:(.*)There is NO warranty; not even for MERCHANTABILITY or FITNESS FOR A
-^\w{3}(.*)[0-9]{1,2}\s[:0-9]{8}\s[._[:alnum:]-]+\sfreeradius\[(.*)\]:(.*)PARTICULAR PURPOSE
-^\w{3}(.*)[0-9]{1,2}\s[:0-9]{8}\s[._[:alnum:]-]+\sfreeradius\[(.*)\]:(.*)You may redistribute
-^\w{3}(.*)[0-9]{1,2}\s[:0-9]{8}\s[._[:alnum:]-]+\sfreeradius\[(.*)\]:(.*)GNU General Public License
-^\w{3}(.*)[0-9]{1,2}\s[:0-9]{8}\s[._[:alnum:]-]+\sfreeradius\[(.*)\]:(.*)For more information about these matters, see the file named COPYRIGHT
-^\w{3}(.*)[0-9]{1,2}\s[:0-9]{8}\s[._[:alnum:]-]+\sfreeradius\[(.*)\]:(.*)Debugger not attached
-^\w{3}(.*)[0-9]{1,2}\s[:0-9]{8}\s[._[:alnum:]-]+\sfreeradius\[(.*)\]:(.*)Creating attribute Unix-Group
-^\w{3}(.*)[0-9]{1,2}\s[:0-9]{8}\s[._[:alnum:]-]+\sfreeradius\[(.*)\]:(.*)'User-Password' suppressed, will not appear in detail output
-^\w{3}(.*)[0-9]{1,2}\s[:0-9]{8}\s[._[:alnum:]-]+\sfreeradius\[(.*)\]:(.*)using internal authentication
-^\w{3}(.*)[0-9]{1,2}\s[:0-9]{8}\s[._[:alnum:]-]+\sfreeradius\[(.*)\]:(.*)Using cached TLS configuration from previous invocation
-^\w{3}(.*)[0-9]{1,2}\s[:0-9]{8}\s[._[:alnum:]-]+\sfreeradius\[(.*)\]:(.*)Configuration appears to be OK
-^\w{3}(.*)[0-9]{1,2}\s[:0-9]{8}\s[._[:alnum:]-]+\sfreeradius\[(.*)\]:(.*)Skipping IP addresses and Ports
-^\w{3}(.*)[0-9]{1,2}\s[:0-9]{8}\s[._[:alnum:]-]+\sfreeradius\[(.*)\]:(.*)Skipping contents of 'if' as it is always 'false'
-^\w{3}(.*)[0-9]{1,2}\s[:0-9]{8}\s[._[:alnum:]-]+\sfreeradius\[(.*)\]:(.*)loaded and linked
-^\w{3}(.*)[0-9]{1,2}\s[:0-9]{8}\s[._[:alnum:]-]+\snetfilter-persistent\[(.*)\]:(.*)Automatic flush disabled
-^\w{3}(.*)[0-9]{1,2}\s[:0-9]{8}\s[._[:alnum:]-]+\snetfilter-persistent\[(.*)\]:(.*)run-parts
-^\w{3}(.*)[0-9]{1,2}\s[:0-9]{8}\s[._[:alnum:]-]+\snetfilter-persistent\[(.*)\]:(.*)skipping IPv6 \(no rules to load\)
+^\w{3}(.*)[0-9]{1,2}\s[:0-9]{8}\s[._[:alnum:]-]+\snetfilter-persistent\[[ .0-9]*\]:(.*)Automatic flush disabled
+^\w{3}(.*)[0-9]{1,2}\s[:0-9]{8}\s[._[:alnum:]-]+\snetfilter-persistent\[[ .0-9]*\]:(.*)run-parts
+^\w{3}(.*)[0-9]{1,2}\s[:0-9]{8}\s[._[:alnum:]-]+\snetfilter-persistent\[[ .0-9]*\]:(.*)skipping IPv6 \(no rules to load\)
+^\w{3}(.*)[0-9]{1,2}\s[:0-9]{8}\s[._[:alnum:]-]+\smkdir\[[ .0-9]*\]:(.*)Die Datei existiert bereits
+^\w{3}(.*)[0-9]{1,2}\s[:0-9]{8}\s[._[:alnum:]-]+\srpi-eeprom-update:(.*)up to date
+^\w{3}(.*)[0-9]{1,2}\s[:0-9]{8}\s[._[:alnum:]-]+\srpi-eeprom-update:(.*)CURRENT:
+^\w{3}(.*)[0-9]{1,2}\s[:0-9]{8}\s[._[:alnum:]-]+\srpi-eeprom-update:(.*)LATEST:
+^\w{3}(.*)[0-9]{1,2}\s[:0-9]{8}\s[._[:alnum:]-]+\srpi-eeprom-update:(.*)RELEASE: default
+^\w{3}(.*)[0-9]{1,2}\s[:0-9]{8}\s[._[:alnum:]-]+\srpi-eeprom-update:(.*)Use raspi-config to change the release.
+^\w{3}(.*)[0-9]{1,2}\s[:0-9]{8}\s[._[:alnum:]-]+\srpi-eeprom-update:(.*)Dedicated
+^\w{3}(.*)[0-9]{1,2}\s[:0-9]{8}\s[._[:alnum:]-]+\sdhcpcd\[[ .0-9]*\]:(.*)no longer a default router
+^\w{3}(.*)[0-9]{1,2}\s[:0-9]{8}\s[._[:alnum:]-]+\sdhcpcd\[[ .0-9]*\]:(.*)deleting default route via
+^\w{3}(.*)[0-9]{1,2}\s[:0-9]{8}\s[._[:alnum:]-]+\s(.*)daemon start
+^\w{3}(.*)[0-9]{1,2}\s[:0-9]{8}\s[._[:alnum:]-]+\sdbus-daemon(.*)Activating via systemd
+^\w{3}(.*)[0-9]{1,2}\s[:0-9]{8}\s[._[:alnum:]-]+\sdbus-daemon(.*)Successfully activated
+^\w{3}(.*)[0-9]{1,2}\s[:0-9]{8}\s[._[:alnum:]-]+\s(.*)[pP]ackage[kK]it

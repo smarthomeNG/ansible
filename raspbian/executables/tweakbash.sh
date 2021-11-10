@@ -12,7 +12,7 @@ export MAKEFLAGS="-j 4"
  alias errorgrep='grep --text "FATAL\|ERROR\|WARNING\|CRITICAL\|FAIL\|fatal\|error\|warn\|fail\|Fail" -i --color=auto'
  alias cli='rlwrap telnet 127.0.0.1 2323'
  alias ..='cd ..'
- alias cleanexim='sudo /usr/sbin/exim -bp | sudo /usr/sbin/exiqgrep -i | xargs exim -Mrm'
+ alias cleanexim='sudo /usr/sbin/exim -bp | sudo /usr/sbin/exiqgrep -i | xargs exim -Mrm && sudo /usr/sbin/exim_tidydb -t 1d /var/spool/exim retry > /dev/null && sudo rm -rf /var/spool/exim/db/retry*'
  alias cleanbash='/usr/local/bin/cleanbash.sh'
 
 # Uses Colorize Script in /usr/local/bin
