@@ -115,6 +115,14 @@
   - name: disable monit
     systemd: enabled=no name=monit.service
 
+  - name: favicons folder
+    file:
+      path: "/var/www/html/favicons"
+      mode: 0775
+      owner: smarthome
+      group: www-data
+      state: directory
+
   - name: favicons
     unarchive:
       src: configs/favicons.tar
@@ -122,3 +130,21 @@
       owner: smarthome
       group: www-data
       mode: 0755
+
+  - name: logfile
+    blockinfile:
+      path: "/etc/rsyslog.d/monit.conf"
+      create: yes
+      block: |
+        template(name="FileFormat_timestamp" type="string" string= "%TIMESTAMP% %HOSTNAME% %syslogtag% %pri-text%%msg:::sp-if-no-1st-sp%%msg:::drop-last-lf%\n")
+        if $programname == 'monit' or $msg contains 'Monit' then {
+          action(type="omfile" file="/var/log/monit.log" template="FileFormat_timestamp" FileCreateMode="0644" FileGroup="adm" FileOwner="smarthome")
+          stop
+        }
+    ignore_errors: yes
+
+  - name: Copy logrotate
+    copy:
+      src: configs/logrotate_monit
+      dest: /etc/logrotate.d/monit
+      mode: 0644

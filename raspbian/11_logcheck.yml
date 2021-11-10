@@ -10,6 +10,21 @@
   - name: Install logcheck
     apt: name=logcheck force=no state=latest install_recommends=yes
 
+  - name: Install python-magic
+    pip:
+      name: python-magic
+      executable: pip3
+      state: latest
+      extra_args: --target=/usr/local/lib/python3.8/site-packages/ --upgrade
+
+  - name: Copy syslogsummary
+    copy:
+      src: executables/syslog-summary.py
+      dest: usr/bin/syslog-summary
+      owner: root
+      group: logcheck
+      mode: 0664
+
   - name: Create Group
     group:
       name: smarthome
@@ -52,6 +67,22 @@
       group: logcheck
       mode: 0644
 
+  - name: Copy Logcheck dhcp
+    copy:
+      src: configs/logcheck.dhcp
+      dest: /etc/logcheck/ignore.d.server/local-dhcp
+      owner: root
+      group: logcheck
+      mode: 0644
+
+  - name: Copy Logcheck grafana
+    copy:
+      src: configs/logcheck.grafana
+      dest: /etc/logcheck/ignore.d.server/local-grafana
+      owner: root
+      group: logcheck
+      mode: 0644
+
   - name: Copy Logcheck exim4
     copy:
       src: configs/logcheck.exim4
@@ -62,7 +93,7 @@
 
   - name: Copy Logcheck radius
     copy:
-      src: configs/logcheck.exim4
+      src: configs/logcheck.radius
       dest: /etc/logcheck/ignore.d.server/local-radius
       owner: root
       group: logcheck
@@ -92,10 +123,10 @@
       group: logcheck
       mode: 0644
 
-  - name: Copy Logcheck nginx
+  - name: Copy Logcheck freeradius
     copy:
-      src: configs/logcheck.nginx
-      dest: /etc/logcheck/ignore.d.server/local-nginx
+      src: configs/logcheck.freeradius
+      dest: /etc/logcheck/ignore.d.server/local-freeradius
       owner: root
       group: logcheck
       mode: 0644
@@ -104,6 +135,14 @@
     copy:
       src: configs/logcheck.fail2ban
       dest: /etc/logcheck/ignore.d.server/local-fail2ban
+      owner: root
+      group: logcheck
+      mode: 0644
+
+  - name: Copy Logcheck openvpn
+    copy:
+      src: configs/logcheck.openvpn
+      dest: /etc/logcheck/ignore.d.server/local-openvpn
       owner: root
       group: logcheck
       mode: 0644
@@ -132,6 +171,14 @@
       group: logcheck
       mode: 0644
 
+  - name: Copy Logcheck samba
+    copy:
+      src: configs/logcheck.samba
+      dest: /etc/logcheck/ignore.d.server/local-samba
+      owner: root
+      group: logcheck
+      mode: 0644
+
   - name: Groups logcheck
     user:
       name: logcheck
@@ -150,6 +197,15 @@
       destfile: /etc/cron.d/logcheck
       regexp: "2 \\* \\* \\* \\*"
       replace: "10 * * * *"
+    ignore_errors: yes
+
+  - name: syslogsummary
+    lineinfile:
+      dest: /etc/logcheck/logcheck.conf
+      regexp: '^#SYSLOGSUMMARY=0'
+      line: 'SYSLOGSUMMARY=1'
+      backrefs: yes
+      state: present
     ignore_errors: yes
 
   - name: disable logcheck1

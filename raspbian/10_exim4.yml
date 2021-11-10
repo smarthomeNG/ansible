@@ -49,6 +49,41 @@
       line: "SmartHomeNG"
     ignore_errors: yes
 
+  - name: exim4 syslog
+    blockinfile:
+      path: /etc/exim4/exim4.conf.localmacros
+      create: yes
+      block: |
+        log_file_path = syslog
+        syslog_timestamp = false
+        syslog_duplication = false
+    ignore_errors: yes
+
+  - name: logfile
+    blockinfile:
+      path: "/etc/rsyslog.d/exim4.conf"
+      create: yes
+      block: |
+        template(name="FileFormat_timestamp" type="string" string= "%TIMESTAMP% %HOSTNAME% %syslogtag% %pri-text%%msg:::sp-if-no-1st-sp%%msg:::drop-last-lf%\n")
+        if $programname startswith 'exim' and $syslogseverity-text == 'info' then {
+          action(type="omfile" file="/var/log/exim4/mainlog" template="FileFormat_timestamp" FileCreateMode="0644" FileGroup="adm" FileOwner="Debian-exim")
+          stop
+        }
+        if $programname startswith 'exim' and $syslogseverity-text == 'notice' then {
+          action(type="omfile" file="/var/log/exim4/rejectlog" template="FileFormat_timestamp" FileCreateMode="0644" FileGroup="adm" FileOwner="Debian-exim")
+          stop
+        }
+        if $programname startswith 'exim' and $syslogseverity-text == 'alert' then {
+          action(type="omfile" file="/var/log/exim4/paniclog" template="FileFormat_timestamp" FileCreateMode="0644" FileGroup="adm" FileOwner="Debian-exim")
+          stop
+        }
+
+  - name: logrotate
+    lineinfile:
+      path: /etc/logrotate.d/exim4-base
+      regexp: 'compress'
+      state: absent
+
   - name: timeout1
     replace:
       destfile: /etc/exim4/conf.d/main/02_exim4-config_options

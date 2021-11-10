@@ -16,13 +16,15 @@
       "graphviz", #uzsu
       "rrdtool", #rrd
       "librrd-dev", #rrd, maybe not necessary
-      "python3-lxml" #knx2 plugin
       ]
     python_install:
       [
       "pymysql", #database
       "yolk3k" #nice python module management
       ]
+
+    log_file_to_check: /usr/local/smarthome/var/log/smarthome-warnings.log
+    wanted_pattern: (.*)SmartHomeNG initialization finished(.*)
 
   tasks:
   - name: Create Group
@@ -127,8 +129,49 @@
   - name: enable_service
     systemd: enabled=yes name=smarthome.service
 
+  - name: Create log directory
+    file:
+      path: /usr/local/smarthome/var/log/
+      state: directory
+      mode: 0755
+      owner: smarthome
+      group: users
+
+  - name: Delete sh-warnings log
+    file:
+      path: "{{ log_file_to_check }}"
+      state: absent
+    ignore_errors: yes
+
+  - name: Init
+    lineinfile:
+      path: "{{ log_file_to_check }}"
+      create: yes
+      line: 'Init'
+      owner: smarthome
+      group: users
+
+  - name: Check log
+    shell: tail -n 1 {{ log_file_to_check }}
+    register: tail_output
+
+  - name: Create a variable
+    set_fact:
+      last_line_of_the_log_file: "{{ tail_output.stdout }}"
+
   - name: Restart smarthome service
     systemd: state=restarted name=smarthome.service
+    async: 2000
+    poll: 0
+    become: true
+    become_user: root
+    register: restart_smarthome
+
+  - name: Match "{{ wanted_pattern }}" appearing after "{{ last_line_of_the_log_file }}" in {{ log_file_to_check }}
+    wait_for:
+      path: "{{ log_file_to_check }}"
+      search_regex: "{{ last_line_of_the_log_file }}\r(.*\r)*.*{{ wanted_pattern }}"
+      timeout: 1800
 
   - name: List Modules
     command: "/home/smarthome/.local/bin/yolk --list"

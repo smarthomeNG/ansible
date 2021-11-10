@@ -7,6 +7,7 @@ while ! ip route | grep -oP 'default via .+ dev eth0' && [ $x -le 10 ]; do
 done
 
 ETHIP=`hostname -I| cut -d' ' -f1-1|cut -d'.' -f1-3`
+IPv6=`ip -6 addr show dev lo | awk '/inet6/{print $2}'`
 
 if [ -f /etc/exports ]; then
   if [ -z "$ETHIP" ]; then
@@ -19,6 +20,14 @@ else
     RES='No NFS exports file found, doing nothing.'
 fi
 sudo touch /var/log/firstboot.log
+sudo echo ${RES} >> /var/log/firstboot.log
+
+if [ -z "$IPv6" ]; then
+  RES='No IPv6 found. Disabling relevant lines in nginx configuration'
+
+  sudo sed -i 's/[[:space:]]*listen \[::\]:80 default_server;/#listen [::]:80 default_server;/g' /etc/nginx/sites-available/default
+  sudo sed -i 's/[[:space:]]*listen \[::\]:443 ssl http2;/#listen [::]:443 ssl http2;/g' /etc/nginx/conf.d/https.conf
+fi
 sudo echo ${RES} >> /var/log/firstboot.log
 
 if [ -f /etc/dhcpcd.conf ] && [ ! -z "$ETH" ]; then
@@ -80,9 +89,9 @@ sudo cp /etc/ssh/ssh_host_rsa_key /home/smarthome/smarthomeng.private
 sudo chown smarthome:smarthome /home/smarthome/smarthomeng.private
 RES='Created new SSH host keys. Copy /etc/ssh/ssh_host_rsa_key to your client and connect as smarthome or root!'
 sudo echo ${RES} >> /var/log/firstboot.log
-#sudo raspi-config nonint do_expand_rootfs
-#sudo partprobe
-#RES='Expanded SD disk to full capacity.'
-#sudo echo ${RES}
-#sudo echo ${RES} >> /var/log/firstboot.log
+sudo raspi-config nonint do_expand_rootfs
+sudo partprobe
+RES='Expanded SD disk to full capacity. You may need to reboot.'
+sudo echo ${RES}
+sudo echo ${RES} >> /var/log/firstboot.log
 #sudo reboot

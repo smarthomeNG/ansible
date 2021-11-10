@@ -32,8 +32,8 @@ echo ""
 echo "OPENVPN: Connect to your Pi from outside securely (currently $VPN_e)"
 select openvpn in "Enable" "Disable" "Skip"; do
     case $openvpn in
-        Enable ) sudo systemctl enable openvpn@server.service; break;;
-        Disable ) sudo systemctl disable openvpn@server.service; break;;
+        Enable ) sudo systemctl unmask openvpn@server.service; sudo systemctl enable openvpn@server.service; break;;
+        Disable ) sudo systemctl disable openvpn@server.service; sudo systemctl mask openvpn@server.service; break;;
         Skip) echo "Skipping"; break;;
         *) echo "Skipping"; break;;
     esac

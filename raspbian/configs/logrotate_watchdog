@@ -2,7 +2,9 @@
     daily
     rotate 7
     missingok
-    dateext
     copytruncate
-    compress
+    notifempty
+    dateext
+    dateformat .%Y-%m-%d.log
+    create 640 root adm
 }

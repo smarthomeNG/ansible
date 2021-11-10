@@ -65,11 +65,3 @@
     copy:
       src: configs/squeezelite.service
       dest: /lib/systemd/system/
-
-  - name: Create log file
-    file:
-      path: /var/log/squeezelite.log
-      state: touch
-      owner: smarthome
-      group: smarthome
-      mode: 0755

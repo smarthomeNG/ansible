@@ -3,6 +3,16 @@
     rotate 7
     missingok
     dateext
-    copytruncate
-    compress
+    dateformat .%Y-%m-%d.log
+    prerotate
+      pid_file="/run/openvpn/server.pid"
+      if test -e "${pid_file}"; then touch "${pid_file}.ACTIVE"; fi
+      /bin/systemctl stop openvpn@server.service
+    endscript
+    postrotate
+      pid_file="/run/openvpn/server.pid.ACTIVE"
+      if test -e "${pid_file}"; then /bin/systemctl start openvpn@server.service 1>/dev/null; fi
+      if test -e "${pid_file}"; then /usr/bin/rm "${pid_file}" 1>/dev/null; fi
+    endscript
+    create 640 root adm
 }

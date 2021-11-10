@@ -23,13 +23,14 @@
         interval = 4
         verbose = 1
         logtick = 120
+        log-dir = /var/log/
 
   - name: logfile
     blockinfile:
       path: "/etc/rsyslog.d/watchdog.conf"
       create: yes
       block: |
-        template(name="FileFormat_timestamp" type="string" string= "%TIMESTAMP% %HOSTNAME% %syslogtag%%msg:::sp-if-no-1st-sp%%msg:::drop-last-lf%\n")
+        template(name="FileFormat_timestamp" type="string" string= "%TIMESTAMP% %HOSTNAME% %syslogtag% %pri-text%%msg:::sp-if-no-1st-sp%%msg:::drop-last-lf%\n")
         if $programname == 'watchdog' or $msg contains 'watchdog' then {
           action(type="omfile" file="/var/log/watchdog.log" template="FileFormat_timestamp")
           stop

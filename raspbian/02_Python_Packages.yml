@@ -39,7 +39,7 @@
       "knxPython",
       "spur",
       "python-miio",
-      "numpy",
+      "numpy"
       ]
 
 
@@ -128,15 +128,65 @@
       executable: pip3
     with_items: "{{ pythonremovemodules }}"
 
+  - name: check if rust exists
+    stat:
+      path: /home/smarthome/.cargo/bin/rustc
+    register: rust_installed
+
+  - name: download rust script
+    get_url:
+      url: https://sh.rustup.rs
+      dest: /home/smarthome
+      mode: 775
+    when: rust_installed.stat.exists == False
+
+  - name: install rust
+    shell: "/home/smarthome/rustup-init.sh -y"
+    async: 1000
+    poll: 0
+    become: true
+    become_user: smarthome
+    when: rust_installed.stat.exists == False
+    register: rust_installer
+
+  - name: wait
+    async_status: jid={{ rust_installer.ansible_job_id }}
+    register: job_result
+    until: job_result.finished
+    retries: 80
+    become: true
+    become_user: smarthome
+    when: rust_installed.stat.exists == False
+
   - name: Install modules
     pip:
       name: "{{ item }}"
       executable: pip3
       state: latest
-      extra_args: --user
+      extra_args: --user --upgrade
     become: true
     become_user: smarthome
+    environment:
+      PATH: "{{ ansible_env.PATH }}:/home/smarthome/.cargo/bin"
     with_items: "{{ pythoninstall }}"
+
+  - name: Update root pip
+    pip:
+      name: pip
+      executable: pip3
+      state: latest
+      extra_args: --user --upgrade
+    become: true
+    become_user: root
+
+  - name: Install psutil
+    pip:
+      name: psutil
+      executable: pip3
+      state: latest
+      extra_args: --user
+    become: true
+    become_user: root
 
   - name: Copy scipy
     copy:
@@ -167,9 +217,9 @@
   - debug: var=deleted
 
   - name: Purge python cache
-    command: pip3 purge cache
+    command: pip3 cache purge
     become: true
     become_user: smarthome
 
   - name: Purge root python cache
-    command: pip3 purge cache
+    command: pip3 cache purge

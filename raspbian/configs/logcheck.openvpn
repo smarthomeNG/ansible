@@ -1,0 +1,2 @@
+^\w{3}\s[ 0-9]{1,2}\s[.:0-9]{8,15}\s+[._[:alnum:]-]+\s+ovpn-server\[[0-9]*\]\:\sdaemon.(notice|info)
+^\w{3}\s[ 0-9]{1,2}\s[.:0-9]{8,15}\s+[._[:alnum:]-]+\s+ovpn-server\:\sdaemon.(notice|info)

@@ -28,11 +28,12 @@
 
   - name: logfile
     blockinfile:
-      dest: "/etc/rsyslog.d/grafana.conf"
+      path: "/etc/rsyslog.d/grafana.conf"
       create: yes
       block: |
-        if $programname == 'grafana-server' then {
-          action(type="omfile" file="/var/log/grafana/grafana.log")
+        template(name="grafana_format" type="string" string= "%TIMESTAMP% %HOSTNAME% %syslogtag%%msg:R,ERE,3,FIELD:(.*)(lvl=)(.*)--end:sp-if-no-1st-sp%%msg:R,ERE,3,FIELD:(.*)(lvl=)(.*)--end:drop-last-lf%\n")
+        if $programname startswith 'grafana' then {
+          action(type="omfile" file="/var/log/grafana.log" template="grafana_format" FileCreateMode="0644" FileGroup="adm" FileOwner="www-data")
           stop
         }
     ignore_errors: yes
@@ -42,6 +43,46 @@
       dest: /etc/grafana/grafana.ini
       insertafter: '^;root_url ='
       line: 'root_url = %(protocol)s://%(domain)s/grafana/'
+
+  - name: create systemd dir
+    file:
+      path: /etc/systemd/system/grafana-server.service.d/
+      state: directory
+
+  - name: Copy service_conf
+    copy:
+      src: configs/service_grafana_fix.conf
+      dest: /etc/systemd/system/grafana-server.service.d/
+      owner: smarthome
+      group: grafana
+      mode: 0644
+
+  - name: logfolder
+    replace:
+      destfile: /etc/grafana/grafana.ini
+      regexp: "^;logs = /var/log/grafana"
+      replace: "logs = /var/log"
+    ignore_errors: yes
+
+  - name: syslog
+    replace:
+      destfile: /etc/grafana/grafana.ini
+      regexp: "^;mode = console file"
+      replace: "mode = syslog"
+    ignore_errors: yes
+
+  - name: tag
+    replace:
+      destfile: /etc/grafana/grafana.ini
+      regexp: "^;tag ="
+      replace: "tag = grafana"
+    ignore_errors: yes
+
+  - name: Groups
+    user:
+      name: grafana
+      groups: adm
+      append: yes
 
   - name: Restart Grafana
     systemd: state=restarted name=grafana-server.service

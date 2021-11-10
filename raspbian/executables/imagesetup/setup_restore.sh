@@ -6,7 +6,7 @@ backupfolder='home/smarthome/backup'
 
 addate() {
     while IFS= read -r line; do
-        echo "$(date) $line"
+        echo "$(date +'%B %02d %X') $line"
     done
 }
 
