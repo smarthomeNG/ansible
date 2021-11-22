@@ -10,6 +10,8 @@ nginx_config () {
     echo "Changing nginx config based on domain $domain"
     sudo sed -i 's/'DOMAIN_HERE'/'${domain}'/g' /etc/nginx/conf.d/https.conf 2>&1
     sudo sed -i 's/'DOMAIN_HERE'/'${domain}'/g' /etc/nginx/sites-available/default 2>&1
+    sudo sed -i 's/#listen/listen/g' /etc/nginx/conf.d/https.conf 2>&1
+    sudo sed -i 's/#server_name/server_name/g' /etc/nginx/conf.d/https.conf 2>&1
     sudo sed -i 's/#ssl_certificate/ssl_certificate/g' /etc/nginx/conf.d/https.conf 2>&1
     sudo sed -i 's/#ssl_certificate_key/ssl_certificate_key/g' /etc/nginx/conf.d/https.conf 2>&1
     sudo sed -i 's/#ssl_trusted_certificate/ssl_trusted_certificate/g' /etc/nginx/conf.d/https.conf 2>&1
@@ -110,9 +112,9 @@ echo ""
 echo "nginx Service is $NGINX_e."
 if [[ $NGINX_e == "enabled" ]]; then
     echo " The server is setup the following way to easily access your websites:"
-    echo "http://<YOURIP>/smartvisu -> smartVISU 2.9"
+    echo "http://<YOURIP>/smartvisu -> most recent smartVISU"
     echo "http://<YOURIP>/smartvisu2.8 -> smartVISU 2.8"
-    echo "http://<YOURIP>/backend-> SmarthomeNG Backend (if plugin is enabled in smarthome config)"
+    echo "http://<YOURIP>/admin -> SmarthomeNG Admin IF"
     echo "http://<YOURIP>/phpmyadmin -> Admin Tool to manage SQL database. Login is root/smarthome"
     echo "http://<YOURIP>/shnet -> SmarthomeNG Network Plugin. Port is configured to 8888. Change in /etc/nginx/sites-available/default"
     echo "http://<YOURIP>/monit -> If you enable monit (later) you can see the status of your services"

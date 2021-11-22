@@ -20,10 +20,10 @@
   - name: Copy syslogsummary
     copy:
       src: executables/syslog-summary.py
-      dest: usr/bin/syslog-summary
+      dest: /usr/bin/syslog-summary
       owner: root
       group: logcheck
-      mode: 0664
+      mode: 0755
 
   - name: Create Group
     group:

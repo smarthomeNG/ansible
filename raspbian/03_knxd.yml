@@ -76,27 +76,15 @@
       line: 'EIBD Log'
       mode: 0777
 
-  - name: List knxd 0.14 deb files
-    shell: ls knxd_0.14*.deb
-    args:
-      chdir: /etc/deb-files/
-    register: knxd_files
-
   - name: Install knxd
-    apt: deb="/etc/deb-files/{{ item.1 }}" force=yes state=present
-    with_indexed_items: "{{ knxd_files.stdout_lines }}"
-    register: knxd
-  - debug: var=knxd
+    apt:
+      name: knxd
+      state: latest
 
-#  - name: Install knxd
-#    apt:
-#      name: knxd
-#      state: latest
-
-#  - name: Install knxdtools
-#    apt:
-#      name: knxd-tools
-#      state: latest
+  - name: Install knxdtools
+    apt:
+      name: knxd-tools
+      state: latest
 
   - name: knxd conf add
     copy:

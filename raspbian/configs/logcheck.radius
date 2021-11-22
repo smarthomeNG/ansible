@@ -1,4 +1,4 @@
 ^\w{3}(.*)[0-9]{1,2}\s[:0-9]{8}\s[._[:alnum:]-]+\s:\sAuth(.*)OK
 ^\w{3}(.*)[0-9]{1,2}\s[:0-9]{8}\s[._[:alnum:]-]+\s:\sInfo
-^\w{3}(.*)[0-9]{1,2}\s[:0-9]{8}\s[._[:alnum:]-]+\s+(freeradius|radiusd)\[[0-9]*\]\:\s+daemon.(info|notice)
-^\w{3}(.*)[0-9]{1,2}\s[:0-9]{8}\s[._[:alnum:]-]+\s+systemd\[[0-9]*\]\:\s+daemon.info\s(Stopping|Stopped|Starting) FreeRADIUS
+^\w{3}(.*)[0-9]{1,2}\s[:0-9]{8}\s[._[:alnum:]-]+\s+(freeradius|radiusd)\[[0-9]*\]\:\s+(daemon.)?(info|notice)
+^\w{3}(.*)[0-9]{1,2}\s[:0-9]{8}\s[._[:alnum:]-]+\s+systemd\[[0-9]*\]\:\s+(daemon.)?info\s(Stopping|Stopped|Starting) FreeRADIUS

@@ -6,6 +6,6 @@
         create 640 root adm
         notifempty
         postrotate
-                if [ "$(systemctl is-active monit)" == "active" ]; then invoke-rc.d monit reload > /dev/null; fi
+                if [ "$(systemctl is-active monit)" = "active" ]; then invoke-rc.d monit reload > /dev/null; fi
         endscript
 }

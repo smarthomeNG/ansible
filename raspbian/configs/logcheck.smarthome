@@ -19,7 +19,7 @@
 ^[0-9\-]{10}[ :0-9]{9}[,0-9]{0,4}\sERROR\s+modules.websocket smartVISU_protocol_v4 exception: received 1005
 ^\w{3}(.*)[0-9]{1,2}\s[:0-9]{8}\sDEBUG
 ^\w{3}(.*)[0-9]{1,2}\s[:0-9]{8}\sINFO
-^\w{3}(.*)[0-9]{1,2}\s[:0-9]{8}\NOTICE
+^\w{3}(.*)[0-9]{1,2}\s[:0-9]{8}\sNOTICE
 ^\w{3}(.*)[0-9]{1,2}\s[:0-9]{8}\sWARNING\s(.*)problem reading cache
 ^\w{3}(.*)[0-9]{1,2}\s[:0-9]{8}\sWARNING(.*)IMAP(.*)object is not subscriptable
 ^\w{3}(.*)[0-9]{1,2}\s[:0-9]{8}\sERROR(.*)IMAP: problem parsing message

@@ -63,7 +63,7 @@ if [[ $name == "Change" ]]; then
   echo "Changes hostname to $newhost"
 fi
 
-recommended=$(($(free -m|awk '$1=="Mem:"{print $2}')*2))
+recommended=$(($(free -m|awk '$1=="Speicher:"{print $2}')*2))
 echo ""
 echo "Do you want to change the Swap file on your Raspberry Pi?"
 SWAP_e=$(systemctl is-enabled dphys-swapfile 2>&1 | tail -n 1) &> /dev/null

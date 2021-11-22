@@ -297,5 +297,7 @@ select mysql in "Backup" "Skip"; do
         *) echo "Skipping"; break;;
     esac
 done
-sudo chown smarthome:users /$backupfolder -R
+if [ -d "$backupfolder" ]; then
+  sudo chown smarthome:users /$backupfolder -R
+fi
 echo "Good bye!"
