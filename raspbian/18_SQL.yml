@@ -90,15 +90,33 @@
       recurse: yes
       state: directory
 
-  - name: Nocompress logrotate
+  - name: Nodelay logrotate
     replace:
-      destfile: /etc/logrotate.d/mysql-server
-      regexp: "compress"
+      destfile: /etc/logrotate.d/mariadb
+      regexp: "^compress"
       replace: "#compress"
+
+  - name: Nodelay logrotate
+    replace:
+      destfile: /etc/logrotate.d/mariadb
+      regexp: "^delaycompress"
+      replace: "#delaycompress"
+
+  - name: lib_logrotate1
+    replace:
+      destfile: /etc/logrotate.d/mariadb
+      regexp: "/var/lib/mysql/mysqld.log"
+      replace: ""
+
+  - name: lib_logrotate2
+    replace:
+      destfile: /etc/logrotate.d/mariadb
+      regexp: "/var/lib/mysql/mariadb.log"
+      replace: ""
 
   - name: tweak logrotate
     blockinfile:
-      path: /etc/logrotate.d/mysql-server
+      path: /etc/logrotate.d/mariadb
       create: no
       insertafter: missingok
       block: |
@@ -144,19 +162,19 @@
         $Template FileFormat_sql,"%TIMESTAMP% %HOSTNAME% %syslogtag% %pri-text%%msg:R,ERE,3,FIELD:(([0-9]{4}-[0-9]{2}-[0-9]{2}\s+[:0-9]{8}\s+[:0-9]{1}\s+\[Note\]\s+)(.*))--end:sp-if-no-1st-sp%%msg:R,ERE,3,FIELD:(([0-9]{4}-[0-9]{2}-[0-9]{2}\s+[:0-9]{8}\s+[:0-9]{1}\s+\[Note\]\s+)(.*))--end:drop-last-lf%\n"
         $Template FileFormat_sql_warning,"%TIMESTAMP% %HOSTNAME% %syslogtag% %pri-text%%msg:R,ERE,3,FIELD:(([0-9]{4}-[0-9]{2}-[0-9]{2}\s+[:0-9]{8}\s+[:0-9]{1}\s+\[Warning\]\s+)(.*))--end:sp-if-no-1st-sp%%msg:R,ERE,3,FIELD:(([0-9]{4}-[0-9]{2}-[0-9]{2}\s+[:0-9]{8}\s+[:0-9]{1}\s+\[Warning\]\s+)(.*))--end:drop-last-lf%\n"
         $Template FileFormat_sql_error,"%TIMESTAMP% %HOSTNAME% %syslogtag% %pri-text%%msg:R,ERE,3,FIELD:(([0-9]{4}-[0-9]{2}-[0-9]{2}\s+[:0-9]{8}\s+[:0-9]{1}\s+\[Error\]\s+)(.*))--end:sp-if-no-1st-sp%%msg:R,ERE,3,FIELD:(([0-9]{4}-[0-9]{2}-[0-9]{2}\s+[:0-9]{8}\s+[:0-9]{1}\s+\[Error\]\s+)(.*))--end:drop-last-lf%\n"
-        if $programname startswith 'mysql' and ($msg contains_i 'shutdown' or $msg contains_i 'starting as process' or $msg contains_i 'Shutdown') then {
+        if $programname startswith 'mysql' and ($msg contains_i 'shutdown' or $msg contains_i 'Shutdown') then {
           action(type="omfile" file="/var/log/mysql/error.log" template="FileFormat_sql" FileCreateMode="0644" FileGroup="adm")
           stop
         }
-        if $programname startswith 'mysql' and $syslogseverity-text != 'error' and $msg contains '[Note]' then {
+        if $programname startswith 'mysql' and $syslogseverity-text != 'error' and $msg contains_i '[Note]' then {
           action(type="omfile" file="/var/log/mysql/mysql.log" template="FileFormat_sql" FileCreateMode="0644" FileGroup="adm")
           stop
         }
-        if $programname startswith 'mysql' and ($syslogseverity-text == 'err' or $msg contains '[Error]') then {
+        if $programname startswith 'mysql' and ($syslogseverity-text == 'err' or $msg contains_i '[ERROR]') then {
           action(type="omfile" file="/var/log/mysql/error.log" template="FileFormat_sql_error" FileCreateMode="0644" FileGroup="adm")
           stop
         }
-        if $programname startswith 'mysql' and ($syslogseverity-text == 'warning' or $msg contains '[Warning]' or $msg contains '[Error]') then {
+        if $programname startswith 'mysql' and ($syslogseverity-text == 'warning' or $msg contains_i '[Warning]' or $msg contains_i '[Error]') then {
           action(type="omfile" file="/var/log/mysql/error.log" template="FileFormat_sql_warning" FileCreateMode="0644" FileGroup="adm")
           stop
         }
@@ -164,70 +182,70 @@
 
   - name: exec
     replace:
-      destfile: /etc/php/7.3/apache2/php.ini
+      destfile: /etc/php/8.0/apache2/php.ini
       regexp: "^max_execution_time = (.*)"
       replace: "max_execution_time = 9999"
     ignore_errors: yes
 
   - name: exec fpm
     replace:
-      destfile: /etc/php/7.3/fpm/php.ini
+      destfile: /etc/php/8.0/fpm/php.ini
       regexp: "^max_execution_time = (.*)"
       replace: "max_execution_time = 9999"
     ignore_errors: yes
 
   - name: memory
     replace:
-      destfile: /etc/php/7.3/apache2/php.ini
+      destfile: /etc/php/8.0/apache2/php.ini
       regexp: "^memory_limit = (.*)"
       replace: "memory_limit = 512M"
     ignore_errors: yes
 
   - name: memory fpm
     replace:
-      destfile: /etc/php/7.3/fpm/php.ini
+      destfile: /etc/php/8.0/fpm/php.ini
       regexp: "^memory_limit = (.*)"
       replace: "memory_limit = 512M"
     ignore_errors: yes
 
   - name: size
     replace:
-      destfile: /etc/php/7.3/apache2/php.ini
+      destfile: /etc/php/8.0/apache2/php.ini
       regexp: "^upload_max_filesize = (.*)"
       replace: "upload_max_filesize = 400M"
     ignore_errors: yes
 
   - name: size fpm
     replace:
-      destfile: /etc/php/7.3/fpm/php.ini
+      destfile: /etc/php/8.0/fpm/php.ini
       regexp: "^upload_max_filesize = (.*)"
       replace: "upload_max_filesize = 400M"
     ignore_errors: yes
 
   - name: postsize
     replace:
-      destfile: /etc/php/7.3/apache2/php.ini
+      destfile: /etc/php/8.0/apache2/php.ini
       regexp: "^post_max_size = (.*)"
       replace: "post_max_size = 400M"
     ignore_errors: yes
 
   - name: postsize fpm
     replace:
-      destfile: /etc/php/7.3/fpm/php.ini
+      destfile: /etc/php/8.0/fpm/php.ini
       regexp: "^post_max_size = (.*)"
       replace: "post_max_size = 400M"
     ignore_errors: yes
 
   - name: mysqli
     replace:
-      destfile: /etc/php/7.3/apache2/php.ini
+      destfile: /etc/php/8.0/apache2/php.ini
       regexp: "^;mysqli.allow_local_infile = On"
       replace: "mysqli.allow_local_infile = On"
     ignore_errors: yes
 
   - name: mysqli fpm
     replace:
-      destfile: /etc/php/7.3/fpm/php.ini
+      destfile: /etc/php/8.0/fpm/php.ini
       regexp: "^;mysqli.allow_local_infile = On"
       replace: "mysqli.allow_local_infile = On"
     ignore_errors: yes
@@ -257,19 +275,6 @@
     register: a2enconf
   - debug: var=a2enconf
 
-  - name: fix php7.3
-    command: sed -i "s/|\s*\((count(\$analyzed_sql_results\['select_expr'\]\)/| (\1)/g" /usr/share/phpmyadmin/libraries/sql.lib.php
-    become: true
-    become_user: root
-    ignore_errors: yes
-
-  - name: fixpart2
-    replace:
-      destfile: /usr/share/phpmyadmin/libraries/plugin_interface.lib.php
-      regexp: "if ($options != null && count($options) > 0) {"
-      replace: "if ($options != null && count((array)$options) > 0) {"
-    ignore_errors: yes
-
   - name: Restart apache
     systemd: state=restarted name=apache2
     ignore_errors: yes
@@ -279,8 +284,11 @@
     ignore_errors: yes
 
   - name: Restart php
-    systemd: state=restarted name=php7.3-fpm
+    systemd: state=restarted name=php8.0-fpm
     ignore_errors: yes
 
   - name: disable mysql
     systemd: enabled=no name=mysql.service
+    
+  - name: disable mariadb
+    systemd: enabled=no name=mariadb.service

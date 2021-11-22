@@ -39,11 +39,20 @@
       "knxPython",
       "spur",
       "python-miio",
-      "numpy"
+      "numpy",
+      "scipy"
       ]
 
 
   tasks:
+  - name: Link python
+    file:
+      dest: '/usr/local/bin/python3'
+      src: '/usr/bin/python'
+      state: link
+      owner: root
+      group: root
+
   - name: Create Group
     group:
       name: smarthome
@@ -66,24 +75,6 @@
       groups: www-data, sudo, i2c, adm, audio, video, plugdev, input, netdev, spi, gpio, dialout
       append: yes
 
-  - name: Copy python3.8.6
-    unarchive:
-      src: packages/python-3.8.6_compiled.tgz
-      dest: /home/smarthome
-      owner: smarthome
-      group: smarthome
-      mode: 0755
-
-  - name: install python3.8.6
-    make:
-      chdir: /home/smarthome/python-3.8.6
-      target: install
-
-  - name: delete pythonfolder
-    file:
-      state: absent
-      path: /home/smarthome/python-3.8.6
-
   - name: remove apt
     apt:
       name: "{{ item }}"
@@ -92,13 +83,6 @@
       autoclean: yes
       purge: yes
     with_items: "{{ pythonremove }}"
-    ignore_errors: yes
-
-  - name: Add src
-    replace:
-      destfile: /etc/apt/sources.list
-      regexp: "^#deb-src"
-      replace: "deb-src"
     ignore_errors: yes
 
   - name: Fix
@@ -188,23 +172,10 @@
     become: true
     become_user: root
 
-  - name: Copy scipy
-    copy:
-      src: packages/scipy-1.1.0-cp38-cp38-linux_armv7l.whl
-      dest: /etc/deb-files/
-
-  - name: Install scipy
-    pip:
-      name: /etc/deb-files/scipy-1.1.0-cp38-cp38-linux_armv7l.whl
-      executable: pip3
-      extra_args: --user
-    become: true
-    become_user: smarthome
-
   - name: pygobjectfiles
     find:
       paths: /usr/lib/python3/dist-packages/
-      patterns: "pygobject*"
+      patterns: "PyGObject*"
     register: pygobject_to_delete
 
   - name: Remove pygobject

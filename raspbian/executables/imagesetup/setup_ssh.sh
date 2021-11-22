@@ -39,7 +39,7 @@ certs () {
             esac
         done
     fi
-    sudo systemctl restart sshd
+    sudo systemctl restart ssh
     echo ""
     echo "It is recommended to disable password login AFTER successfully testing your ssh certificate connection."
     echo "Create a new ssh session using the certificate instead of the user/password. Use smarthome or root as User and NO password."
@@ -71,7 +71,7 @@ nocerts () {
     sudo systemctl restart ssh
 }
 
-SSHD_e=$(systemctl is-enabled sshd 2>&1 | tail -n 1)&> /dev/null
+SSHD_e=$(systemctl is-enabled ssh 2>&1 | tail -n 1)&> /dev/null
 echo ""
 echo "SSH: Connect to your Raspi via network. Use a client like vssh, mobaXterm, putty, etc. (currently $SSHD_e)"
 select sshd in "Enable" "Disable" "Skip"; do
@@ -82,7 +82,7 @@ select sshd in "Enable" "Disable" "Skip"; do
         *) echo "Skipping"; break;;
     esac
 done
-SSHD_e=$(systemctl is-enabled sshd 2>&1 | tail -n 1)&> /dev/null
+SSHD_e=$(systemctl is-enabled ssh 2>&1 | tail -n 1)&> /dev/null
 if [[ $SSHD_e == "enabled" ]]; then
     echo ""
     echo "It is highly recommended to secure your SSH connection with certificates instead of passwords."

@@ -7,7 +7,7 @@
 
   vars:
     apt_install:
-      [
+      ["libgpgme-dev", #gpg
       "rlwrap", #easier telnet / cli usage
       "gfortran", # scipy build
       "libatlas-base-dev", #uzsu / scipy
@@ -92,7 +92,7 @@
   - name: sh ignore perm
     command: git config core.fileMode false chdir=/usr/local/smarthome/
 
-  - name: Change requirements
+  - name: chmod requirements
     file:
       path: /usr/local/smarthome/tools/build_requirements.py
       mode: 0777

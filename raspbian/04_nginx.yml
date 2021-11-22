@@ -13,7 +13,7 @@
       "geoip-database",
       "geoip-bin",
       "libgeoip1",
-      "php7.3-fpm",
+      "php8.0-fpm",
       "lua5.1",
       "luarocks",
       "liblua5.1-dev",
@@ -187,14 +187,14 @@
 
   - name: Change ini
     replace:
-      destfile: /etc/php/7.3/fpm/php.ini
+      destfile: /etc/php/8.0/fpm/php.ini
       regexp: ";cgi.fix_pathinfo=1"
       replace: "cgi.fix_pathinfo=0"
 
   - name: Change log
     replace:
-      destfile: /etc/php/7.3/fpm/php-fpm.conf
-      regexp: "error_log = /var/log/php7.3-fpm.log"
+      destfile: /etc/php/8.0/fpm/php-fpm.conf
+      regexp: "error_log = /var/log/php8.0-fpm.log"
       replace: "error_log = syslog"
 
   - name: logfile
@@ -203,8 +203,8 @@
       create: yes
       block: |
         template(name="FileFormat_timestamp" type="string" string= "%TIMESTAMP% %HOSTNAME% %syslogtag% %pri-text%%msg:::sp-if-no-1st-sp%%msg:::drop-last-lf%\n")
-        if $programname startswith 'php' then {
-          action(type="omfile" file="/var/log/php7.3-fpm.log" template="FileFormat_timestamp" FileCreateMode="0644" FileGroup="adm" FileOwner="www-data")
+        if ($programname startswith 'php' or $msg contains ' php ') then {
+          action(type="omfile" file="/var/log/php8.0-fpm.log" template="FileFormat_timestamp" FileCreateMode="0644" FileGroup="adm" FileOwner="www-data")
           stop
         }
     ignore_errors: yes
@@ -266,19 +266,6 @@
       owner: smarthome
       group: www-data
       mode: 0770
-
-  - name: create php_systemd dir
-    file:
-      path: /etc/systemd/system/php7.3-fpm.service.d/
-      state: directory
-
-  - name: Copy php_service_conf
-    copy:
-      src: configs/service_php_directory.conf
-      dest: /etc/systemd/system/php7.3-fpm.service.d/
-      owner: www-data
-      group: www-data
-      mode: 0664
 
   - name: create nginx_systemd dir
     file:
@@ -351,12 +338,12 @@
 
   - name: logrotate_php
     lineinfile:
-      path: /etc/logrotate.d/php7.3-fpm
+      path: /etc/logrotate.d/php8.0-fpm
       regexp: 'compress'
       state: absent
 
   - name: Restart php
-    systemd: daemon_reload=yes state=restarted name=php7.3-fpm.service
+    systemd: daemon_reload=yes state=restarted name=php8.0-fpm.service
 
   - name: Restart nginx
     systemd: state=restarted name=nginx

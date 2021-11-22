@@ -16,7 +16,8 @@
       "ffmpeg"]
 
     packages:
-      ["ffmpeg"]
+      ["ffmpeg",
+      "squeezelite"]
 
   tasks:
   - name: Create Group
@@ -48,12 +49,6 @@
       update_cache: yes
       install_recommends: no
     with_items: "{{ packages }}"
-
-  - name: Copy squeezelite
-    copy:
-      src: executables/squeezelite
-      dest: /usr/bin/
-      mode: 0755
 
   - name: Copy squeezelite sh
     copy:

@@ -3,7 +3,7 @@
         missingok
         rotate 14
         dateext
-        dateformat .%Y-%m-%d.
+        dateformat %Y-%m-%d.
         extension log
         notifempty
         create 0640 www-data adm

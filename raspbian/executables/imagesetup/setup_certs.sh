@@ -172,7 +172,7 @@ create_servercerts () {
         fi
         sudo ./easyrsa init-pki
         sudo touch $RSA_FOLDER/pki/index.txt.attr
-        sudo sed -i 's/RANDFILE[[:space:]]\+= \/etc\/ssl\/easy-rsa\/pki\/.rnd//g' $RSA_FOLDER/pki/safessl-easyrsa.cnf 2>&1    
+        sudo sed -i 's/RANDFILE[[:space:]]\+= \/etc\/ssl\/easy-rsa\/pki\/.rnd//g' $RSA_FOLDER/pki/safessl-easyrsa.cnf 2>&1
         if [[ $dh == "Create" ]]; then
             sudo ./easyrsa gen-dh
             echo ""
@@ -204,7 +204,7 @@ create_servercerts () {
         sudo mv /tmp/ca.pem $RSA_FOLDER/pki/
         echo "Server certificates were generated: ca.crt, ca.key, ca.pem, ca.crl (for revoking certificates), dh.pem, server.crt, server.key."
         echo "Creating ta.key (for openvpn)."
-        sudo /usr/sbin/openvpn --genkey --secret pki/ta.key
+        sudo /usr/sbin/openvpn --genkey secret pki/ta.key
         echo "Creating a random file (for freeradius)."
         sudo openssl rand -out $RSA_FOLDER/pki/random 128
         echo ""

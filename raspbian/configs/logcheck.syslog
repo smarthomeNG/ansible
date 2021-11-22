@@ -26,6 +26,8 @@
 ^\w{3}(.*)[0-9]{1,2}\s[:0-9]{8}\s[._[:alnum:]-]+\s+jackd\[[0-9]*\]\:\s+JackEngine\:\:XRun
 ^\w{3}(.*)[0-9]{1,2}\s[:0-9]{8}\s[._[:alnum:]-]+\s+jackd\[[0-9]*\]\:\s+JackAudioDriver\:\:ProcessGraphAsyncMaster
 ^\w{3}(.*)[0-9]{1,2}\s[:0-9]{8}\s[._[:alnum:]-]+\s+systemd\[[0-9]*\]\:\s+certbot.timer
+^\w{3}(.*)[0-9]{1,2}\s[:0-9]{8}\s[._[:alnum:]-]+\s+systemd\[[0-9]*\]\:\s+(.*)Consumed ([.0-9]+min\s)?[.0-9]+s CPU time.
+^\w{3}(.*)[0-9]{1,2}\s[:0-9]{8}\s[._[:alnum:]-]+\s+systemd\[[0-9]*\]\:\s+Finished
 ^\w{3}(.*)[0-9]{1,2}\s[:0-9]{8}\s[._[:alnum:]-]+\s+kernel\:\s\[[.0-9]{11,14}\]\s+WARN\:\:dwc_otg_handle_mode_mismatch_intr
 ^\w{3}(.*)[0-9]{1,2}\s[:0-9]{8}\s[._[:alnum:]-]+\s+kernel\:\s\[[.0-9]{11,14}\]\s+$
 ^\w{3}(.*)[0-9]{1,2}\s[:0-9]{8}\s[._[:alnum:]-]+\s+sshd\[[0-9]*\]\:\s+pam_systemd(.*)Failed to release session
@@ -47,3 +49,10 @@
 ^\w{3}(.*)[0-9]{1,2}\s[:0-9]{8}\s[._[:alnum:]-]+\sdbus-daemon(.*)Activating via systemd
 ^\w{3}(.*)[0-9]{1,2}\s[:0-9]{8}\s[._[:alnum:]-]+\sdbus-daemon(.*)Successfully activated
 ^\w{3}(.*)[0-9]{1,2}\s[:0-9]{8}\s[._[:alnum:]-]+\s(.*)[pP]ackage[kK]it
+^\w{3}(.*)[0-9]{1,2}\s[:0-9]{8}\s[._[:alnum:]-]+\ssystemd-timesyncd\[[ .0-9]*\]\:\s+Initial synchronization to time server
+^\w{3}(.*)[0-9]{1,2}\s[:0-9]{8}\s[._[:alnum:]-]+\skernel:\s+\[[. [:alnum:]]+\](.*)frame buffer device
+^\w{3}(.*)[0-9]{1,2}\s[:0-9]{8}\s[._[:alnum:]-]+\sfstrim\[[ .0-9]*\]:(.*)trimmed on
+^\w{3}(.*)[0-9]{1,2}\s[:0-9]{8}\s[._[:alnum:]-]+\sdhcpcd\[[ .0-9]*\]:(.*)expired address
+^\w{3}(.*)[0-9]{1,2}\s[:0-9]{8}\s[._[:alnum:]-]+\sdhcpcd\[[ .0-9]*\]:(.*)part of Router Advertisement expired
+^\w{3}(.*)[0-9]{1,2}\s[:0-9]{8}\s[._[:alnum:]-]+\sdhcpcd\[[ .0-9]*\]:(.*)deleting route to
+^\w{3}(.*)[0-9]{1,2}\s[:0-9]{8}\s[._[:alnum:]-]+\skernel:\s+\[[. [:alnum:]]+\](.*)hrtimer: interrupt took

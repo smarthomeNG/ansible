@@ -21,18 +21,18 @@ sql_backupconfig () {
     fi
 }
 
-SQL_e=$(systemctl is-enabled mysql 2>&1 | tail -n 1)&> /dev/null
+SQL_e=$(systemctl is-enabled mariadb 2>&1 | tail -n 1)&> /dev/null
 echo ""
 echo "MYSQL: Database alternative to sqlite. Recommended to use in conjunction with the database plugin (currently $SQL_e)"
 select mysql in "Enable" "Disable" "Skip"; do
     case $mysql in
-        Enable ) sudo systemctl enable mysql; break;;
-        Disable ) sudo systemctl disable mysql; sudo sed -i 's/RUNBACKUPS=[a-zA-Z0-9]*/RUNBACKUPS=False/1' /etc/cron.hourly/mysql_backup 2>&1; break;;
+        Enable ) sudo systemctl enable mariadb; break;;
+        Disable ) sudo systemctl disable mariadb; sudo sed -i 's/RUNBACKUPS=[a-zA-Z0-9]*/RUNBACKUPS=False/1' /etc/cron.hourly/mysql_backup 2>&1; break;;
         Skip) echo "Skipping"; break;;
         *) echo "Skipping"; break;;
     esac
 done
-SQL_e=$(systemctl is-enabled mysql 2>&1 | tail -n 1)&> /dev/null
+SQL_e=$(systemctl is-enabled mariadb 2>&1 | tail -n 1)&> /dev/null
 echo ""
 echo "MYSQL Service is $SQL_e. Config file is /etc/mysql/debian.cnf"
 if [[ $SQL_e == "enabled" ]]; then
@@ -40,5 +40,5 @@ if [[ $SQL_e == "enabled" ]]; then
     echo "An automatic backup of your database will be created every hour in the folder /var/backups/mysql."
     echo "A maxmimum number of the 5 most recent backups is kept."
     sql_backupconfig
-    sudo systemctl restart mysql;
+    sudo systemctl restart mariadb;
 fi

@@ -70,16 +70,30 @@
       path: "/etc/rsyslog.d/samba.conf"
       create: yes
       block: |
-        template(name="FileFormat_timestamp" type="string" string= "%TIMESTAMP% %HOSTNAME% %syslogtag% %pri-text%%msg:::sp-if-no-1st-sp%%msg:::drop-last-lf%\n")
+        template(name="samba_format" type="string" string= "%TIMESTAMP% %HOSTNAME% %syslogtag% %pri-text:R,ERE,1,FIELD:daemon.(.*)--end%%msg:R,ERE,1,FIELD:^[ \t]*(.*)$--end:sp-if-no-1st-sp%%msg:R,ERE,1,FIELD:^[ \t]*(.*)$--end:drop-last-lf%\n")
+        if ($programname == 'nmbd' or $programname startswith 'smbd') and ($msg contains '../lib/' or $msg contains '../source' or $msg contains '../librpc' or $msg contains '../libcli/') then {
+          stop
+        }
         if $syslogfacility-text == 'daemon' and ($programname == 'smbd' or $msg contains 'Samba' or $programname == 'smbd_audit') then {
-          action(type="omfile" file="/var/log/samba.log" template="FileFormat_timestamp" FileCreateMode="0644" FileGroup="adm")
+          action(type="omfile" file="/var/log/samba.log" template="samba_format" FileCreateMode="0644" FileGroup="adm")
           stop
         }
         if $programname == 'nmbd' then {
-          action(type="omfile" file="/var/log/samba.log" template="FileFormat_timestamp" FileCreateMode="0644" FileGroup="adm")
+          action(type="omfile" file="/var/log/samba.log" template="samba_format" FileCreateMode="0644" FileGroup="adm")
           stop
         }
     ignore_errors: yes
+
+  - name: Delete_logdir
+    file:
+      path: /var/log/samba
+      state: absent
+
+  - name: Copy logrotate
+    copy:
+      src: configs/logrotate_samba
+      dest: /etc/logrotate.d/samba
+      mode: 0644
 
   - name: Restart smbd
     systemd: daemon_reload=yes state=restarted name=smbd

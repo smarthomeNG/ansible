@@ -49,6 +49,12 @@
       regexp: "logdir = /var/log/freeradius"
       replace: "logdir = /var/log"
 
+  - name: PIDfile
+    replace:
+      destfile: /etc/default/freeradius
+      regexp: 'FREERADIUS_OPTIONS=""'
+      replace: 'FREERADIUS_OPTIONS="-P"'
+
   - name: Copy eap
     copy:
       src: configs/freeradius_eap.conf

@@ -4,7 +4,7 @@
     notifempty
     missingok
     postrotate
-        if [ "$(systemctl is-active fail2ban)" == "active" ]; then fail2ban-client flushlogs 1>/dev/null; fi
+        if [ "$(systemctl is-active fail2ban)" = "active" ]; then fail2ban-client flushlogs 1>/dev/null; fi
     endscript
 
     # If fail2ban runs as non-root it still needs to have write access

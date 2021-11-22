@@ -1,8 +1,9 @@
-^\w{3}(.*)[0-9]{1,2}\s[:0-9]{8}\s[._[:alnum:]-]+\s(smbd|systemd|nmbd)\[[0-9]+\]\:\sdaemon.info
-^\w{3}(.*)[0-9]{1,2}\s[:0-9]{8}\s[._[:alnum:]-]+\ssmbd_audit\:\sdaemon.notice(.*)\|ok\|
-^\w{3}(.*)[0-9]{1,2}\s[:0-9]{8}\s[._[:alnum:]-]+\s(smbd|systemd|nmbd)\[[0-9]+\]\:\sdaemon.err(.*)(daemon_ready|dump_workgroups|dump workgroup)
-^\w{3}(.*)[0-9]{1,2}\s[:0-9]{8}\s[._[:alnum:]-]+\s(smbd|systemd|nmbd)\[[0-9]+\]\:\sdaemon.err(.*)become_domain_master_browser_bcast
-^\w{3}(.*)[0-9]{1,2}\s[:0-9]{8}\s[._[:alnum:]-]+\s(smbd|systemd|nmbd)\[[0-9]+\]\:\sdaemon.err(.*)Attempting to become domain master
-^\w{3}(.*)[0-9]{1,2}\s[:0-9]{8}\s[._[:alnum:]-]+\s(smbd|systemd|nmbd)\[[0-9]+\]\:\sdaemon.err(.*)now a domain master
-^\w{3}(.*)[0-9]{1,2}\s[:0-9]{8}\s[._[:alnum:]-]+\s(smbd|systemd|nmbd)\[[0-9]+\]\:\sdaemon.err\s+\*\*\*\*\*
-^\w{3}(.*)[0-9]{1,2}\s[:0-9]{8}\s[._[:alnum:]-]+\s(smbd|systemd|nmbd)\[[0-9]+\]\:\sdaemon.err\s+Samba name
+^\w{3}(.*)[0-9]{1,2}\s[:0-9]{8}\s[._[:alnum:]-]+\s(smbd|systemd|nmbd)\[[0-9]+\]\:\s(daemon.)?(info|notice)
+^\w{3}(.*)[0-9]{1,2}\s[:0-9]{8}\s[._[:alnum:]-]+\ssmbd_audit\:\s+(daemon.)?(notice|debug|info)
+^\w{3}(.*)[0-9]{1,2}\s[:0-9]{8}\s[._[:alnum:]-]+\s(smbd|systemd|nmbd)\[[0-9]+\]\:\s(daemon.)?err(.*)(daemon_ready|dump_workgroups|dump workgroup)
+^\w{3}(.*)[0-9]{1,2}\s[:0-9]{8}\s[._[:alnum:]-]+\s(smbd|systemd|nmbd)\[[0-9]+\]\:\s(daemon.)?err(.*)become_domain_master_browser_bcast
+^\w{3}(.*)[0-9]{1,2}\s[:0-9]{8}\s[._[:alnum:]-]+\s(smbd|systemd|nmbd)\[[0-9]+\]\:\s(daemon.)?err(.*)Attempting to become domain master
+^\w{3}(.*)[0-9]{1,2}\s[:0-9]{8}\s[._[:alnum:]-]+\s(smbd|systemd|nmbd)\[[0-9]+\]\:\s(daemon.)?err(.*)now a domain master
+^\w{3}(.*)[0-9]{1,2}\s[:0-9]{8}\s[._[:alnum:]-]+\s(smbd|systemd|nmbd)\[[0-9]+\]\:\s(daemon.)?err\s+\*\*\*\*\*
+^\w{3}(.*)[0-9]{1,2}\s[:0-9]{8}\s[._[:alnum:]-]+\s(smbd|systemd|nmbd)\[[0-9]+\]\:\s(daemon.)?err\s+Samba name
+^\w{3}(.*)[0-9]{1,2}\s[:0-9]{8}\s[._[:alnum:]-]+\s(smbd|systemd|nmbd)\[[0-9]+\]\:\s(daemon.)?warning\s+INFO

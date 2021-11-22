@@ -23,7 +23,7 @@
       "libaio-dev",
       "git-core",
       "build-essential",
-      "dh-systemd",
+      "debhelper",
       "autoconf",
       "libtool",
       "libusb-1.0-0-dev",
@@ -45,6 +45,27 @@
 
 
   tasks:
+  - name: Create sh Group
+    group:
+      name: smarthome
+      state: present
+
+  - name: Create sh User
+    user:
+      name: smarthome
+      shell: /bin/bash
+      groups: smarthome
+      append: no
+      update_password: always
+      password: ""
+      comment: 'SmarthomeNG User'
+
+  - name: Add groups
+    user:
+      name: smarthome
+      groups: www-data, sudo, i2c, adm, audio, video, plugdev, input, netdev, spi, gpio, dialout, root, tty, users
+      append: yes
+
   - name: Update release
     shell: apt-get update --allow-releaseinfo-change
 
@@ -183,12 +204,6 @@
       replace: "PermitRootLogin yes"
     ignore_errors: yes
 
-  - name: Securetty
-    lineinfile:
-      path: /etc/securetty
-      insertafter: '^console'
-      line: 'ssh'
-
   - name: getty AMA
     systemd: masked=yes name=serial-getty@ttyAMA0.service
     ignore_errors: yes
@@ -267,11 +282,6 @@
       line: 'i2c-bcm2708'
     when: test_grep2.stdout == ""
 
-  - name: Create sh Group
-    group:
-      name: smarthome
-      state: present
-
   - name: udev tty
     blockinfile:
       path: /etc/udev/rules.d/99-dev.rules
@@ -289,22 +299,6 @@
       special_time: reboot
       job: 'udevadm trigger'
       cron_file: udev
-
-  - name: Create sh User
-    user:
-      name: smarthome
-      shell: /bin/bash
-      groups: smarthome
-      append: no
-      update_password: always
-      password: ""
-      comment: 'SmarthomeNG User'
-
-  - name: Add groups
-    user:
-      name: smarthome
-      groups: www-data, sudo, i2c, adm, audio, video, plugdev, input, netdev, spi, gpio, dialout, root, tty, users
-      append: yes
 
   - name: Make ssh dir
     file:
@@ -346,7 +340,7 @@
       src: executables/mycolorize-r.sh
       dest: /usr/local/bin/colorize
       mode: 0777
-      owner: root
+      owner: smarthome
       group: root
     register: colorize
   - debug: var=colorize
@@ -355,7 +349,7 @@
     copy:
       src: executables/colorbash.sh
       dest: /etc/profile.d/
-      owner: root
+      owner: smarthome
       group: root
       mode: 0777
 
@@ -363,7 +357,7 @@
     copy:
       src: executables/tweakbash.sh
       dest: /etc/profile.d/
-      owner: root
+      owner: smarthome
       group: root
       mode: 0777
 

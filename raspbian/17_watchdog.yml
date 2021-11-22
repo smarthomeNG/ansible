@@ -32,7 +32,7 @@
       block: |
         template(name="FileFormat_timestamp" type="string" string= "%TIMESTAMP% %HOSTNAME% %syslogtag% %pri-text%%msg:::sp-if-no-1st-sp%%msg:::drop-last-lf%\n")
         if $programname == 'watchdog' or $msg contains 'watchdog' then {
-          action(type="omfile" file="/var/log/watchdog.log" template="FileFormat_timestamp")
+          action(type="omfile" file="/var/log/watchdog.log" template="FileFormat_timestamp" FileGroup="adm"  FileCreateMode="0644")
           stop
         }
     ignore_errors: yes
@@ -63,6 +63,11 @@
       src: configs/logrotate_watchdog
       dest: /etc/logrotate.d/watchdog
       mode: 0644
+
+  - name: Delete_logdir
+    file:
+      path: /var/log/watchdog
+      state: absent
 
   - name: disbale
     systemd: enabled=no name=watchdog.service

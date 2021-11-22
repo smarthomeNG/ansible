@@ -1,4 +1,6 @@
-^[-0-9]{10}\s[:,0-9]{8,12}\sfail2ban(.*)\[[0-9]+\]\:\s+(daemon|user).(notice|info)
+^[-0-9]{10}\s[:,0-9]{8,12}\sfail2ban(.*)\[[0-9]+\]\:\s+(daemon.|user.)?([Nn][Oo][Tt][Ii][Cc][Ee]|[Ii][Nn][Ff][Oo])
 ^[-0-9]{10}\s[:,0-9]{8,12}\sfail2ban.utils(.*)\[[0-9]+\]\:\sLevel 39(.*)
-^\w{3}(.*)[0-9]{1,2}\s[:0-9]{8}\s[._[:alnum:]-]+\sfail2ban(.*)\s+(daemon|user).(notice|info)
+^\w{3}(.*)[0-9]{1,2}\s[:0-9]{8}\s[._[:alnum:]-]+\sfail2ban(.*)\s+(daemon.|user.)?([Nn][Oo][Tt][Ii][Cc][Ee]|[Ii][Nn][Ff][Oo])
 ^\w{3}(.*)[0-9]{1,2}\s[:0-9]{8}\s[._[:alnum:]-]+\sfail2ban.utils(.*)\[[0-9]+\]\:\s(.*)Level 39(.*)
+^\w{3}(.*)[0-9]{1,2}\s[:0-9]{8}\s[._[:alnum:]-]+\sfail2ban(.*)\[[0-9]+\]\:\s+Server ready
+^\w{3}(.*)[0-9]{1,2}\s[:0-9]{8}\s[._[:alnum:]-]+\sfail2ban(.*)\[[0-9]+\]\:\s+(.*)[Ss]uccessful
