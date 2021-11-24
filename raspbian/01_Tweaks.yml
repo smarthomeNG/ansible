@@ -428,8 +428,7 @@
       path: /etc/rsyslog.d/ignore-systemd-session-slice.conf
       create: yes
       block: |
-        if $programname == "systemd" and ($msg contains "Starting Session" or $msg contains "Started Session" or $msg contains "session closed" or $msg contains "session opened" or $msg contains "Created slice" or $msg contains "Starting user-" or $msg contains "Starting User Slice of" or $msg contains "Startup" or $msg contains "Removed session" or $msg contains "New session" or $msg contains "Removed slice User Slice of" or $msg contains "Stopping User Slice of" or $msg contains "dwc_otg_handle_mode_mismatch_intr") then stop
-        if $programname == "systemd-logind" and ($msg contains "Starting Session" or $msg contains "Started Session" or $msg contains "session closed" or $msg contains "session opened" or $msg contains "Created slice" or $msg contains "Starting user-" or $msg contains "Starting User Slice of" or $msg contains "Removed session"  or $msg contains "New session" or $msg contains "Removed slice User Slice of" or $msg contains "Stopping User Slice of") then stop
+        if $programname startswith "systemd" and ($msg contains "Starting Session" or $msg contains "Started Session" or $msg contains "session closed" or $msg contains "session opened" or $msg contains "Created slice" or $msg contains "Starting user-" or $msg contains "Starting User Slice of" or $msg contains "Startup" or $msg contains "Removed session" or $msg contains "New session" or $msg contains "Removed slice " or $msg contains "Stopping User Slice of" or $msg contains "dwc_otg_handle_mode_mismatch_intr") then stop
 
   - name: systemd-timesyncd
     systemd: enabled=yes name=systemd-timesyncd.service
