@@ -38,11 +38,11 @@
       path: "/etc/rsyslog.d/grafana.conf"
       create: yes
       block: |
-      template(name="grafana" type="string" string= "%TIMESTAMP% %HOSTNAME% %syslogtag% %pri-text:R,ERE,1,FIELD:local7.(.*)--end%%msg:R,ERE,2,FIELD:(.*)msg=(.*)--end:sp-if-no-1st-sp%%msg:R,ERE,2,FIELD:(.*)msg=(.*)--end:drop-last-lf%\n")
-      if $syslogfacility-text == 'local7' and ($programname == 'grafana-server' or $programname == 'grafana') then {
-        action(type="omfile" file="/var/log/grafana.log" template="grafana" FileGroup="adm"  FileCreateMode="0644")
-        stop
-      }
+        template(name="grafana" type="string" string= "%TIMESTAMP% %HOSTNAME% %syslogtag% %pri-text:R,ERE,1,FIELD:local7.(.*)--end%%msg:R,ERE,2,FIELD:(.*)msg=(.*)--end:sp-if-no-1st-sp%%msg:R,ERE,2,FIELD:(.*)msg=(.*)--end:drop-last-lf%\n")
+        if $syslogfacility-text == 'local7' and ($programname == 'grafana-server' or $programname == 'grafana') then {
+          action(type="omfile" file="/var/log/grafana.log" template="grafana" FileGroup="adm"  FileCreateMode="0644")
+          stop
+        }
     ignore_errors: yes
 
   - name: rooturl
@@ -97,6 +97,11 @@
       name: grafana
       groups: adm
       append: yes
+
+  - name: Delete_logdir
+    file:
+      path: /var/log/grafana
+      state: absent
 
   - name: Restart Grafana
     systemd: state=restarted name=grafana-server.service
