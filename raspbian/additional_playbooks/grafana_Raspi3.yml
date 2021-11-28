@@ -103,6 +103,9 @@
       path: /var/log/grafana
       state: absent
 
+  - name: Restart rsyslog
+    systemd: state=restarted name=rsyslog.service
+
   - name: Restart Grafana
     systemd: state=restarted name=grafana-server.service
 
