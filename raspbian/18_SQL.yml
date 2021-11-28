@@ -5,6 +5,9 @@
   become_user: root
   become: true
 
+  vars:
+    ansible_python_interpreter: /usr/bin/python
+    
   tasks:
   - name: Create Group
     group:
@@ -289,6 +292,6 @@
 
   - name: disable mysql
     systemd: enabled=no name=mysql.service
-    
+
   - name: disable mariadb
     systemd: enabled=no name=mariadb.service

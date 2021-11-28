@@ -5,6 +5,9 @@
   become_user: root
   become: true
 
+  vars:
+    ansible_python_interpreter: /usr/bin/python
+    
   tasks:
   - name: Root Password to root
     user:

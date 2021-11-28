@@ -6,6 +6,7 @@
   become: true
 
   vars:
+    ansible_python_interpreter: /usr/bin/python
     playbooks:
       ["homebridge_Raspi3.yml",
       "influxdb_Raspi3.yml",

@@ -5,8 +5,10 @@
   become_user: root
   become: true
 
-  tasks:
+  vars:
+    ansible_python_interpreter: /usr/bin/python
 
+  tasks:
   - name: easy_dir
     file:
       path: /etc/ssl/easy-rsa
