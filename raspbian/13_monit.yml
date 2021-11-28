@@ -6,8 +6,8 @@
   become: true
 
   vars:
+    ansible_python_interpreter: /usr/bin/python
     monitgraphpath: /var/www/html/monitgraph
-
 
   tasks:
   - name: Create Group

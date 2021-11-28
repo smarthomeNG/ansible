@@ -6,6 +6,7 @@
   become: true
 
   vars:
+    ansible_python_interpreter: /usr/bin/python
     pythonremove:
       ["python3-keyring",
       "python3-pyasn1",
@@ -132,6 +133,14 @@
     become_user: smarthome
     when: rust_installed.stat.exists == False
     register: rust_installer
+
+  - name: Make tmp dir
+    file:
+      path: /home/smarthome/.ansible/tmp
+      state: directory
+      owner: smarthome
+      group: smarthome
+      mode: 0777
 
   - name: wait
     async_status: jid={{ rust_installer.ansible_job_id }}

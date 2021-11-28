@@ -5,8 +5,10 @@
   become_user: root
   become: true
 
-  tasks:
+  vars:
+    ansible_python_interpreter: /usr/bin/python
 
+  tasks:
   - name: Install watchdog
     apt: name=watchdog force=no state=latest install_recommends=no
 

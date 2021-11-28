@@ -6,7 +6,7 @@
   become: true
 
   vars:
-
+    ansible_python_interpreter: /usr/bin/python
     smartvisupath: /var/www/html/smartvisu2.8
     smartvisupath2: /var/www/html/smartvisu
     htmlpath: /var/www/html

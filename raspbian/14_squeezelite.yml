@@ -6,6 +6,7 @@
   become: true
 
   vars:
+    ansible_python_interpreter: /usr/bin/python
     packages_compile:
       ["libasound2-dev",
       "libflac-dev",
