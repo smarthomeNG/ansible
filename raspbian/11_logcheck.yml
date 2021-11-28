@@ -17,7 +17,7 @@
       name: python-magic
       executable: pip3
       state: latest
-      extra_args: --target=/usr/local/lib/python3.8/site-packages/ --upgrade
+      extra_args: --target=/usr/local/lib/python3.9/site-packages/ --upgrade
 
   - name: Copy syslogsummary
     copy:
