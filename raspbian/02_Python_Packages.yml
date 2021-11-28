@@ -106,6 +106,12 @@
       name: python3-pip
       state: present
 
+  - name: Install yolk
+    pip:
+      name: yolk3k
+      state: present
+      executable: pip3
+
   - name: remove modules
     pip:
       name: "{{ item }}"
