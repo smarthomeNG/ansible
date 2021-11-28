@@ -64,7 +64,7 @@
       state: touch
 
   - name: Install curl
-    apt: name=php-curl force=no state=latest install_recommends=yes
+    apt: name=php8.0-curl force=no state=latest install_recommends=yes
 
   - name: Copy config
     copy:
