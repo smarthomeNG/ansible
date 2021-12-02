@@ -15,7 +15,8 @@
       "python3-setuptools",
       "python-six",
       "enum34",
-      "python-idna"
+      "python-idna",
+      "python3-gpg"
       ]
 
     pythonremovemodules:
@@ -26,6 +27,7 @@
 
     pythoninstall:
       ["pip",
+      "/home/smarthome/.ansible/tmp/gpg-1.10.0.tar.gz",
       "RPi.GPIO",
       "pgen",
       "requests",
@@ -95,6 +97,20 @@
       state: latest
       install_recommends: no
 
+  - name: Install swig4
+    apt:
+      name: swig4.0
+      state: latest
+      install_recommends: no
+
+  - name: swiglink
+    ansible.builtin.file:
+      src: /usr/bin/swig4.0
+      dest: /usr/bin/swig
+      owner: root
+      group: root
+      state: link
+
   - name: Install libssl-dev
     apt:
       name: libssl-dev
@@ -105,12 +121,6 @@
     apt:
       name: python3-pip
       state: present
-
-  - name: Install yolk
-    pip:
-      name: yolk3k
-      state: present
-      executable: pip3
 
   - name: remove modules
     pip:
@@ -157,6 +167,20 @@
     become_user: smarthome
     when: rust_installed.stat.exists == False
 
+  - name: Copy gpg
+    copy:
+      src: packages/gpg-1.10.0.tar.gz
+      dest: /home/smarthome/.ansible/tmp
+      mode: 0777
+      owner: smarthome
+      group: root
+
+  - name: Install libgpgme-dev
+    apt:
+      name: libgpgme-dev
+      state: latest
+      install_recommends: no
+
   - name: Install modules
     pip:
       name: "{{ item }}"
@@ -181,6 +205,15 @@
   - name: Install psutil
     pip:
       name: psutil
+      executable: pip3
+      state: latest
+      extra_args: --user
+    become: true
+    become_user: root
+
+  - name: Install gpg for root
+    pip:
+      name: /home/smarthome/.ansible/tmp/gpg-1.10.0.tar.gz
       executable: pip3
       state: latest
       extra_args: --user

@@ -242,6 +242,13 @@
       replace: "root=/dev/mmcblk0p2 "
     ignore_errors: yes
 
+  - name: triggerhappy
+    replace:
+      destfile: /lib/udev/rules.d/60-triggerhappy.rules
+      regexp: '^(\s+)RUN\+\=(.*)$'
+      replace: '\1RUN+="/bin/systemctl restart triggerhappy"'
+    ignore_errors: yes
+
   - name: Test for entry
     command: 'grep "rootdelay=5 consoleblank=0 cgroup_memory=1 cgroup_enable=memory init=/usr/lib/raspi-config/init_resize.sh" /boot/cmdline.txt'
     register: test_grep1
@@ -317,13 +324,13 @@
   - name: restart fakehwclock
     systemd: state=restarted name=fake-hwclock.service
 
-  - name: chmod rsyslog conf
-    file:
-      path: /etc/rsyslog.conf
-      state: touch
+  - name: rsyslog
+    copy:
+      src: configs/rsyslog.conf
+      dest: /etc/rsyslog.conf
+      mode: 0755
       owner: smarthome
       group: smarthome
-      mode: 0755
 
   - name: hostname public
     command: 'hostnamectl set-hostname SmartHomeNG'
@@ -434,29 +441,6 @@
   - name: systemd-timesyncd
     systemd: enabled=yes name=systemd-timesyncd.service
 
-  - name: cron log
-    replace:
-      destfile: /etc/rsyslog.conf
-      regexp: "^#cron."
-      replace: "cron."
-    ignore_errors: yes
-
-  - name: cron log2
-    replace:
-      destfile: /etc/rsyslog.conf
-      regexp: "^\\*.\\*;auth,authpriv.none"
-      replace: "*.*;auth,authpriv.none;cron.none"
-    ignore_errors: yes
-    register: cronlog
-  - debug: var=cronlog
-
-  - name: no user log
-    replace:
-      destfile: /etc/rsyslog.conf
-      regexp: "^user."
-      replace: "#user."
-    ignore_errors: yes
-
   - name: debdir
     file: path=/etc/deb-files/ state=directory mode=0755
 
@@ -498,6 +482,19 @@
         }
     ignore_errors: yes
 
+  - name: create systemd dir bluetooth
+    file:
+      path: /etc/systemd/system/bluetooth.service.d/
+      state: directory
+
+  - name: Copy service_conf bluetooth
+    copy:
+      src: configs/service_bluetooth_fix.conf
+      dest: /etc/systemd/system/bluetooth.service.d/
+      owner: root
+      group: adm
+      mode: 0644
+
   - name: create systemd dir snmpd
     file:
       path: /etc/systemd/system/snmpd.service.d/
@@ -537,7 +534,7 @@
 
   - name: snmp logfile
     blockinfile:
-      path: "/etc/rsyslog.d/samba.conf"
+      path: "/etc/rsyslog.d/snmp.conf"
       create: yes
       block: |
         template(name="FileFormat_timestamp" type="string" string= "%TIMESTAMP% %HOSTNAME% %syslogtag% %pri-text%%msg:::sp-if-no-1st-sp%%msg:::drop-last-lf%\n")

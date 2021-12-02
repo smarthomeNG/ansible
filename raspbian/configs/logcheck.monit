@@ -1,4 +1,2 @@
-^\[\w{3,4}\s+\w{3}\s+[0-9]{1,2}\s+[:0-9]{8}\]\s+info
-Reinitializing Monit
-^\w{3}(.*)[0-9]{1,2}\s[:0-9]{8}\s[._[:alnum:]-]+\smonit\[[0-9]+\]\: user.info
-^\w{3}(.*)[0-9]{1,2}\s[:0-9]{8}\s[._[:alnum:]-]+\s+nginx:\slocal7.info
+^\w{3}(.*)[0-9]{1,2}\s[:0-9]{8}\s[._[:alnum:]-]+\smonit\[[0-9]+\]\:\s(user.)?info
+^\w{3}(.*)[0-9]{1,2}\s[:0-9]{8}\s[._[:alnum:]-]+\s+nginx:\s(local7.)?info

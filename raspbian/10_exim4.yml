@@ -80,17 +80,17 @@
           stop
         }
 
-  - name: logrotate
-    lineinfile:
-      path: /etc/logrotate.d/exim4-base
-      regexp: 'compress'
-      state: absent
+  - name: Copy logrotate
+    copy:
+      src: configs/logrotate_exim4_base
+      dest: /etc/logrotate.d/exim4-base
+      mode: 0644
 
-  - name: logrotate2
-    replace:
-      destfile: /etc/logrotate.d/exim4-base
-      regexp: '^nocreate'
-      replace: 'create 640 Debian-exim adm'
+  - name: Copy logrotate2
+    copy:
+      src: configs/logrotate_exim4_paniclog
+      dest: /etc/logrotate.d/exim4-paniclog
+      mode: 0644
 
   - name: timeout1
     replace:

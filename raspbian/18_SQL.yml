@@ -7,7 +7,7 @@
 
   vars:
     ansible_python_interpreter: /usr/bin/python
-    
+
   tasks:
   - name: Create Group
     group:
@@ -277,6 +277,14 @@
     ignore_errors: yes
     register: a2enconf
   - debug: var=a2enconf
+
+  - name: chmod log
+    file:
+      path: /var/log/mysql/error.log
+      state: touch
+      owner: mysql
+      group: adm
+      mode: 0755
 
   - name: Restart apache
     systemd: state=restarted name=apache2

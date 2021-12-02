@@ -1,0 +1,10 @@
+/var/log/exim4/paniclog {
+        size 10M
+        daily
+        missingok
+        rotate 10
+        notifempty
+        create 640 Debian-exim adm
+        dateext
+        dateformat .%Y-%m-%d.log
+}

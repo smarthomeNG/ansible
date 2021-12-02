@@ -43,6 +43,12 @@
       groups: www-data, sudo, i2c, adm, audio, video, plugdev, input, netdev, spi, gpio, dialout
       append: yes
 
+  - name: Update Cache
+    apt: update_cache=yes
+
+  - name: Safe apt upgrade
+    apt: upgrade=safe
+    
   - name: Install Packages
     apt:
       name: "{{ item }}"
