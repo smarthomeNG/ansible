@@ -16,6 +16,8 @@ adddate() {
 export LC_ALL=C
 log_file="/var/log/mysql/mariabackup.log"
 
+sudo chmod 0644 /etc/mysql/debian.cnf
+sudo chown mysql:mysql /etc/mysql/debian.cnf
 if [[ $RUNBACKUPS == True ]] && (command -v /usr/bin/mariabackup > /dev/null 2>&1 && pgrep -x mysqld > /dev/null 2>&1 && ! pgrep mariabackup  > /dev/null 2>&1); then
 	days_of_backups=3  # Must be less than 7
 	backup_owner="mysql"
@@ -84,9 +86,9 @@ if [[ $RUNBACKUPS == True ]] && (command -v /usr/bin/mariabackup > /dev/null 2>&
 		# Make sure today's backup directory is available and take the actual backup
 		mkdir -p "${todays_dir}"
 		cd /var/log/mysql/ && find "${todays_dir}" -type f -name "*.incomplete" -delete
-		mariabackup "${mariabackup_args[@]}" --target-dir="${todays_dir}" > "${todays_dir}/${backup_type}-${now}.xbstream.incomplete" 2>> $log_file
+		sudo mariabackup "${mariabackup_args[@]}" --target-dir="${todays_dir}" > "${todays_dir}/${backup_type}-${now}.xbstream.incomplete" 2>> $log_file
 
-		mv "${todays_dir}/${backup_type}-${now}.xbstream.incomplete" "${todays_dir}/${backup_type}-${now}.xbstream"
+		sudo mv "${todays_dir}/${backup_type}-${now}.xbstream.incomplete" "${todays_dir}/${backup_type}-${now}.xbstream"
 	}
 
 	set_options && rotate_old && take_backup
