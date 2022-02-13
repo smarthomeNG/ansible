@@ -14,5 +14,5 @@
 ^\w{3}(.*)[0-9]{1,2}\s[:0-9]{8}\sWARNING\s+lib.smarthome.main(.*)initialization finished
 ^\w{3}(.*)[0-9]{1,2}\s[:0-9]{8}\sWARNING\s+plugins.visu_websocket(.*)Series cancelation: No series for path
 ^\w{3}(.*)[0-9]{1,2}\s[:0-9]{8}\sERROR\s+modules.websocket smartVISU_protocol_v4 exception: no close frame received or sent
-^\w{3}(.*)[0-9]{1,2}\s[:0-9]{8}\sERROR\s+modules.websocket smartVISU_protocol_v4 exception: sent 1011
-^\w{3}(.*)[0-9]{1,2}\s[:0-9]{8}\sERROR\s+modules.websocket smartVISU_protocol_v4 exception: received 1005
+^\w{3}(.*)[0-9]{1,2}\s[:0-9]{8}\sERROR\s+modules.websocket smartVISU_protocol_v4(.*)sent 1011
+^\w{3}(.*)[0-9]{1,2}\s[:0-9]{8}\s(ERROR|WARNING)\s+modules.websocket smartVISU_protocol_v4(.*)received 1005

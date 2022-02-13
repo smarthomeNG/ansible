@@ -17,7 +17,7 @@
       name: python-magic
       executable: pip3
       state: latest
-      extra_args: --target=/usr/local/lib/python3.9/site-packages/ --upgrade
+      extra_args: --target=/usr/local/lib/python3.9/dist-packages --upgrade
 
   - name: Copy syslogsummary
     copy:
@@ -73,6 +73,14 @@
     copy:
       src: configs/logcheck.dhcp
       dest: /etc/logcheck/ignore.d.server/local-dhcp
+      owner: root
+      group: logcheck
+      mode: 0644
+
+  - name: Copy Logcheck upgrades
+    copy:
+      src: configs/logcheck.upgrades
+      dest: /etc/logcheck/ignore.d.server/local-upgrades
       owner: root
       group: logcheck
       mode: 0644

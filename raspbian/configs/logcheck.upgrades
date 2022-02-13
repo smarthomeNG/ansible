@@ -1,0 +1,1 @@
+^\w{3}(.*)[0-9]{1,2}\s[:0-9]{8}\s[._[:alnum:]-]+\sunattended-upgrade: (daemon.)?(info|debug)
