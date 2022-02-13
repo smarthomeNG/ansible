@@ -15,6 +15,12 @@
         ]
 
   tasks:
+  - name: User
+    user:
+      name: grafana
+      groups: adm
+      append: yes
+
   - name: key
     apt_key:
       url: https://packages.grafana.com/gpg.key
@@ -43,6 +49,14 @@
           action(type="omfile" file="/var/log/grafana.log" template="grafana" FileGroup="adm"  FileCreateMode="0644")
           stop
         }
+        if $syslogfacility-text == 'local7' and ($programname startswith 'loki') then {
+          action(type="omfile" file="/var/log/grafana.log" template="grafana" FileGroup="adm"  FileCreateMode="0644")
+          stop
+        }
+        if $syslogfacility-text == 'local7' and ($programname startswith 'promtail') then {
+          action(type="omfile" file="/var/log/grafana.log" template="grafana" FileGroup="adm"  FileCreateMode="0644")
+          stop
+        }
     ignore_errors: yes
 
   - name: rooturl
@@ -50,6 +64,54 @@
       dest: /etc/grafana/grafana.ini
       insertafter: '^;root_url ='
       line: 'root_url = %(protocol)s://%(domain)s/grafana/'
+
+  - name: download loki
+    unarchive:
+      src: https://github.com/grafana/loki/releases/latest/download/loki-linux-arm.zip
+      dest: /usr/local/bin
+      mode: 0775
+      owner: grafana
+      group: adm
+
+  - name: download promtail
+    unarchive:
+      src: https://github.com/grafana/loki/releases/latest/download/promtail-linux-arm.zip
+      dest: /usr/local/bin
+      mode: 0775
+      owner: grafana
+      group: adm
+
+  - name: config loki
+    get_url:
+      url: https://raw.githubusercontent.com/grafana/loki/master/cmd/loki/loki-local-config.yaml
+      dest: /etc/grafana/config-loki.yml
+      mode: 0777
+      owner: grafana
+      group: smarthome
+
+  - name: config promtail
+    get_url:
+      url: https://raw.githubusercontent.com/grafana/loki/master/cmd/loki/loki-local-config.yaml
+      dest: /etc/grafana/config-promtail.yml
+      mode: 0777
+      owner: grafana
+      group: smarthome
+
+  - name: loki service
+    copy:
+      src: configs/loki.service
+      dest: /lib/systemd/system/loki.service
+
+  - name: promtail service
+    copy:
+      src: configs/promtail.service
+      dest: /lib/systemd/system/promtail.service
+
+  - name: enable_loki
+    systemd: enabled=yes name=loki.service
+
+  - name: enable_promtail
+    systemd: enabled=yes name=promtail.service
 
   - name: create systemd dir
     file:
@@ -91,12 +153,6 @@
       regexp: "^;tag ="
       replace: "tag = grafana"
     ignore_errors: yes
-
-  - name: Groups
-    user:
-      name: grafana
-      groups: adm
-      append: yes
 
   - name: Delete_logdir
     file:
