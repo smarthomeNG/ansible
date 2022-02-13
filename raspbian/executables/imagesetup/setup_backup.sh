@@ -202,7 +202,7 @@ backup_all() {
   echo ""
   echo "Encrypting tar file as there are certificates and other private information stored. This might take longer."
   echo "Please provide a password and remember that for the restore process!"
-  sudo openssl enc -e -iter -out /$backupfolder/image_backup_encrypted.tar -in /$backupfolder/image_backup.tar
+  sudo openssl enc -e -iter 2 -v -aes-256-cbc -out /$backupfolder/image_backup_encrypted.tar -in /$backupfolder/image_backup.tar
   echo ""
   echo "Encryption done. Please copy the file /$backupfolder/image_backup_encrypted.tar to a save place."
   echo "Deleting unencrypted file."
@@ -211,7 +211,7 @@ backup_all() {
 
 backup_mysql() {
   if [ ! -f "$backupfolder/backup_log.txt" ]; then
-    sudo chown smarthome:users /$backupfolder -R
+    sudo chown smarthome:adm /$backupfolder -R
     echo "Running mariadb-backup now." | adddate > /$backupfolder/backup_log.txt 2>&1
   fi
   echo "Running mariadb-backup now. Check the file /etc/cron.hourly/mysql_backup for the target directory"

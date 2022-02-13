@@ -13,7 +13,7 @@ addate() {
 restore_all() {
   if [ -f /$backupfolder/image_backup_encrypted.tar ]; then
       echo "Decrypting tar file.. please provide the correct password."
-      sudo openssl enc -d -iter -in /$backupfolder/image_backup_encrypted.tar -out /$backupfolder/image_backup.tar
+      sudo openssl enc -e -iter 2 -v -aes-256-cbc -in /$backupfolder/image_backup_encrypted.tar -out /$backupfolder/image_backup.tar
       echo ""
       echo "Decryption done. Extracting all config files to the correct folders. Please be patient."
       cd /
