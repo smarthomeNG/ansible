@@ -1,0 +1,13 @@
+[Unit]
+Description=Loki service
+After=network.target
+
+[Service]
+Type=simple
+User=grafana
+PermissionsStartOnly=true
+ExecStartPre=+/usr/bin/chown grafana:adm /tmp/loki
+ExecStart=/usr/local/bin/loki-linux-arm -config.file /etc/grafana/config-loki.yml
+
+[Install]
+WantedBy=multi-user.target
