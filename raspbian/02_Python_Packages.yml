@@ -27,7 +27,7 @@
 
     pythoninstall:
       ["pip",
-      "/home/smarthome/.ansible/tmp/gpg-1.10.0.tar.gz",
+      "python-gnupg",
       "RPi.GPIO",
       "pgen",
       "requests",
@@ -39,13 +39,12 @@
       "pycrypto",
       "yolk3k",
       "snmp",
-      "knxPython",
-      "spur",
-      "python-miio",
       "numpy",
-      "scipy"
+      "scipy",    
+      "knxPython",
+      "python-miio",
+      "spur"   
       ]
-
 
   tasks:
   - name: Link python
@@ -117,11 +116,26 @@
       state: latest
       install_recommends: no
 
-  - name: Install pip3
-    apt:
-      name: python3-pip
-      state: present
+  - name: Copy getpip
+    get_url:
+      url: https://bootstrap.pypa.io/get-pip.py
+      dest: /home/smarthome
+      mode: 0777
+      owner: smarthome
+      group: smarthome
 
+  - name: Install pip3 
+    command: 'python3 /home/smarthome/get-pip.py'
+
+  - name: Update root pip
+    pip:
+      name: pip
+      executable: pip3
+      state: latest
+      extra_args: --upgrade
+    become: true
+    become_user: root
+    
   - name: remove modules
     pip:
       name: "{{ item }}"
@@ -167,20 +181,18 @@
     become_user: smarthome
     when: rust_installed.stat.exists == False
 
-  - name: Copy gpg
-    copy:
-      src: packages/gpg-1.10.0.tar.gz
-      dest: /home/smarthome/.ansible/tmp
-      mode: 0777
-      owner: smarthome
-      group: root
-
   - name: Install libgpgme-dev
     apt:
       name: libgpgme-dev
       state: latest
       install_recommends: no
 
+  - name: Install python3-dev
+    apt:
+      name: python3-dev
+      state: latest
+      install_recommends: no
+      
   - name: Install modules
     pip:
       name: "{{ item }}"
@@ -193,15 +205,6 @@
       PATH: "{{ ansible_env.PATH }}:/home/smarthome/.cargo/bin"
     with_items: "{{ pythoninstall }}"
 
-  - name: Update root pip
-    pip:
-      name: pip
-      executable: pip3
-      state: latest
-      extra_args: --user --upgrade
-    become: true
-    become_user: root
-
   - name: Install psutil
     pip:
       name: psutil
@@ -213,7 +216,7 @@
 
   - name: Install gpg for root
     pip:
-      name: /home/smarthome/.ansible/tmp/gpg-1.10.0.tar.gz
+      name: python-gnupg
       executable: pip3
       state: latest
       extra_args: --user
