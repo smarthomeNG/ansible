@@ -1,2 +1,3 @@
 ^[-0-9]{10}\s[:,0-9]{8,12}\sgrafana(.*)\[[0-9]+\]\:\s+(local7.)?info
 ^\w{3}(.*)[0-9]{1,2}\s[:0-9]{8}\s[._[:alnum:]-]+\sgrafana(.*)\[[0-9]+\]\:\s+(local7.)?info
+^\w{3}(.*)[0-9]{1,2}\s[:0-9]{8}\s[._[:alnum:]-]+\s(loki-linux-arm|promtail)\[[0-9]+\]\:\s+(daemon.)?info
