@@ -600,7 +600,7 @@
       block: |
         template(name="FileFormat_timestamp" type="string" string= "%TIMESTAMP% %HOSTNAME% %syslogtag% %pri-text%%msg:::sp-if-no-1st-sp%%msg:::drop-last-lf%\n")
         if $programname == 'unattended-upgrade' then {
-          action(type="omfile" file="/var/log/unattended-upgrades.log" template="FileFormat_timestamp")
+          action(type="omfile" file="/var/log/unattended-upgrades.log" template="FileFormat_timestamp" FileCreateMode="0644" FileGroup="adm" FileOwner="smarthome")
           stop
         }
     ignore_errors: yes
