@@ -5,6 +5,9 @@
   become_user: root
   become: true
 
+  vars:
+    ansible_python_interpreter: /usr/bin/python
+    
   tasks:
   - name: Install
     apt:
@@ -40,8 +43,9 @@
       dest: "/etc/rsyslog.d/influxdb.conf"
       create: yes
       block: |
-        if $programname == 'influxd' then {
-          action(type="omfile" file="/var/log/influxdb.log")
+        template(name="FileFormat_timestamp" type="string" string= "%TIMESTAMP% %HOSTNAME% %syslogtag% %pri-text%%msg:::sp-if-no-1st-sp%%msg:::drop-last-lf%\n")
+        if $programname startswith 'influxd' then {
+          action(type="omfile" file="/var/log/influxdb.log" template="FileFormat_timestamp" FileGroup="adm"  FileCreateMode="0644" FileOwner="smarthome")
           stop
         }
     ignore_errors: yes
