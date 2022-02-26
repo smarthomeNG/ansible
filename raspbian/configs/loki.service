@@ -6,8 +6,9 @@ After=network.target
 Type=simple
 User=grafana
 PermissionsStartOnly=true
+ExecStartPre=+/usr/bin/mkdir /tmp/loki
 ExecStartPre=+/usr/bin/chown grafana:adm /tmp/loki
-ExecStart=/usr/local/bin/loki-linux-arm -config.file /etc/grafana/config-loki.yml
+ExecStart=/usr/local/bin/loki-linux-arm -config.file /etc/grafana/config-loki.yaml
 
 [Install]
 WantedBy=multi-user.target
