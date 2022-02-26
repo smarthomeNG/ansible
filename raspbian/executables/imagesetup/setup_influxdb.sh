@@ -45,7 +45,7 @@ install_influxdb () {
     GRAFANA_e="not installed"
   fi
   echo ""
-  echo "GRAFANA: Web Service to configure and show influxdb graphs. (currently $GRAFANA_e)"
+  echo "GRAFANA: Web Service to configure and show influxdb graphs as well as log files using loki. (currently $GRAFANA_e)"
   if [[ $GRAFANA_e == "not installed" ]]; then
     unset grafana_install
     select grafana_install in "Install" "Skip"; do
@@ -90,7 +90,7 @@ case $raspi in
     a32082 ) raspiversion=3;;
     a020d3 ) raspiversion=3;;
     9020e0 ) raspiversion=3;;
-    a02100 ) raspiversion=3;; 
+    a02100 ) raspiversion=3;;
     a03111 ) raspiversion=4;;
     b03111 ) raspiversion=4;;
     c03111 ) raspiversion=4;;
