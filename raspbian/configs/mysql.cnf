@@ -21,5 +21,9 @@ socket      = /run/mysqld/mysqld.sock
 max_allowed_packet = 8M
 read_buffer_size = 512M
 max_statement_time = 120000
+connect_timeout = 60
+net_read_timeout = 60
+wait_timeout = 28800
+interactive_timeout = 28800
 [mysqld_safe]
 syslog
