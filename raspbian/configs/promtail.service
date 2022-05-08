@@ -1,6 +1,6 @@
 [Unit]
 Description=Promtail service
-After=network.target
+After=network.target loki.service
 
 [Service]
 Type=simple
