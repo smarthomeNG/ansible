@@ -1,8 +1,8 @@
 {
   "dashboard": {
     "id": null,
-    "title": "Loki nginx",
-    "tags": [ "templated" ],
+    "title": "Smarthome Log",
+    "tags": [ ],
     "timezone": "browser",
     "annotations": {
         "list": [
@@ -101,11 +101,11 @@
             },
             "targets": [
                 {
-                    "expr": "sum by (status) (count_over_time({job=\"nginx\"} | pattern `<_> - - <_> \"<method> <_> <_>\" <status> <_> <_> \"<_>\" <_>`[1m])) ",
+                    "expr": "sum by (status) (count_over_time({job=\"shng\"} | pattern `<_> - - <_> \"<method> <_> <_>\" <status> <_> <_> \"<_>\" <_>`[1m])) ",
                     "refId": "A"
                 }
             ],
-            "title": "nginx timeseries",
+            "title": "Smarthome timeseries",
             "type": "timeseries"
         },
         {
@@ -153,11 +153,11 @@
             "pluginVersion": "8.2.5",
             "targets": [
                 {
-                    "expr": "sum(count_over_time({job=\"nginx\"} | pattern `<remote_addr> - -`[$__range])) by (remote_addr)",
+                    "expr": "sum (count_over_time({job=\"shng\"}[1m]))",
                     "refId": "A"
                 }
             ],
-            "title": "nginx bargauge",
+            "title": "Smarthome bargauge",
             "type": "bargauge"
         },
         {
@@ -181,11 +181,11 @@
             },
             "targets": [
                 {
-                    "expr": "{job=\"nginx\"}",
+                    "expr": "{job=\"shng\"}",
                     "refId": "A"
                 }
             ],
-            "title": "nginx logs",
+            "title": "Smarthome Logs",
             "type": "logs"
         }
     ],
@@ -200,7 +200,6 @@
         "to": "now"
     },
     "timepicker": {},
-    "uid": "TAQUDUp7z",
-    "version": 4
+    "version": 1
   }
 }
