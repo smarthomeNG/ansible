@@ -15,7 +15,7 @@ scrape_configs:
         - localhost
       labels:
         job: varlogs
-        __path__: /var/log/*log
+        __path__: /var/log/*.log
         host: grafana
 - job_name: shng
   static_configs:
@@ -23,7 +23,7 @@ scrape_configs:
         - localhost
       labels:
         job: shng
-        __path__: /usr/local/smarthome/var/log/*log
+        __path__: /usr/local/smarthome/var/log/*.log
         host: grafana
 - job_name: nginx
   static_configs:
@@ -31,7 +31,7 @@ scrape_configs:
         - localhost
       labels:
         job: nginx
-        __path__: /var/log/nginx/*log
+        __path__: /var/log/nginx/*.log
         host: grafana
 - job_name: exim
   static_configs:
@@ -39,7 +39,7 @@ scrape_configs:
         - localhost
       labels:
         job: nginx
-        __path__: /var/log/exim4/*log
+        __path__: /var/log/exim4/*.log
         host: grafana
 - job_name: mysql
   static_configs:
@@ -47,7 +47,7 @@ scrape_configs:
         - localhost
       labels:
         job: nginx
-        __path__: /var/log/mysql/*log
+        __path__: /var/log/mysql/*.log
         host: grafana
 - job_name: letsencrypt
   static_configs:
@@ -55,5 +55,5 @@ scrape_configs:
         - localhost
       labels:
         job: nginx
-        __path__: /var/log/letsencrypt/*log
+        __path__: /var/log/letsencrypt/*.log
         host: grafana
