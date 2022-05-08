@@ -203,6 +203,7 @@
       path: "/etc/rsyslog.d/php.conf"
       create: yes
       block: |
+        $umask 0000
         template(name="FileFormat_timestamp" type="string" string= "%TIMESTAMP% %HOSTNAME% %syslogtag% %pri-text%%msg:::sp-if-no-1st-sp%%msg:::drop-last-lf%\n")
         if ($programname startswith 'php' or $msg contains ' php ') then {
           action(type="omfile" file="/var/log/php8.0-fpm.log" template="FileFormat_timestamp" FileCreateMode="0644" FileGroup="adm" FileOwner="www-data")
@@ -211,10 +212,9 @@
     ignore_errors: yes
 
   - name: Git crypto
-    git:
-      repo: 'https://github.com/evanlabs/luacrypto.git'
-      dest: /root/luacrypto
-      version: master
+    get_url:
+      url: https://github.com/evanlabs/luacrypto/archive/refs/heads/master.zip
+      dest: /root/luacrypto.zip
     register: git
   - debug: var=git
 
