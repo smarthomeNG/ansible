@@ -73,12 +73,12 @@ backup_all() {
   sudo tar vprf $backupfolder/image_backup.tar etc/mailname | adddate_copy >> $backupfolder/backup_log.txt 2>&1
 
   echo "Backed up exim4"
-  if [ -z "$RSA_FOLDER" ]; then
+  if [ -n "$RSA_FOLDER" ] && [ -d "$RSA_FOLDER" ]; then
 	sudo tar vprf $backupfolder/image_backup.tar $RSA_FOLDER | adddate_copy >> $backupfolder/backup_log.txt 2>&1
 	sudo tar vprf $backupfolder/image_backup.tar $KEY_FOLDER | adddate_copy >> $backupfolder/backup_log.txt 2>&1
 	echo "Backed up certifictes"
   fi
-  if [ -z "etc/letsencrypt" ]; then
+  if [ -d "etc/letsencrypt" ]; then
 	  sudo tar vprf $backupfolder/image_backup.tar etc/letsencrypt/ | adddate_copy >> $backupfolder/backup_log.txt 2>&1
 	  sudo tar vprf $backupfolder/image_backup.tar var/www/letsencrypt/.well-known/ | adddate_copy >> $backupfolder/backup_log.txt 2>&1
 	  sudo tar vprf $backupfolder/image_backup.tar var/www/letsencrypt | adddate_copy >> $backupfolder/backup_log.txt 2>&1
@@ -97,15 +97,15 @@ backup_all() {
   sudo tar vprf $backupfolder/image_backup.tar etc/dphys-swapfile | adddate_copy >> $backupfolder/backup_log.txt 2>&1
 
   echo "Backed up swap settings"
-  if [ -z "home/smarthome/.homebridge" ]; then
+  if [ -d "home/smarthome/.homebridge" ]; then
 	  sudo tar vprf $backupfolder/image_backup.tar home/smarthome/.homebridge | adddate_copy >> $backupfolder/backup_log.txt 2>&1
 	  echo "Backed up homebridge"
   fi
-  if [ -z "etc/influxdb/influxdb.conf" ]; then
+  if [ -f "etc/influxdb/influxdb.conf" ]; then
 	  sudo tar vprf $backupfolder/image_backup.tar etc/influxdb/influxdb.conf | adddate_copy >> $backupfolder/backup_log.txt 2>&1
 	  echo "Backed up influxdb config"
   fi
-  if [ -z "etc/grafana/" ]; then
+  if [ -d "etc/grafana/" ]; then
 	sudo tar vprf $backupfolder/image_backup.tar etc/grafana/ | adddate_copy >> $backupfolder/backup_log.txt 2>&1
 	echo "Backed up grafana config"
   fi
@@ -175,7 +175,7 @@ backup_all() {
   sudo tar vprf $backupfolder/image_backup.tar etc/rsyslog.conf | adddate_copy >> $backupfolder/backup_log.txt 2>&1
   sudo tar vprf $backupfolder/image_backup.tar etc/rsyslog.d | adddate_copy >> $backupfolder/backup_log.txt 2>&1
   sudo tar vprf $backupfolder/image_backup.tar boot/config.txt | adddate_copy >> $backupfolder/backup_log.txt 2>&1
-  if [ -z "var/lib/systemd/linger" ]; then
+  if [ -d "var/lib/systemd/linger" ]; then
 	sudo tar vprf $backupfolder/image_backup.tar var/lib/systemd/linger | adddate_copy >> $backupfolder/backup_log.txt 2>&1
   fi
   sudo tar vprf $backupfolder/image_backup.tar etc/default/keyboard | adddate_copy >> $backupfolder/backup_log.txt 2>&1
@@ -202,7 +202,7 @@ backup_all() {
   echo ""
   echo "Encrypting tar file as there are certificates and other private information stored. This might take longer."
   echo "Please provide a password and remember that for the restore process!"
-  sudo openssl enc -e -iter -out /$backupfolder/image_backup_encrypted.tar -in /$backupfolder/image_backup.tar
+  sudo openssl enc -e -iter 2 -v -aes-256-cbc -out /$backupfolder/image_backup_encrypted.tar -in /$backupfolder/image_backup.tar
   echo ""
   echo "Encryption done. Please copy the file /$backupfolder/image_backup_encrypted.tar to a save place."
   echo "Deleting unencrypted file."
@@ -211,7 +211,7 @@ backup_all() {
 
 backup_mysql() {
   if [ ! -f "$backupfolder/backup_log.txt" ]; then
-    sudo chown smarthome:users /$backupfolder -R
+    sudo chown smarthome:adm /$backupfolder -R
     echo "Running mariadb-backup now." | adddate > /$backupfolder/backup_log.txt 2>&1
   fi
   echo "Running mariadb-backup now. Check the file /etc/cron.hourly/mysql_backup for the target directory"
@@ -235,7 +235,7 @@ backup_influxdb() {
 
 	sudo /usr/bin/influxd backup -portable -database smarthome /$backupfolder/influxdb | adddate >> /$backupfolder/backup_log.txt 2>&1
 	cd /
-	if [ -z "$backupfolder/influxdb" ]; then
+	if [ -d "$backupfolder/influxdb" ]; then
 		sudo tar vprf $backupfolder/influxdb_backup.tar $backupfolder/influxdb | adddate_copy >> /$backupfolder/backup_log.txt 2>&1
 		sudo rm /$backupfolder/influxdb -R | adddate >> /$backupfolder/backup_log.txt 2>&1
 		echo ""

@@ -1,22 +1,3 @@
-^[0-9\-]{10}[ :0-9]{9}[,0-9]{0,4} DEBUG
-^[0-9\-]{10}[ :0-9]{9}[,0-9]{0,4} INFO
-^[0-9\-]{10}[ :0-9]{9}[,0-9]{0,4} NOTICE
-^[0-9\-]{10}[ :0-9]{9}[,0-9]{0,4} WARNING\s(.*)problem reading cache
-^[0-9\-]{10}[ :0-9]{9}[,0-9]{0,4} WARNING(.*)IMAP(.*)object is not subscriptable
-^[0-9\-]{10}[ :0-9]{9}[,0-9]{0,4} ERROR(.*)IMAP: problem parsing message
-^[0-9\-]{10}[ :0-9]{9}[,0-9]{0,4} ERROR(.*)No route to host
-(.*)TypeError: 'NoneType' object is not subscriptable(.*)
-^[0-9\-]{10}[ :0-9]{9}[,0-9]{0,4} ERROR(.*)horizon
-^[0-9\-]{10}[ :0-9]{9}[,0-9]{0,4} WARNING\s+plugins.cli\s+CLI: You should set a password for this plugin.
-^[0-9\-]{10}[ :0-9]{9}[,0-9]{0,4} ERROR(.*)telegram.ext.updater Error while getting Updates: Timed out
-^[0-9\-]{10}[ :0-9]{9}[,0-9]{0,4} WARNING\s+plugins.telegram Update None caused error Timed out
-^[0-9\-]{10}[ :0-9]{9}[,0-9]{0,4} ERROR\s+plugins.xiaomi_vac Xiaomi_Robvac: Error Unable to discover the device(.*) for [0-3] time
-^[0-9\-]{10}[ :0-9]{9}[,0-9]{0,4} ERROR\s+plugins.unifi\s+Poll failed(.*) for [0-3] time
-^[0-9\-]{10}[ :0-9]{9}[,0-9]{0,4} WARNING\s+lib.smarthome.main(.*)initialization finished
-^[0-9\-]{10}[ :0-9]{9}[,0-9]{0,4} WARNING\s+plugins.visu_websocket(.*)Series cancelation: No series for path
-^[0-9\-]{10}[ :0-9]{9}[,0-9]{0,4}\sERROR\s+modules.websocket smartVISU_protocol_v4 exception: no close frame received or sent
-^[0-9\-]{10}[ :0-9]{9}[,0-9]{0,4}\sERROR\s+modules.websocket smartVISU_protocol_v4 exception: sent 1011
-^[0-9\-]{10}[ :0-9]{9}[,0-9]{0,4}\sERROR\s+modules.websocket smartVISU_protocol_v4 exception: received 1005
 ^\w{3}(.*)[0-9]{1,2}\s[:0-9]{8}\sDEBUG
 ^\w{3}(.*)[0-9]{1,2}\s[:0-9]{8}\sINFO
 ^\w{3}(.*)[0-9]{1,2}\s[:0-9]{8}\sNOTICE
@@ -28,10 +9,10 @@
 ^\w{3}(.*)[0-9]{1,2}\s[:0-9]{8}\sWARNING\s+plugins.cli\s+CLI: You should set a password for this plugin.
 ^\w{3}(.*)[0-9]{1,2}\s[:0-9]{8}\sERROR(.*)telegram.ext.updater Error while getting Updates: Timed out
 ^\w{3}(.*)[0-9]{1,2}\s[:0-9]{8}\sWARNING\s+plugins.telegram Update None caused error Timed out
-^\w{3}(.*)[0-9]{1,2}\s[:0-9]{8}\sERROR\s+plugins.xiaomi_vac Xiaomi_Robvac: Error Unable to discover the device(.*) for [0-3] time
-^\w{3}(.*)[0-9]{1,2}\s[:0-9]{8}\sERROR\s+plugins.unifi\s+Poll failed(.*) for [0-3] time
+^\w{3}(.*)[0-9]{1,2}\s[:0-9]{8}\sERROR\s+plugins.xiaomi_vac Xiaomi_Robvac: Error Unable to discover the device(.*) for [0-9] time
+^\w{3}(.*)[0-9]{1,2}\s[:0-9]{8}\sERROR\s+plugins.unifi\s+Poll failed(.*) for [0-9] time
 ^\w{3}(.*)[0-9]{1,2}\s[:0-9]{8}\sWARNING\s+lib.smarthome.main(.*)initialization finished
 ^\w{3}(.*)[0-9]{1,2}\s[:0-9]{8}\sWARNING\s+plugins.visu_websocket(.*)Series cancelation: No series for path
 ^\w{3}(.*)[0-9]{1,2}\s[:0-9]{8}\sERROR\s+modules.websocket smartVISU_protocol_v4 exception: no close frame received or sent
-^\w{3}(.*)[0-9]{1,2}\s[:0-9]{8}\sERROR\s+modules.websocket smartVISU_protocol_v4 exception: sent 1011
-^\w{3}(.*)[0-9]{1,2}\s[:0-9]{8}\sERROR\s+modules.websocket smartVISU_protocol_v4 exception: received 1005
+^\w{3}(.*)[0-9]{1,2}\s[:0-9]{8}\sERROR\s+modules.websocket smartVISU_protocol_v4(.*)sent 1011
+^\w{3}(.*)[0-9]{1,2}\s[:0-9]{8}\s(ERROR|WARNING)\s+modules.websocket smartVISU_protocol_v4(.*)received 1005

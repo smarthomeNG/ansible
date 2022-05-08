@@ -46,15 +46,15 @@
   - name: Restart monit service
     systemd: state=restarted name=monit.service
 
-  - name: Git Monitgraph
-    git:
-      repo: 'https://github.com/perusio/monit-graph.git'
+  - name: Monitgraph folder
+    file:
+      path: "{{ monitgraphpath }}"
+      state: directory
+
+  - name: Copy Monitgraph
+    unarchive:
+      src: packages/monitgraph.tar
       dest: "{{ monitgraphpath }}"
-      version: master
-      force: yes
-    register: git
-    ignore_errors: yes
-  - debug: var=git
 
   - name: Monittoken
     file:
@@ -65,12 +65,6 @@
 
   - name: Install curl
     apt: name=php8.0-curl force=no state=latest install_recommends=yes
-
-  - name: Copy config
-    copy:
-      src: configs/monitgraph.conf
-      dest: "{{ monitgraphpath }}/config.php"
-      mode: 0440
 
   - name: make dirs 0755
     command: find "{{ monitgraphpath }}" -type d ! -perm 0755 -exec chmod 0755 {} \;
@@ -89,7 +83,7 @@
   - name: data folder
     file:
       path: "{{ monitgraphpath }}/data"
-      mode: 0775
+      mode: 0777
       state: directory
 
   - name: data file
@@ -137,7 +131,7 @@
       create: yes
       block: |
         template(name="FileFormat_timestamp" type="string" string= "%TIMESTAMP% %HOSTNAME% %syslogtag% %pri-text%%msg:::sp-if-no-1st-sp%%msg:::drop-last-lf%\n")
-        if $programname == 'monit' or $msg contains 'Monit' then {
+        if $programname == 'monit' then {
           action(type="omfile" file="/var/log/monit.log" template="FileFormat_timestamp" FileCreateMode="0644" FileGroup="adm" FileOwner="smarthome")
           stop
         }

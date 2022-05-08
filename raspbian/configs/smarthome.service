@@ -1,8 +1,6 @@
 [Unit]
 Description=SmartHomeNG daemon
-After=network.target
-After=knxd.service
-After=knxd.socket
+After=network.target knxd.service knxd.socket
 
 [Service]
 Type=forking

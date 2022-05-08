@@ -6,6 +6,7 @@
   become: true
 
   vars:
+    ansible_python_interpreter: /usr/bin/python
     dashboards: [
           {
             "name": "smarthome",
@@ -15,6 +16,12 @@
         ]
 
   tasks:
+  - name: User
+    user:
+      name: grafana
+      groups: adm, systemd-journal
+      append: yes
+
   - name: key
     apt_key:
       url: https://packages.grafana.com/gpg.key
@@ -39,8 +46,17 @@
       create: yes
       block: |
         template(name="grafana" type="string" string= "%TIMESTAMP% %HOSTNAME% %syslogtag% %pri-text:R,ERE,1,FIELD:local7.(.*)--end%%msg:R,ERE,2,FIELD:(.*)msg=(.*)--end:sp-if-no-1st-sp%%msg:R,ERE,2,FIELD:(.*)msg=(.*)--end:drop-last-lf%\n")
+        template(name="FileFormat_timestamp" type="string" string= "%TIMESTAMP% %HOSTNAME% %syslogtag% %pri-text%%msg:::sp-if-no-1st-sp%%msg:::drop-last-lf%\n")
         if $syslogfacility-text == 'local7' and ($programname == 'grafana-server' or $programname == 'grafana') then {
           action(type="omfile" file="/var/log/grafana.log" template="grafana" FileGroup="adm"  FileCreateMode="0644")
+          stop
+        }
+        if $programname startswith 'loki' then {
+          action(type="omfile" file="/var/log/grafana.log" template="FileFormat_timestamp" FileGroup="adm"  FileCreateMode="0644")
+          stop
+        }
+        if $programname startswith 'promtail' then {
+          action(type="omfile" file="/var/log/grafana.log" template="FileFormat_timestamp" FileGroup="adm"  FileCreateMode="0644")
           stop
         }
     ignore_errors: yes
@@ -50,6 +66,54 @@
       dest: /etc/grafana/grafana.ini
       insertafter: '^;root_url ='
       line: 'root_url = %(protocol)s://%(domain)s/grafana/'
+
+  - name: download loki 2.4.2
+    unarchive:
+      src: https://github.com/grafana/loki/releases/download/v2.4.2/loki-linux-arm.zip
+      dest: /usr/local/bin
+      mode: 0775
+      owner: grafana
+      group: adm
+
+  - name: download promtail
+    unarchive:
+      src: https://github.com/grafana/loki/releases/latest/download/promtail-linux-arm.zip
+      dest: /usr/local/bin
+      mode: 0775
+      owner: grafana
+      group: adm
+
+  - name: loki config
+    copy:
+      src: configs/config-loki.yaml
+      dest: /etc/grafana/config-loki.yaml
+      mode: 0777
+      owner: grafana
+      group: smarthome
+
+  - name: config promtail
+    copy:
+      src: configs/config-promtail.yaml
+      dest: /etc/grafana/config-promtail.yaml
+      mode: 0777
+      owner: grafana
+      group: smarthome
+
+  - name: loki service
+    copy:
+      src: configs/loki.service
+      dest: /lib/systemd/system/loki.service
+
+  - name: promtail service
+    copy:
+      src: configs/promtail.service
+      dest: /lib/systemd/system/promtail.service
+
+  - name: enable_loki
+    systemd: enabled=yes name=loki.service
+
+  - name: enable_promtail
+    systemd: enabled=yes name=promtail.service
 
   - name: create systemd dir
     file:
@@ -91,12 +155,6 @@
       regexp: "^;tag ="
       replace: "tag = grafana"
     ignore_errors: yes
-
-  - name: Groups
-    user:
-      name: grafana
-      groups: adm
-      append: yes
 
   - name: Delete_logdir
     file:
@@ -213,6 +271,83 @@
     register: db
     ignore_errors: yes
   - debug: msg="Dashboard ID is {{ db['results'][0]['json']['id'] }}"
+
+  - name: datasource1_loki
+    uri:
+      url: http://{{ hostvars[inventory_hostname]['ansible_default_ipv4']['address'] }}/grafana/api/datasources/name/Loki
+      user: admin
+      password: admin
+      force_basic_auth: yes
+    register: grafana_loki
+    failed_when: false
+    changed_when: false
+    no_log: true
+  - debug: var=grafana_loki
+
+  - name: datasource2_loki
+    uri:
+      url: http://{{ hostvars[inventory_hostname]['ansible_default_ipv4']['address'] }}/grafana/api/datasources
+      method: POST
+      user: admin
+      password: admin
+      body:
+        name: "Loki"
+        type: "loki"
+        url: "http://127.0.0.1:3100"
+        access: "proxy"
+        isDefault: false
+      force_basic_auth: yes
+      status_code: 200
+      body_format: json
+    when: "grafana_loki.status == 404"
+    ignore_errors: yes
+    no_log: true
+
+  - name: dashboard_nginxloki
+    uri:
+      url: http://{{ hostvars[inventory_hostname]['ansible_default_ipv4']['address'] }}/grafana/api/dashboards/db
+      method: POST
+      user: "smarthome"
+      password: "smarthome"
+      body: "{{ lookup('template', item.file) }}"
+      status_code: 200
+      body_format: json
+      force_basic_auth: yes
+    with_items: [
+          {
+            "name": "nginx_loki",
+            "file": "../configs/nginx.json",
+            "dash_name": "NGINX Log"
+          }
+        ]
+    register: loki
+    no_log: true
+    ignore_errors: yes
+  - debug: msg="Dashboard ID is {{ loki['results'][0]['json']['id'] }}"
+    ignore_errors: yes
+
+  - name: dashboard_shngloki
+    uri:
+      url: http://{{ hostvars[inventory_hostname]['ansible_default_ipv4']['address'] }}/grafana/api/dashboards/db
+      method: POST
+      user: "smarthome"
+      password: "smarthome"
+      body: "{{ lookup('template', item.file) }}"
+      status_code: 200
+      body_format: json
+      force_basic_auth: yes
+    with_items: [
+          {
+            "name": "smarthome_loki",
+            "file": "../configs/smarthome.json",
+            "dash_name": "Smarthome Log"
+          }
+        ]
+    register: shng_loki
+    no_log: true
+    ignore_errors: yes
+  - debug: msg="Dashboard ID is {{ shng_loki['results'][0]['json']['id'] }}"
+    ignore_errors: yes
 
   - name: star
     uri:

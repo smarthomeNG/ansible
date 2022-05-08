@@ -163,31 +163,14 @@
       create: yes
       block: |
         $Template freeradius,"%TIMESTAMP% %HOSTNAME% %syslogtag% %pri-text:R,ERE,2,FIELD:([a-z]*\.)(.*)--end%:%msg:R,ERE,1,FIELD:(.*)--end:sp-if-no-1st-sp%%msg:R,ERE,1,FIELD:(.*)--end:drop-last-lf%\n"
-        if $programname == 'freeradius' or $programname == 'radiusd' or $msg contains 'FreeRADIUS' or $msg contains 'freeradius' then {
+        if $programname == 'freeradius' or $programname == 'radiusd' then {
           action(type="omfile" file="/var/log/freeradius.log" template="freeradius" FileCreateMode="0644" FileGroup="adm" FileOwner="freerad")
           stop
         }
     ignore_errors: yes
 
-  - name: logrotate1
-    replace:
-      destfile: /etc/logrotate.d/freeradius
-      regexp: "copytruncate"
-      replace: "#copytruncate"
-    ignore_errors: yes
-
-  - name: logrotate2
-    blockinfile:
-      path: "/etc/logrotate.d/freeradius"
-      insertafter: "#copytruncate"
-      block: |
-        prerotate
-            pid_file="/run/freeradius/freeradius.pid"
-            if test -e "${pid_file}"; then touch "${pid_file}.ACTIVE"; fi
-            /bin/systemctl stop freeradius
-        endscript
-        postrotate
-            pid_file="/run/freeradius/freeradius.pid.ACTIVE"
-            if test -e "${pid_file}"; then /bin/systemctl start freeradius.service 1>/dev/null; fi
-            if test -e "${pid_file}"; then /usr/bin/rm "${pid_file}" 1>/dev/null; fi
-        endscript
+  - name: logrotate
+    copy:
+      src: configs/logrotate_freeradius
+      dest: /etc/logrotate.d/freeradius
+      mode: 0644

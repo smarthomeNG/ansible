@@ -9,7 +9,6 @@
     ansible_python_interpreter: /usr/bin/python
     packages:
       ["tcpdump",
-      "unzip",
       "screen",
       "dos2unix",
       "telnet",
@@ -39,6 +38,8 @@
       "fake-hwclock",
       "libudev-dev",
       "libkrb5-dev",
+      "powermgmt-base", # for automatic updates (wants to check if battery mode is active)
+      "scdaemon", #GnuPG
       "libgirepository1.0-dev", # for python PygObject
       "libglib2.0-dev", # for python PygObject
       "libcairo2-dev" # for python PygObject
@@ -111,7 +112,7 @@
       state: present
 
   - name: Set locale
-    command: 'update-locale LANG=de_DE.UTF-8'
+    command: 'update-locale LANG=de_DE.UTF-8 LC_ALL=de_DE.UTF-8'
     register: locale
   - debug: var=locale
 
@@ -150,6 +151,13 @@
       regexp: 'ExecStart=/usr/lib/bluetooth/bluetoothd'
       replace: 'ExecStart=/usr/lib/bluetooth/bluetoothd --noplugin=sap'
     ignore_errors: yes
+
+  - name: tweak journal
+    blockinfile:
+      path: /etc/systemd/journald.conf
+      block: |
+            SystemMaxUse=500M
+            MaxFileSec=7day
 
   - name: tweak screen
     blockinfile:
@@ -242,6 +250,13 @@
       replace: "root=/dev/mmcblk0p2 "
     ignore_errors: yes
 
+  - name: triggerhappy
+    replace:
+      destfile: /lib/udev/rules.d/60-triggerhappy.rules
+      regexp: '^(\s+)RUN\+\=(.*)$'
+      replace: '\1RUN+="/bin/systemctl restart triggerhappy"'
+    ignore_errors: yes
+
   - name: Test for entry
     command: 'grep "rootdelay=5 consoleblank=0 cgroup_memory=1 cgroup_enable=memory init=/usr/lib/raspi-config/init_resize.sh" /boot/cmdline.txt'
     register: test_grep1
@@ -293,13 +308,38 @@
       block: |
         KERNEL=="ttyS0", OWNER="root", GROUP="dialout", MODE="0660"
 
-  - name: cronjob
+  - name: cronjob_udev
     cron:
       name: udev
       user: root
       special_time: reboot
       job: 'udevadm trigger'
       cron_file: udev
+
+  - name: journald_timecheck add shell
+    cron:
+      name: SHELL
+      env: yes
+      job: /bin/bash
+      user: root
+      cron_file: journald_timecheck
+
+  - name: journald_timecheck add path
+    cron:
+      name: PATH
+      env: yes
+      job: /bin:/sbin:/usr/bin:/usr/sbin
+      insertafter: SHELL
+      user: root
+      cron_file: journald_timecheck
+
+  - name: journald_timecheck add time check for journalctl to find out problems with journalctl performance/cache
+    cron:
+      name: journald_timecheck
+      user: root
+      special_time: daily
+      job: 'echo $(date +"\%b \%02d \%X") "INFO Time for journalctl was" $({ time -p journalctl -b --no-pager > /dev/null ; } 2>&1 | grep real) >> /var/log/syslog'
+      cron_file: journald_timecheck
 
   - name: Make ssh dir
     file:
@@ -317,13 +357,13 @@
   - name: restart fakehwclock
     systemd: state=restarted name=fake-hwclock.service
 
-  - name: chmod rsyslog conf
-    file:
-      path: /etc/rsyslog.conf
-      state: touch
+  - name: rsyslog
+    copy:
+      src: configs/rsyslog.conf
+      dest: /etc/rsyslog.conf
+      mode: 0755
       owner: smarthome
       group: smarthome
-      mode: 0755
 
   - name: hostname public
     command: 'hostnamectl set-hostname SmartHomeNG'
@@ -343,8 +383,6 @@
       mode: 0777
       owner: smarthome
       group: root
-    register: colorize
-  - debug: var=colorize
 
   - name: Copy colorbash
     copy:
@@ -434,29 +472,6 @@
   - name: systemd-timesyncd
     systemd: enabled=yes name=systemd-timesyncd.service
 
-  - name: cron log
-    replace:
-      destfile: /etc/rsyslog.conf
-      regexp: "^#cron."
-      replace: "cron."
-    ignore_errors: yes
-
-  - name: cron log2
-    replace:
-      destfile: /etc/rsyslog.conf
-      regexp: "^\\*.\\*;auth,authpriv.none"
-      replace: "*.*;auth,authpriv.none;cron.none"
-    ignore_errors: yes
-    register: cronlog
-  - debug: var=cronlog
-
-  - name: no user log
-    replace:
-      destfile: /etc/rsyslog.conf
-      regexp: "^user."
-      replace: "#user."
-    ignore_errors: yes
-
   - name: debdir
     file: path=/etc/deb-files/ state=directory mode=0755
 
@@ -498,6 +513,19 @@
         }
     ignore_errors: yes
 
+  - name: create systemd dir bluetooth
+    file:
+      path: /etc/systemd/system/bluetooth.service.d/
+      state: directory
+
+  - name: Copy service_conf bluetooth
+    copy:
+      src: configs/service_bluetooth_fix.conf
+      dest: /etc/systemd/system/bluetooth.service.d/
+      owner: root
+      group: adm
+      mode: 0644
+
   - name: create systemd dir snmpd
     file:
       path: /etc/systemd/system/snmpd.service.d/
@@ -537,7 +565,7 @@
 
   - name: snmp logfile
     blockinfile:
-      path: "/etc/rsyslog.d/samba.conf"
+      path: "/etc/rsyslog.d/snmp.conf"
       create: yes
       block: |
         template(name="FileFormat_timestamp" type="string" string= "%TIMESTAMP% %HOSTNAME% %syslogtag% %pri-text%%msg:::sp-if-no-1st-sp%%msg:::drop-last-lf%\n")
@@ -555,14 +583,27 @@
 
   - name: Unblock Wifi
     shell: rfkill unblock 0
+    ignore_errors: yes
 
-  - name: Copy Update script
+  - name: updatescript
     copy:
       src: executables/system_update.sh
       dest: /opt/system_update
       mode: 0775
       owner: smarthome
       group: smarthome
+
+  - name: upgrades logfile
+    blockinfile:
+      path: "/etc/rsyslog.d/unattendedupgrades.conf"
+      create: yes
+      block: |
+        template(name="FileFormat_timestamp" type="string" string= "%TIMESTAMP% %HOSTNAME% %syslogtag% %pri-text%%msg:::sp-if-no-1st-sp%%msg:::drop-last-lf%\n")
+        if $programname == 'unattended-upgrade' then {
+          action(type="omfile" file="/var/log/unattended-upgrades.log" template="FileFormat_timestamp" FileCreateMode="0644" FileGroup="adm" FileOwner="smarthome")
+          stop
+        }
+    ignore_errors: yes
 
   - name: unattended_config
     blockinfile:
@@ -600,8 +641,8 @@
   - name: unattended_config_mail2
     replace:
       destfile: /etc/apt/apt.conf.d/50unattended-upgrades
-      regexp: '^//Unattended-Upgrade::MailOnlyOnError "false";'
-      replace: 'Unattended-Upgrade::MailOnlyOnError "true";'
+      regexp: '^//Unattended-Upgrade::MailReport "on-change";'
+      replace: 'Unattended-Upgrade::MailReport "only-on-error";'
     ignore_errors: yes
 
   - name: unattended_config_removedeps
@@ -609,6 +650,13 @@
       destfile: /etc/apt/apt.conf.d/50unattended-upgrades
       regexp: '^//Unattended-Upgrade::Remove-Unused-Dependencies "false";'
       replace: 'Unattended-Upgrade::Remove-Unused-Dependencies "true";'
+    ignore_errors: yes
+
+  - name: unattended_config_syslog
+    replace:
+      destfile: /etc/apt/apt.conf.d/50unattended-upgrades
+      regexp: '^// Unattended-Upgrade::SyslogEnable "false";'
+      replace: 'Unattended-Upgrade::SyslogEnable "true";'
     ignore_errors: yes
 
   - name: create systemd dir unattendedupgrades
@@ -629,6 +677,12 @@
       path: /etc/logrotate.d/rsyslog
       regexp: 'compress'
       state: absent
+
+  - name: logrotate_unattended
+    copy:
+      src: configs/logrotate_upgrades
+      dest: /etc/logrotate.d/unattended-upgrades
+      mode: 0644
 
   - name: Swap
     replace:

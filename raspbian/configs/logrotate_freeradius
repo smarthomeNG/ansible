@@ -1,0 +1,50 @@
+#  The main server log
+/var/log/freeradius.log {
+        daily
+        rotate 7
+        missingok
+        notifempty
+        create 640 freerad adm
+        dateext
+        dateformat .%Y-%m-%d.log
+        prerotate
+            pid_file="/run/freeradius/freeradius.pid"
+            if test -e "${pid_file}"; then touch "/run/freeradius.ACTIVE"; fi
+            /bin/systemctl stop freeradius
+        endscript
+        postrotate
+            pid_file="/run/freeradius.ACTIVE"
+            if test -e "${pid_file}"; then /bin/systemctl start freeradius.service 1>/dev/null; fi
+            if test -e "${pid_file}"; then /usr/bin/rm "${pid_file}" 1>/dev/null; fi
+        endscript
+}
+
+# (in order)
+#  Session monitoring utilities
+#  Session database modules
+#  SQL log files
+#/var/log/freeradius/checkrad.log /var/log/freeradius/radwatch.log
+#/var/log/freeradius/radutmp /var/log/freeradius/radwtmp
+#/var/log/freeradius/sqllog.sql
+#{
+#        daily
+#        rotate 52
+#        missingok
+#        notifempty
+#        nocreate
+#}
+
+# There are different detail-rotating strategies you can use.  One is
+# to write to a single detail file per IP and use the rotate config
+# below.  Another is to write to a daily detail file per IP with:
+#     detailfile = ${radacctdir}/%{Client-IP-Address}/%Y%m%d-detail
+# (or similar) in radiusd.conf, without rotation.  If you go with the
+# second technique, you will need another cron job that removes old
+# detail files.  You do not need to comment out the below for method #2.
+#/var/log/freeradius/radacct/*/detail {
+#        daily
+#        rotate 52
+#        missingok
+#        notifempty
+#        nocreate
+#}

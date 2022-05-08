@@ -7,3 +7,4 @@
 /var/log/nginx/error.log
 /var/log/syslog
 /var/log/auth.log
+/var/log/unattended-upgrades.log

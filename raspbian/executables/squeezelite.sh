@@ -15,8 +15,7 @@ DAEMON=/usr/bin/squeezelite
 PIDFILE=/var/run/${NAME}.pid
 SCRIPTNAME=/etc/init.d/${NAME}
 
-#SL_MAC_ADDRESS=""
-[ -n "$SL_MAC_ADDRESS" ] || SL_MAC_ADDRESS=$(ifconfig | grep 'eth0' | tr -s ' ' | rev | sed -e 's/^[ \t]*//' | cut -d ' ' -f1 | rev)
+SL_MAC_ADDRESS=$(cat /sys/class/net/eth0/address)
 
 SL_NAME="Squeezelite"
 ALSABUFFER=320

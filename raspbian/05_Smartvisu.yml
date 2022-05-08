@@ -43,6 +43,11 @@
     register: git
   - debug: var=git
 
+  - name: config git
+    shell: git config pull.rebase false
+    args:
+      chdir: "{{ smartvisupath2 }}"
+
   - name: Copy Smartvisu 2.8
     unarchive:
       remote_src: yes

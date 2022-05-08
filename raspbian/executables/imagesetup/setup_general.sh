@@ -29,8 +29,8 @@ echo "Do you want to activate automatic system updates?"
 echo "(apt-get update && upgrade once a day using unattendedupgrades Package)"
 select unattended in "Activate" "Deactivate" "Skip"; do
     case $unattended in
-        Activate ) sudo sed -i 's/"0"/"1"/g' /etc/apt/apt.conf.d/20auto-upgrades 2>&1; break;;
-        Deactivate ) sudo sed -i 's/"1"/"0"/g' /etc/apt/apt.conf.d/20auto-upgrades 2>&1; break;;
+        Activate ) sudo sed -i 's/"0"/"1"/g' /etc/apt/apt.conf.d/20auto-upgrades 2>&1; echo "Autoupgrad activated"; break;;
+        Deactivate ) sudo sed -i 's/"1"/"0"/g' /etc/apt/apt.conf.d/20auto-upgrades 2>&1; echo "Autoupgrad deactivated"; break;;
         Skip) echo "Skipping"; break;;
         *) echo "Skipping"; break;;
     esac

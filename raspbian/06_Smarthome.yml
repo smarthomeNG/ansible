@@ -20,6 +20,9 @@
       ]
     python_install:
       [
+      "ruamel.yaml",
+      "pytz",
+      "numpy",
       "pymysql", #database
       "yolk3k" #nice python module management
       ]
@@ -68,9 +71,28 @@
     become_user: smarthome
     with_items: "{{ python_install }}"
 
+  - name: Install libatlas-base-dev
+    apt:
+      name: libatlas-base-dev
+      state: latest
+      install_recommends: no
+
+  - name: Copy scipy
+    copy:
+      src: packages/scipy-1.8.0-cp39-cp39-linux_armv7l.whl
+      dest: /etc/deb-files/
+
+  - name: Install scipy
+    pip:
+      name: /etc/deb-files/scipy-1.8.0-cp39-cp39-linux_armv7l.whl
+      executable: pip3
+      extra_args: --user
+    become: true
+    become_user: smarthome
+
   - name: Git SmarthomeNG
     git:
-      repo: 'git://github.com/smarthomeNG/smarthome.git'
+      repo: 'https://github.com/smarthomeNG/smarthome.git'
       dest: /usr/local/smarthome
       version: master
       force: yes
@@ -79,7 +101,7 @@
 
   - name: Git Plugins
     git:
-      repo: 'git://github.com/smarthomeNG/plugins.git'
+      repo: 'https://github.com/smarthomeNG/plugins.git'
       dest: /usr/local/smarthome/plugins
       version: master
       force: yes
@@ -108,8 +130,19 @@
       path: /usr/local/smarthome/tools/build_requirements.py
       mode: 0777
 
+  - name: Change Owner
+    file:
+      path: /usr/local/smarthome
+      owner: smarthome
+      group: smarthome
+      mode: 0775
+      recurse: yes
+      state: directory
+
   - name: Update requirements
     command: /usr/local/smarthome/tools/build_requirements.py
+    become: true
+    become_user: smarthome
 
   - name: Install requirements
     pip:
@@ -124,15 +157,6 @@
     copy:
       dest: /lib/systemd/system/smarthome.service
       src: configs/smarthome.service
-
-  - name: Change Owner
-    file:
-      path: /usr/local/smarthome
-      owner: smarthome
-      group: smarthome
-      mode: 0775
-      recurse: yes
-      state: directory
 
   - name: Remove astral
     pip: name=astral executable=pip3 state=absent
@@ -170,12 +194,21 @@
     set_fact:
       last_line_of_the_log_file: "{{ tail_output.stdout }}"
 
+  - name: Change Owner
+    file:
+      path: /usr/local/smarthome
+      owner: smarthome
+      group: smarthome
+      mode: 0775
+      recurse: yes
+      state: directory
+
   - name: Restart smarthome service
     systemd: state=restarted name=smarthome.service
     async: 2000
     poll: 0
     become: true
-    become_user: root
+    become_user: smarthome
     register: restart_smarthome
 
   - name: Match "{{ wanted_pattern }}" appearing after "{{ last_line_of_the_log_file }}" in {{ log_file_to_check }}

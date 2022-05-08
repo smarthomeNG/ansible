@@ -15,7 +15,8 @@
       "python3-setuptools",
       "python-six",
       "enum34",
-      "python-idna"
+      "python-idna",
+      "python3-gpg"
       ]
 
     pythonremovemodules:
@@ -26,6 +27,7 @@
 
     pythoninstall:
       ["pip",
+      "python-gnupg",
       "RPi.GPIO",
       "pgen",
       "requests",
@@ -38,12 +40,9 @@
       "yolk3k",
       "snmp",
       "knxPython",
-      "spur",
       "python-miio",
-      "numpy",
-      "scipy"
+      "spur"
       ]
-
 
   tasks:
   - name: Link python
@@ -95,22 +94,45 @@
       state: latest
       install_recommends: no
 
+  - name: Install swig4
+    apt:
+      name: swig4.0
+      state: latest
+      install_recommends: no
+
+  - name: swiglink
+    ansible.builtin.file:
+      src: /usr/bin/swig4.0
+      dest: /usr/bin/swig
+      owner: root
+      group: root
+      state: link
+
   - name: Install libssl-dev
     apt:
       name: libssl-dev
       state: latest
       install_recommends: no
 
-  - name: Install pip3
-    apt:
-      name: python3-pip
-      state: present
+  - name: Copy getpip
+    get_url:
+      url: https://bootstrap.pypa.io/get-pip.py
+      dest: /home/smarthome
+      mode: 0777
+      owner: smarthome
+      group: smarthome
 
-  - name: Install yolk
+  - name: Install pip3
+    command: 'python3 /home/smarthome/get-pip.py'
+
+  - name: Update root pip
     pip:
-      name: yolk3k
-      state: present
+      name: pip
       executable: pip3
+      state: latest
+      extra_args: --upgrade
+    become: true
+    become_user: root
 
   - name: remove modules
     pip:
@@ -131,6 +153,14 @@
       mode: 775
     when: rust_installed.stat.exists == False
 
+  - name: Make tmp dir
+    file:
+      path: /home/smarthome/.ansible/tmp
+      state: directory
+      owner: smarthome
+      group: smarthome
+      mode: 0777
+
   - name: install rust
     shell: "/home/smarthome/rustup-init.sh -y"
     async: 1000
@@ -140,14 +170,6 @@
     when: rust_installed.stat.exists == False
     register: rust_installer
 
-  - name: Make tmp dir
-    file:
-      path: /home/smarthome/.ansible/tmp
-      state: directory
-      owner: smarthome
-      group: smarthome
-      mode: 0777
-
   - name: wait
     async_status: jid={{ rust_installer.ansible_job_id }}
     register: job_result
@@ -156,6 +178,18 @@
     become: true
     become_user: smarthome
     when: rust_installed.stat.exists == False
+
+  - name: Install libgpgme-dev
+    apt:
+      name: libgpgme-dev
+      state: latest
+      install_recommends: no
+
+  - name: Install python3-dev
+    apt:
+      name: python3-dev
+      state: latest
+      install_recommends: no
 
   - name: Install modules
     pip:
@@ -169,18 +203,18 @@
       PATH: "{{ ansible_env.PATH }}:/home/smarthome/.cargo/bin"
     with_items: "{{ pythoninstall }}"
 
-  - name: Update root pip
-    pip:
-      name: pip
-      executable: pip3
-      state: latest
-      extra_args: --user --upgrade
-    become: true
-    become_user: root
-
   - name: Install psutil
     pip:
       name: psutil
+      executable: pip3
+      state: latest
+      extra_args: --user
+    become: true
+    become_user: root
+
+  - name: Install gpg for root
+    pip:
+      name: python-gnupg
       executable: pip3
       state: latest
       extra_args: --user

@@ -89,10 +89,11 @@ if [ $sv = "Update" ]; then
   fi
   sudo touch /var/www/html/smartvisu/config.ini
   sudo chown smarthome:www-data /var/www/html/smartvisu -R
-  sudo find . -type d -exec chmod g+rwsx {} + 2>&1
-  sudo find . -type f -exec chmod g+r {} + 2>&1
-  sudo find . -name *.ini -exec chmod g+rw {} + 2>&1
-  sudo find . -name *.var -exec chmod g+rw {} + 2>&1
+  sudo ./setpermissions
+  #sudo find . -type d -exec chmod g+rwsx {} + 2>&1
+  #sudo find . -type f -exec chmod g+r {} + 2>&1
+  #sudo find . -name *.ini -exec chmod g+rw {} + 2>&1
+  #sudo find . -name *.var -exec chmod g+rw {} + 2>&1
   #sudo chmod 0775 /var/www/html/smartvisu -R
   #sudo chmod 0660 /var/www/html/smartvisu/config.ini
 fi

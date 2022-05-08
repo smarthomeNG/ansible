@@ -1,0 +1,59 @@
+server:
+  http_listen_port: 9080
+  grpc_listen_port: 0
+
+positions:
+  filename: /tmp/positions.yaml
+
+clients:
+  - url: http://localhost:3100/loki/api/v1/push
+
+scrape_configs:
+- job_name: system
+  static_configs:
+    - targets:
+        - localhost
+      labels:
+        job: varlogs
+        __path__: /var/log/*.log
+        host: grafana
+- job_name: shng
+  static_configs:
+    - targets:
+        - localhost
+      labels:
+        job: shng
+        __path__: /usr/local/smarthome/var/log/*.log
+        host: grafana
+- job_name: nginx
+  static_configs:
+    - targets:
+        - localhost
+      labels:
+        job: nginx
+        __path__: /var/log/nginx/*.log
+        host: grafana
+- job_name: exim
+  static_configs:
+    - targets:
+        - localhost
+      labels:
+        job: nginx
+        __path__: /var/log/exim4/*.log
+        host: grafana
+- job_name: mysql
+  static_configs:
+    - targets:
+        - localhost
+      labels:
+        job: nginx
+        __path__: /var/log/mysql/*.log
+        host: grafana
+- job_name: letsencrypt
+  static_configs:
+    - targets:
+        - localhost
+      labels:
+        job: nginx
+        __path__: /var/log/letsencrypt/*.log
+        host: grafana
