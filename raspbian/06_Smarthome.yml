@@ -92,7 +92,7 @@
 
   - name: Git SmarthomeNG
     git:
-      repo: 'git://github.com/smarthomeNG/smarthome.git'
+      repo: 'https://github.com/smarthomeNG/smarthome.git'
       dest: /usr/local/smarthome
       version: master
       force: yes
@@ -101,7 +101,7 @@
 
   - name: Git Plugins
     git:
-      repo: 'git://github.com/smarthomeNG/plugins.git'
+      repo: 'https://github.com/smarthomeNG/plugins.git'
       dest: /usr/local/smarthome/plugins
       version: master
       force: yes
@@ -125,6 +125,11 @@
   - name: sh ignore perm
     command: git config core.fileMode false chdir=/usr/local/smarthome/
 
+  - name: chmod requirements
+    file:
+      path: /usr/local/smarthome/tools/build_requirements.py
+      mode: 0777
+
   - name: Change Owner
     file:
       path: /usr/local/smarthome
@@ -133,11 +138,6 @@
       mode: 0775
       recurse: yes
       state: directory
-      
-  - name: chmod requirements
-    file:
-      path: /usr/local/smarthome/tools/build_requirements.py
-      mode: 0777
 
   - name: Update requirements
     command: /usr/local/smarthome/tools/build_requirements.py
@@ -194,12 +194,21 @@
     set_fact:
       last_line_of_the_log_file: "{{ tail_output.stdout }}"
 
+  - name: Change Owner
+    file:
+      path: /usr/local/smarthome
+      owner: smarthome
+      group: smarthome
+      mode: 0775
+      recurse: yes
+      state: directory
+
   - name: Restart smarthome service
     systemd: state=restarted name=smarthome.service
     async: 2000
     poll: 0
     become: true
-    become_user: root
+    become_user: smarthome
     register: restart_smarthome
 
   - name: Match "{{ wanted_pattern }}" appearing after "{{ last_line_of_the_log_file }}" in {{ log_file_to_check }}
