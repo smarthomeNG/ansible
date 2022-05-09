@@ -46,17 +46,17 @@
       create: yes
       block: |
         template(name="grafana" type="string" string= "%TIMESTAMP% %HOSTNAME% %syslogtag% %pri-text:R,ERE,1,FIELD:local7.(.*)--end%%msg:R,ERE,2,FIELD:(.*)msg=(.*)--end:sp-if-no-1st-sp%%msg:R,ERE,2,FIELD:(.*)msg=(.*)--end:drop-last-lf%\n")
-        template(name="FileFormat_timestamp" type="string" string= "%TIMESTAMP% %HOSTNAME% %syslogtag% %pri-text%%msg:::sp-if-no-1st-sp%%msg:::drop-last-lf%\n")
+        template(name="promtail" type="string" string= "%TIMESTAMP% %HOSTNAME% %syslogtag% %msg:R,ERE,1,FIELD:level=(debug|info|warn|error)--end%%msg:R,ERE,2,FIELD:(.*)msg=(.*)--end:sp-if-no-1st-sp%%msg:R,ERE,2,FIELD:(.*)msg=(.*)--end:drop-last-lf%\n")
         if $syslogfacility-text == 'local7' and ($programname == 'grafana-server' or $programname == 'grafana') then {
           action(type="omfile" file="/var/log/grafana.log" template="grafana" FileGroup="adm"  FileCreateMode="0644")
           stop
         }
         if $programname startswith 'loki' then {
-          action(type="omfile" file="/var/log/grafana.log" template="FileFormat_timestamp" FileGroup="adm"  FileCreateMode="0644")
+          action(type="omfile" file="/var/log/grafana.log" template="promtail" FileGroup="adm"  FileCreateMode="0644")
           stop
         }
         if $programname startswith 'promtail' then {
-          action(type="omfile" file="/var/log/grafana.log" template="FileFormat_timestamp" FileGroup="adm"  FileCreateMode="0644")
+          action(type="omfile" file="/var/log/grafana.log" template="promtail" FileGroup="adm"  FileCreateMode="0644")
           stop
         }
     ignore_errors: yes
