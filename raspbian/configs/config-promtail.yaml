@@ -38,7 +38,7 @@ scrape_configs:
     - targets:
         - localhost
       labels:
-        job: nginx
+        job: exim
         __path__: /var/log/exim4/*.log
         host: grafana
 - job_name: mysql
@@ -46,7 +46,7 @@ scrape_configs:
     - targets:
         - localhost
       labels:
-        job: nginx
+        job: mysql
         __path__: /var/log/mysql/*.log
         host: grafana
 - job_name: letsencrypt
