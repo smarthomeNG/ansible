@@ -71,6 +71,7 @@
     unarchive:
       src: https://github.com/grafana/loki/releases/download/v2.4.2/loki-linux-arm.zip
       dest: /usr/local/bin
+      remote_src: true
       mode: 0775
       owner: grafana
       group: adm
@@ -79,13 +80,14 @@
     unarchive:
       src: https://github.com/grafana/loki/releases/latest/download/promtail-linux-arm.zip
       dest: /usr/local/bin
+      remote_src: true
       mode: 0775
       owner: grafana
       group: adm
 
   - name: loki config
     copy:
-      src: configs/config-loki.yaml
+      src: /etc/ansible/configs/config-loki.yaml
       dest: /etc/grafana/config-loki.yaml
       mode: 0777
       owner: grafana
@@ -93,7 +95,7 @@
 
   - name: config promtail
     copy:
-      src: configs/config-promtail.yaml
+      src: /etc/ansible/configs/config-promtail.yaml
       dest: /etc/grafana/config-promtail.yaml
       mode: 0777
       owner: grafana
@@ -101,12 +103,12 @@
 
   - name: loki service
     copy:
-      src: configs/loki.service
+      src: /etc/ansible/configs/config-loki.yamlloki.service
       dest: /lib/systemd/system/loki.service
 
   - name: promtail service
     copy:
-      src: configs/promtail.service
+      src: /etc/ansible/configs/config-loki.yamlpromtail.service
       dest: /lib/systemd/system/promtail.service
 
   - name: enable_loki
@@ -114,6 +116,14 @@
 
   - name: enable_promtail
     systemd: enabled=yes name=promtail.service
+
+  - name: create plugins dir
+    file:
+      path: /var/lib/grafana/plugins
+      state: directory
+      owner: smarthome
+      group: grafana
+      mode: 0744
 
   - name: create systemd dir
     file:

@@ -17,7 +17,13 @@
       ["homebridge_config.json",
       "homebridge.service",
       "influxdb.json",
-      "logcheck.homebridge"
+      "logcheck.homebridge",
+      "loki.service",
+      "promtail.service",
+      "nginx.json",
+      "smarthome.json",
+      "config-promtail.yaml",
+      "config-loki.yaml"
       ]
 
     packages:
