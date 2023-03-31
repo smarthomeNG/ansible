@@ -41,7 +41,6 @@
       version: master
       force: yes
     register: git
-  - debug: var=git
 
   - name: config git
     shell: git config pull.rebase false
@@ -84,13 +83,13 @@
       state: directory
 
   - name: mbstring
-    apt: name=php8.0-mbstring force=no state=latest
+    apt: name=php8.2-mbstring force=no state=latest
 
   - name: xml
-    apt: name=php8.0-xml force=no state=latest
+    apt: name=php8.2-xml force=no state=latest
 
   - name: Restart php
-    systemd: state=restarted name=php8.0-fpm.service
+    systemd: state=restarted name=php8.2-fpm.service
 
   - name: Restart nginx
     systemd: state=restarted name=nginx
