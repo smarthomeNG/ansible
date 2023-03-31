@@ -235,8 +235,26 @@
     register: git
   - debug: var=git
 
+  - name: Unarchive luacrypto
+    ansible.builtin.unarchive:
+      src: /root/luacrypto.zip
+      dest: /root/
+      remote_src: yes
+
+  - name: fix luacryptogit zip
+    replace:
+      destfile: /root/luacrypto-master/rockspecs/luacrypto-git-1.rockspec
+      regexp: 'git://github.com/evanlabs/luacrypto.git'
+      replace: 'https://github.com/evanlabs/luacrypto/archive/refs/heads/master.zip'
+
+  - name: fix luacryptogit folder
+    replace:
+      destfile: /root/luacrypto-master/rockspecs/luacrypto-git-1.rockspec
+      regexp: 'dir = "luacrypto"'
+      replace: 'dir = "luacrypto-master"'
+
   - name: Install crypto
-    command: "luarocks install /root/luacrypto/rockspecs/luacrypto-git-1.rockspec"
+    command: "luarocks install /root/luacrypto-master/rockspecs/luacrypto-git-1.rockspec"
 
   - name: Create lua
     file:
