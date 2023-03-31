@@ -15,3 +15,4 @@
 ^\w{3}(.*)[0-9]{1,2}\s[:0-9]{8}\s[._[:alnum:]-]+\ssshd\[[0-9]+\]\:(.*)Disconnected from user root(.*)
 ^\w{3}(.*)[0-9]{1,2}\s[:0-9]{8}\s[._[:alnum:]-]+\ssystemd-logind\[[0-9]+\]\:(.*)logged out.(.*)
 ^\w{3}(.*)[0-9]{1,2}\s[:0-9]{8}\s[._[:alnum:]-]+\s(smbd|nmbd)\[[0-9]+\]\:\s(.*)session opened for user smarthome
+^\w{3}(.*)[0-9]{1,2}\s[:0-9]{8}\s[._[:alnum:]-]+\s+sudo(.*)COMMAND=./setpermissions
