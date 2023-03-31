@@ -2,6 +2,9 @@
 echo "Updating System Packages"
 sudo apt-get update
 sudo apt-get dist-upgrade
+echo "Fixing debian.cnf permissions"
+sudo chown mysql:mysql /etc/mysql/debian.cnf
+sudo chmod 0644 /etc/mysql/debian.cnf
 echo "Do you want to update SmarthomeNG?"
 echo "WARNING: Any changes to the source code/plugins you made manually are lost. Back them up now and proceed later."
 sh="Skip"
@@ -26,6 +29,8 @@ if [ $sh = "Update" ]; then
       esac
   done
   if [ $tree = "Develop" ]; then
+    git config --global --add safe.directory /usr/local/smarthome
+    git config --global --add safe.directory /usr/local/smarthome/plugins
     echo 'Updating SmarthomeNG to latest develop version'
     cd /usr/local/smarthome
     sudo git stash
@@ -36,6 +41,8 @@ if [ $sh = "Update" ]; then
     sudo git checkout develop
     sudo git pull origin develop
   elif [ $tree = "Master" ]; then
+    git config --global --add safe.directory /usr/local/smarthome
+    git config --global --add safe.directory /usr/local/smarthome/plugins
     echo 'Updating SmarthomeNG to latest master version'
     cd /usr/local/smarthome
     sudo git stash
@@ -75,12 +82,14 @@ if [ $sv = "Update" ]; then
       esac
   done
   if [ $tree = "Develop" ]; then
+    git config --global --add safe.directory /var/www/html/smartvisu
     echo 'Updating smartvisu to latest develop version'
     cd /var/www/html/smartvisu
     sudo git stash
     sudo git checkout develop
     sudo git pull origin develop
   elif [ $tree = "Master" ]; then
+    git config --global --add safe.directory /var/www/html/smartvisu
     echo 'Updating smartvisu to latest master version'
     cd /var/www/html/smartvisu
     sudo git stash
