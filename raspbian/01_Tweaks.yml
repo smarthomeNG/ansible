@@ -35,6 +35,7 @@
       "snmpd",
       "snmp-mibs-downloader",
       "snmp",
+      "netcat",
       "fake-hwclock",
       "libudev-dev",
       "libkrb5-dev",
@@ -113,8 +114,6 @@
 
   - name: Set locale
     command: 'update-locale LANG=de_DE.UTF-8 LC_ALL=de_DE.UTF-8'
-    register: locale
-  - debug: var=locale
 
   - name: keyboard
     replace:
@@ -677,6 +676,12 @@
       path: /etc/logrotate.d/rsyslog
       regexp: 'compress'
       state: absent
+
+  - name: logrotate btmp
+    replace:
+      destfile: /etc/logrotate.d/btmp
+      regexp: 'utmp'
+      replace: adm
 
   - name: logrotate_unattended
     copy:

@@ -17,12 +17,14 @@
       "graphviz", #uzsu
       "rrdtool", #rrd
       "librrd-dev", #rrd, maybe not necessary
+      "python3-dev" #necessary for psutil compilation
       ]
     python_install:
       [
       "ruamel.yaml",
       "pytz",
       "numpy",
+      "scipy==1.8.1",
       "pymysql", #database
       "yolk3k" #nice python module management
       ]
@@ -71,24 +73,33 @@
     become_user: smarthome
     with_items: "{{ python_install }}"
 
+  - name: install ruamel for root
+    pip:
+      name: "ruamel.yaml"
+      state: latest
+      executable: pip3
+      extra_args: --user
+    become: true
+    become_user: root
+
   - name: Install libatlas-base-dev
     apt:
       name: libatlas-base-dev
       state: latest
       install_recommends: no
 
-  - name: Copy scipy
-    copy:
-      src: packages/scipy-1.8.0-cp39-cp39-linux_armv7l.whl
-      dest: /etc/deb-files/
+#  - name: Copy scipy
+#    copy:
+#      src: packages/scipy-1.8.0-cp39-cp39-linux_armv7l.whl
+#      dest: /etc/deb-files/
 
-  - name: Install scipy
-    pip:
-      name: /etc/deb-files/scipy-1.8.0-cp39-cp39-linux_armv7l.whl
-      executable: pip3
-      extra_args: --user
-    become: true
-    become_user: smarthome
+#  - name: Install scipy
+#    pip:
+#      name: /etc/deb-files/scipy-1.8.0-cp39-cp39-linux_armv7l.whl
+#      executable: pip3
+#      extra_args: --user
+#    become: true
+#    become_user: smarthome
 
   - name: Git SmarthomeNG
     git:
@@ -97,7 +108,6 @@
       version: master
       force: yes
     register: git
-  - debug: var=git
 
   - name: Git Plugins
     git:
@@ -107,7 +117,6 @@
       force: yes
     register: git2
     ignore_errors: yes
-  - debug: var=git2
 
   - name: config git
     shell: git config pull.rebase false
@@ -178,6 +187,12 @@
       state: absent
     ignore_errors: yes
 
+  - name: pipcommand
+    replace:
+      destfile: /usr/local/smarthome/etc/smarthome.yaml.default
+      regexp: '#pip_command: "python3 -m pip"'
+      replace: 'pip_command: "python3 -m pip"'
+
   - name: Init
     lineinfile:
       path: "{{ log_file_to_check }}"
@@ -203,19 +218,51 @@
       recurse: yes
       state: directory
 
-  - name: Restart smarthome service
-    systemd: state=restarted name=smarthome.service
-    async: 2000
+  - name: fix ownership smarthome git
+    shell: git config --global --add safe.directory /usr/local/smarthome
+
+  - name: fix ownership smarthome plugins git
+    shell: git config --global --add safe.directory /usr/local/smarthome/plugins
+
+  - name: Reinstall pyopenssl
+    pip:
+      name: pyopenssl
+      executable: pip3
+      state: latest
+      extra_args: --user --upgrade
+    become: true
+    become_user: smarthome
+    environment:
+      PATH: "{{ ansible_env.PATH }}:/home/smarthome/.cargo/bin"
+
+  - name: Stop smarthome service
+    systemd: state=stopped name=smarthome.service
+    async: 1000
     poll: 0
     become: true
     become_user: smarthome
     register: restart_smarthome
 
+  - name: start smarthome
+    shell: /usr/local/smarthome/bin/smarthome.py
+    async: 1000
+    poll: 0
+    become: true
+    become_user: smarthome
+
   - name: Match "{{ wanted_pattern }}" appearing after "{{ last_line_of_the_log_file }}" in {{ log_file_to_check }}
     wait_for:
       path: "{{ log_file_to_check }}"
       search_regex: "{{ last_line_of_the_log_file }}\r(.*\r)*.*{{ wanted_pattern }}"
-      timeout: 1800
+      timeout: 900
+
+  - name: Restart smarthome service
+    systemd: state=restarted name=smarthome.service
+    async: 1000
+    poll: 0
+    become: true
+    become_user: smarthome
+    register: restart_smarthome
 
   - name: List Modules
     command: "/home/smarthome/.local/bin/yolk --list"
@@ -225,3 +272,8 @@
     become_user: smarthome
     become_method: su
   - debug: var=pip3
+
+  - name: Stop smarthome
+    ansible.builtin.service:
+      name: smarthome
+      state: stopped

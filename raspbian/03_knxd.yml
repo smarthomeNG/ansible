@@ -7,7 +7,7 @@
 
   vars:
     ansible_python_interpreter: /usr/bin/python
-    
+
   tasks:
   - name: Create User
     user:
@@ -176,3 +176,9 @@
   - name: enable_service
     systemd: enabled=yes name=knxd.service
     register: enable_knxd_service
+
+  - name: Stop knxd socket
+    systemd: state=stopped name=knxd.socket
+
+  - name: Stop knxd service
+    systemd: state=stopped name=knxd.service
