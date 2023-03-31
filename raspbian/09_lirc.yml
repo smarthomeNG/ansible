@@ -7,29 +7,8 @@
 
   vars:
     ansible_python_interpreter: /usr/bin/python
-    
+
   tasks:
-  - name: Copy devinput
-    copy:
-      src: configs/devinput.lircd.conf
-      dest: /etc/lirc/lircd.conf.d/
-      owner: root
-      group: root
-      mode: 0644
-
-  - name: conf
-    lineinfile:
-      path: /etc/lirc/lircd.conf
-      create: yes
-      line: 'include "lircd.conf.d/*.conf"'
-
-  - name: Copy options
-    copy:
-      src: configs/lirc_options.conf
-      dest: /etc/lirc/
-      owner: root
-      group: root
-      mode: 0644
 
   - name: Install xsltproc
     apt: name=xsltproc force=no state=latest install_recommends=yes
@@ -70,23 +49,45 @@
       create: yes
       block: |
         template(name="FileFormat_timestamp" type="string" string= "%TIMESTAMP% %HOSTNAME% %syslogtag% %pri-text%%msg:::sp-if-no-1st-sp%%msg:::drop-last-lf%\n")
-        if $programname == 'lircd' then {
+        if $programname startswith 'lircd' then {
           action(type="omfile" file="/var/log/lirc.log" template="FileFormat_timestamp" FileCreateMode="0644" FileGroup="adm" FileOwner="smarthome")
           stop
         }
     ignore_errors: yes
 
-  - name: create systemd dir lirc
-    file:
-      path: /etc/systemd/system/lircd.service.d/
-      state: directory
+#  - name: create systemd dir lirc
+#    file:
+#      path: /etc/systemd/system/lircd.service.d/
+#      state: directory
 
-  - name: Copy service_conf lirc
+#  - name: Copy service_conf lirc
+#    copy:
+#      src: configs/service_lirc_fix.conf
+#      dest: /etc/systemd/system/lircd.service.d/
+#      owner: smarthome
+#      group: smarthome
+#      mode: 0644
+
+  - name: Copy devinput
     copy:
-      src: configs/service_lirc_fix.conf
-      dest: /etc/systemd/system/lircd.service.d/
-      owner: smarthome
-      group: smarthome
+      src: configs/devinput.lircd.conf
+      dest: /etc/lirc/lircd.conf.d/
+      owner: root
+      group: root
+      mode: 0644
+
+  - name: conf
+    lineinfile:
+      path: /etc/lirc/lircd.conf
+      create: yes
+      line: 'include "lircd.conf.d/*.conf"'
+
+  - name: Copy options
+    copy:
+      src: configs/lirc_options.conf
+      dest: /etc/lirc/
+      owner: root
+      group: root
       mode: 0644
 
   - name: reload
@@ -99,12 +100,6 @@
     command: "ldconfig"
     args:
       chdir: /sbin
-
-  - name: Restart Socket
-    systemd: daemon_reload=yes state=restarted name=lircd.socket
-
-  - name: Restart Service
-    systemd: daemon_reload=yes state=restarted name=lircd.service
 
   - name: disable lircd-setup
     systemd: enabled=no name=lircd-setup.service
@@ -120,3 +115,9 @@
 
   - name: disable_socket
     systemd: enabled=no name=lircd.socket
+
+  - name: Restart Socket
+    systemd: daemon_reload=yes state=restarted name=lircd.socket
+
+  - name: Restart Service
+    systemd: daemon_reload=yes state=restarted name=lircd.service
