@@ -1,5 +1,7 @@
 # ansible
-Ansible Playbooks for Installation of SmartHomeNG and/or Tools
+Ansible Playbooks for Installation of SmartHomeNG and/or Tools. The Playbooks are created for Raspberry Pis and might need to be changed for other computers.
+
+The Playbooks are used for creating the Raspberry Pi Image that can be downloaded here: https://github.com/smarthomeNG/raspberrypi-image
 
 ## Usage
 
