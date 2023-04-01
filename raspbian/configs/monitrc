@@ -232,6 +232,20 @@ check process sshd with pidfile /run/sshd.pid
 #  restart program = "/bin/systemctl restart grafana-server"
 #  if 20 restarts within 45 cycles then timeout
 
+##LOKI
+#check process loki matching "loki-linux-arm"
+#  start program = "/bin/systemctl start loki"
+#  stop program = "/bin/systemctl stop loki"
+#  restart program = "/bin/systemctl restart loki"
+#  if 5 restarts within 5 cycles then timeout
+
+##PROMTAIL
+#check process promtail matching "promtail-linux-arm"
+#  start program = "/bin/systemctl start promtail"
+#  stop program = "/bin/systemctl stop promtail"
+#  restart program = "/bin/systemctl restart promtail"
+#  if 5 restarts within 5 cycles then timeout
+
 ##OPENVPN
 #check process openvpn with pidfile /run/openvpn/server.pid
 #  not every "0 0 * * *"

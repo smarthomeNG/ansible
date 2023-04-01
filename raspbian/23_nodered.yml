@@ -7,7 +7,7 @@
 
   vars:
     ansible_python_interpreter: /usr/bin/python
-    
+
   tasks:
   - name: Create Group
     group:
@@ -48,7 +48,7 @@
     become_user: smarthome
     become: true
     become_method: su
-    async: 1000
+    async: 2500
     poll: 0
     when: nodered_installed.stat.exists == False
     register: nodered_installer
@@ -57,7 +57,7 @@
     async_status: jid={{ nodered_installer.ansible_job_id }}
     register: job_result
     until: job_result.finished
-    retries: 80
+    retries: 280
     become_user: smarthome
     become: true
     become_method: su

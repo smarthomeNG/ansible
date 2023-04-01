@@ -41,7 +41,8 @@
       "snmp",
       "knxPython",
       "python-miio",
-      "spur"
+      "spur",
+      "pyopenssl"
       ]
 
   tasks:
@@ -91,6 +92,12 @@
   - name: Install libffi-dev
     apt:
       name: libffi-dev
+      state: latest
+      install_recommends: no
+
+  - name: Install libcap-dev
+    apt:
+      name: libcap-dev
       state: latest
       install_recommends: no
 
@@ -215,6 +222,24 @@
   - name: Install gpg for root
     pip:
       name: python-gnupg
+      executable: pip3
+      state: latest
+      extra_args: --user
+    become: true
+    become_user: root
+
+  - name: Install cherrypy for root
+    pip:
+      name: cherrypy
+      executable: pip3
+      state: latest
+      extra_args: --user
+    become: true
+    become_user: root
+
+  - name: Install iowait for root
+    pip:
+      name: iowait
       executable: pip3
       state: latest
       extra_args: --user
