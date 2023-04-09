@@ -93,7 +93,15 @@ case $raspi in
     a02100 ) raspiversion=3;;
     a03111 ) raspiversion=4;;
     b03111 ) raspiversion=4;;
+    b03112 ) raspiversion=4;;
+    b03114 ) raspiversion=4;;
+    b03115 ) raspiversion=4;;
     c03111 ) raspiversion=4;;
+    c03112 ) raspiversion=4;;
+    c03114 ) raspiversion=4;;
+    c03115 ) raspiversion=4;;
+    d03114 ) raspiversion=4;;
+    d03115 ) raspiversion=4;;
 esac
 if [[ $raspiversion -ge "3" ]]; then
   echo ""
