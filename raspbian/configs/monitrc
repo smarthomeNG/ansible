@@ -85,11 +85,11 @@ check process nginx with pidfile /run/nginx.pid
  if 15 restarts within 25 cycles then unmonitor
 
 #PHP
-check process php-fpm with pidfile /run/php/php8.0-fpm.pid
-  start program = "/bin/systemctl start php8.0-fpm"
-  stop program = "/bin/systemctl stop php8.0-fpm"
-  restart program = "/bin/systemctl restart php8.0-fpm"
-  if failed unixsocket /run/php/php8.0-fpm.sock then restart
+check process php-fpm with pidfile /run/php/php8.2-fpm.pid
+  start program = "/bin/systemctl start php8.2-fpm"
+  stop program = "/bin/systemctl stop php8.2-fpm"
+  restart program = "/bin/systemctl restart php8.2-fpm"
+  if failed unixsocket /run/php/php8.2-fpm.sock then restart
   if 15 restarts within 25 cycles then unmonitor
 
 #SMARTHOME
