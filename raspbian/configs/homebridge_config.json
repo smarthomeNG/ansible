@@ -1,116 +1,104 @@
-{ "bridge": { "name": "SmarthomeNG", "username": "CC:22:3D:E3:DE:37", "port": 51826, "pin": "044-55-999" },
-
-"platforms": [
-    {
-      "platform": "People",
-       "threshold" : 15,
-       "anyoneSensor" : true,
-       "nooneSensor" : false,
-       "webhookPort": 51828,
-       "cacheDirectory": "/home/smarthome/.homebridge/storage",
-       "pingInterval": 10000,
-       "ignoreReEnterExitSeconds": 0,
-       "people" : [
-           {
-               "name" : "Person1",
-               "target" : "Person iPhone 7",
-               "threshold" : 15,
-               "pingInterval": 10000,
-               "ignoreReEnterExitSeconds": 0
-           },
-           {
-               "name" : "Person2",
-               "target" : "Person iPhone",
-               "threshold" : 15,
-               "pingInterval": 10000,
-               "ignoreReEnterExitSeconds": 0
-           }
-       ]
-      },
-    {
-        "platform": "SmartHomeNG",
-
+{
+    "bridge": {
         "name": "SmartHomeNG",
-        "host": "10.0.0.150",
-        "accessories": [
-            {
-                "name": "Temperatur Stube",
-                "type": "TemperatureSensor",
-                "currenttemperature": "EG.Stube.Temperatur"
-            },
-            {
-                "name": "Heizung Bad",
-                "type": "Thermostat",
-                "currenttemperature": "OG.Bad.Temperatur",
-                "targettemperature": "OG.Bad.Temperatur.Sollwert",
-                "targettemperatureminimum": 18,
-                "targettemperaturemaximum": 25
-            },
-            {
-                "name": "Ventilator Bad",
-                "type": "Fan",
-                "onoff": "OG.Bad.Ventilator"
-            },
-            {
-                "name": "Schalter",
-                "type": "Switch",
-                "onoff": "EG.Esszimmer.Schalter"
-            },
-            {
-                "name": "Schaltsteckdose",
-                "type": "Outlet",
-                "onoff": "EG.Esszimmer.Steckdose"
-            },
-            {
-                "name": "Bürolicht",
-                "type": "Lightbulb",
-                "onoff": "EG.Buero.Licht"
-            },
-            {
-                "name": "Stubenlicht",
-                "type": "Lightbulb",
-                "onoff": "EG.Stube.Licht"
-            },
-            {
-                "name": "Schlafzimmerlicht",
-                "type": "Lightbulb",
-                "onoff": "OG.SZSS.Licht",
-                "brightness": "OG.SZSS.Licht.dimmen"
-            },
-            {
-                "name": "Rolladen Büro",
-                "type": "WindowCovering",
-                "updown": "EG.Buero.Rolladen.AufAb",
-                "currentposition": "EG.Buero.Rolladen.Position",
-                "targetposition": "EG.Buero.Rolladen.Position",
-                "inverted": true
-            },
-            {
-                "name": "Bewegungsmelder Küche",
-                "type": "MotionSensor",
-                "motionstate": "EG.Kueche.Praesenz"
-            },
-            {
-                "name": "Terassentür Küche",
-                "type": "ContactSensor",
-                "contactsensorstate": "EG.Kueche.Tuer",
-                "inverted": true
-            },
-            {
-                "name": "Fenster Esszimmer",
-                "type": "ContactSensor",
-                "contactsensorstate": "EG.Esszimmer.Fenster",
-                "inverted": true
-            },
-            {
-                "name": "Präsenzsmelder Esszimmer",
-                "type": "OccupancySensor",
-                "motiondetected": "EG.Esszimmer.Praesenz"
-            }
+        "username": "CC:22:3D:E3:DE:37",
+        "port": 51138,
+        "pin": "655-59-9284"
+    },
 
-        ]
-    }
-],
+    "platforms": [
+        {
+            "platform": "SmartHomeNG",
+            "name": "SmartHomeNG",
+            "host": "smarthome.iot.wagener.family",
+            "port": 2425,
+            "tls": true,
+            "accessories": [
+                {
+                    "type": "Outlet",
+                    "name": "Steckdose Esszimmer",
+                    "On": "EG.Esszimmer.Steckdose"
+                },
+                {
+                    "type": "OccupancySensor",
+                    "name": "Präsenz Büro",
+                    "manufacturer": "Preussen",
+                    "model": "Motion 360 KNX",
+                    "OccupancyDetected": "EG.Buero.Praesenz"
+                },
+                {
+                    "type": "MotionSensor",
+                    "name": "Bewegung Flur",
+                    "manufacturer": "Preussen",
+                    "model": "Motion 360 KNX",
+                    "MotionDetected": "EG.Flur.Praesenz"
+                },
+                {
+                    "type": "ContactSensor",
+                    "name": "Fenster Büro",
+                    "ContactState": "EG.Buero.Fenster"
+                },
+                {
+                    "type": "Doorbell",
+                    "name": "Haustür",
+                    "SinglePress": "Technik.Asterisk.Klingel"
+                },
+                {
+                    "type": "Lightbulb",
+                    "name": "Licht Büro",
+                    "On": "EG.Buero.Deckenspots",
+                    "Brightness": "EG.Buero.Deckenspots.dimmen",
+                    "BrightnessMin": 0,
+                    "BrightnessMax": 255
+                }
+                {
+                    "type": "Lightbulb",
+                    "name": "RGB Leiste Stube",
+                    "On": "EG.Stube.Ledleiste",
+                    "Brightness": "EG.Stube.Ledleiste.dimmen",
+                    "BrightnessMin": 0,
+                    "BrightnessMax": 255,
+                    "R": "EG.Stube.Ledleiste.R.dimmen",
+                    "RMin": 0,
+                    "RMax": 255,
+                    "G": "EG.Stube.Ledleiste.G.dimmen",
+                    "GMin": 0,
+                    "GMax": 255,
+                    "B": "EG.Stube.Ledleiste.B.dimmen",
+                    "BMin": 0,
+                    "BMax": 255,
+                    "W": "EG.Stube.Ledleiste.W.dimmen",
+                    "WMin": 0,
+                    "WMax": 255
+                },
+                {
+                    "type": "Fan",
+                    "name": "Ventilator Bad",
+                    "Active": "OG.Bad.Ventilator"
+                },
+                {
+                    "type": "Thermostat",
+                    "name": "Temperatur Büro",
+                    "CurrentTemperature": "EG.Buero.Temperatur",
+                    "TargetTemperature": "EG.Buero.Temperatur.Sollwert",
+                    "CurrentHeatingCoolingState": "EG.Buero.Temperatur.Modus"
+                },
+                {
+                    "type": "WindowCovering",
+                    "name": "Shutters office",
+                    "CurrentPosition": "EG.Buero.Rolladen.Position",
+                    "CurrentPositionMin": 0,
+                    "CurrentPositionMax": 255,
+                    "CurrentPositionInverted": true,
+                    "TargetPosition": "EG.Buero.Rolladen.ZielPosition",
+                    "TargetPositionMin": 0,
+                    "TargetPositionMax": 255,
+                    "TargetPositionInverted": true
+                }
+            ]
+        }
+    ],
 
-"description": "This is my development config file."
+    "description": "This is my development config file."
+
 }
