@@ -42,6 +42,7 @@
     apt_key:
       url: https://apt.grafana.com/gpg.key
       state: present
+      keyring: /usr/share/keyrings/grafana.key
       validate_certs: False
 
   - name: repo
