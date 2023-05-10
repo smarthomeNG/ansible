@@ -62,14 +62,6 @@
     register: init
     ignore_errors: yes
 
-  - name: Copy service
-    copy:
-      src: configs/mysql.service
-      dest: /lib/systemd/system/mysql.service
-      owner: root
-      group: root
-      mode: 0644
-
   - name: Install phpmyadmin
     apt:
       name: phpmyadmin
@@ -161,22 +153,27 @@
       path: "/etc/rsyslog.d/mysql.conf"
       create: yes
       block: |
-        $Template FileFormat_sql,"%TIMESTAMP% %HOSTNAME% %syslogtag% %pri-text%%msg:R,ERE,3,FIELD:(([0-9]{4}-[0-9]{2}-[0-9]{2}\s+[:0-9]{8}\s+[:0-9]{1}\s+\[Note\]\s+)(.*))--end:sp-if-no-1st-sp%%msg:R,ERE,3,FIELD:(([0-9]{4}-[0-9]{2}-[0-9]{2}\s+[:0-9]{8}\s+[:0-9]{1}\s+\[Note\]\s+)(.*))--end:drop-last-lf%\n"
-        $Template FileFormat_sql_warning,"%TIMESTAMP% %HOSTNAME% %syslogtag% %pri-text%%msg:R,ERE,3,FIELD:(([0-9]{4}-[0-9]{2}-[0-9]{2}\s+[:0-9]{8}\s+[:0-9]{1}\s+\[Warning\]\s+)(.*))--end:sp-if-no-1st-sp%%msg:R,ERE,3,FIELD:(([0-9]{4}-[0-9]{2}-[0-9]{2}\s+[:0-9]{8}\s+[:0-9]{1}\s+\[Warning\]\s+)(.*))--end:drop-last-lf%\n"
-        $Template FileFormat_sql_error,"%TIMESTAMP% %HOSTNAME% %syslogtag% %pri-text%%msg:R,ERE,3,FIELD:(([0-9]{4}-[0-9]{2}-[0-9]{2}\s+[:0-9]{8}\s+[:0-9]{1}\s+\[Error\]\s+)(.*))--end:sp-if-no-1st-sp%%msg:R,ERE,3,FIELD:(([0-9]{4}-[0-9]{2}-[0-9]{2}\s+[:0-9]{8}\s+[:0-9]{1}\s+\[Error\]\s+)(.*))--end:drop-last-lf%\n"
-        if $programname startswith 'mysql' and ($msg contains_i 'shutdown' or $msg contains_i 'Shutdown') then {
+        $Template FileFormat_start,"%TIMESTAMP% %HOSTNAME% %syslogtag% %pri-text%%msg:::sp-if-no-1st-sp%%msg:::drop-last-lf%\n"
+        $Template FileFormat_sql,"%TIMESTAMP% %HOSTNAME% %syslogtag% %pri-text%%msg:R,ERE,3,FIELD:(([0-9]{4}-[0-9]{2}-[0-9]{2}\s+[:0-9]{7,8}\s+[:0-9]{1}\s+\[Note\]\s+)(.*))--end:sp-if-no-1st-sp%%msg:R,ERE,3,FIELD:(([0-9]{4}-[0-9]{2}-[0-9]{2}\s+[:0-9]{7,8}\s+[:0-9]{1}\s+\[Note\]\s+)(.*))--end:drop-last-lf%\n"
+        $Template FileFormat_sql_warning,"%TIMESTAMP% %HOSTNAME% %syslogtag% %pri-text%%msg:R,ERE,3,FIELD:(([0-9]{4}-[0-9]{2}-[0-9]{2}\s+[:0-9]{7,8}\s+[:0-9]{1}\s+\[Warning\]\s+)(.*))--end:sp-if-no-1st-sp%%msg:R,ERE,3,FIELD:(([0-9]{4}-[0-9]{2}-[0-9]{2}\s+[:0-9]{7,8}\s+[:0-9]{1}\s+\[Warning\]\s+)(.*))--end:drop-last-lf%\n"
+        $Template FileFormat_sql_error,"%TIMESTAMP% %HOSTNAME% %syslogtag% %pri-text%%msg:R,ERE,3,FIELD:(([0-9]{4}-[0-9]{2}-[0-9]{2}\s+[:0-9]{7,8}\s+[:0-9]{1}\s+\[Error\]\s+)(.*))--end:sp-if-no-1st-sp%%msg:R,ERE,3,FIELD:(([0-9]{4}-[0-9]{2}-[0-9]{2}\s+[:0-9]{7,8}\s+[:0-9]{1}\s+\[Error\]\s+)(.*))--end:drop-last-lf%\n"
+        if ($programname contains 'mysql' or $programname contains 'mariadb') and ($msg contains_i 'shutdown' or $msg contains_i 'Shutdown') then {
           action(type="omfile" file="/var/log/mysql/error.log" template="FileFormat_sql" FileCreateMode="0644" FileGroup="adm")
           stop
         }
-        if $programname startswith 'mysql' and $syslogseverity-text != 'error' and $msg contains_i '[Note]' then {
+        if ($programname contains 'mysql' or $programname contains 'mariadb') and $syslogseverity-text != 'error' and $msg contains_i '[Note]' then {
           action(type="omfile" file="/var/log/mysql/mysql.log" template="FileFormat_sql" FileCreateMode="0644" FileGroup="adm")
           stop
         }
-        if $programname startswith 'mysql' and ($syslogseverity-text == 'err' or $msg contains_i '[ERROR]') then {
+        if $syslogtag startswith '/etc/mysql/debian-start' then {
+          action(type="omfile" file="/var/log/mysql/mysql.log" template="FileFormat_start" FileCreateMode="0644" FileGroup="adm")
+          stop
+        }
+        if ($programname contains 'mysql' or $programname contains 'mariadb') and ($syslogseverity-text == 'error' or $msg contains_i '[ERROR]') then {
           action(type="omfile" file="/var/log/mysql/error.log" template="FileFormat_sql_error" FileCreateMode="0644" FileGroup="adm")
           stop
         }
-        if $programname startswith 'mysql' and ($syslogseverity-text == 'warning' or $msg contains_i '[Warning]' or $msg contains_i '[Error]') then {
+        if ($programname contains 'mysql' or $programname contains 'mariadb') and ($syslogseverity-text == 'warning' or $msg contains_i '[Warning]' or $msg contains_i '[Error]') then {
           action(type="omfile" file="/var/log/mysql/error.log" template="FileFormat_sql_warning" FileCreateMode="0644" FileGroup="adm")
           stop
         }
@@ -275,9 +272,17 @@
     ignore_errors: yes
     register: a2enconf
 
-  - name: chmod log
+  - name: chmod error log
     file:
       path: /var/log/mysql/error.log
+      state: touch
+      owner: mysql
+      group: adm
+      mode: 0755
+
+  - name: chmod mysql log
+    file:
+      path: /var/log/mysql/mysql.log
       state: touch
       owner: mysql
       group: adm
@@ -294,9 +299,6 @@
   - name: Restart php
     systemd: state=restarted name=php8.2-fpm
     ignore_errors: yes
-
-  - name: disable mysql
-    systemd: enabled=no name=mysql.service
 
   - name: disable mariadb
     systemd: enabled=no name=mariadb.service
