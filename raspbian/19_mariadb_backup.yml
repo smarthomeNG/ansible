@@ -7,12 +7,18 @@
 
   vars:
     ansible_python_interpreter: /usr/bin/python
-    
+
   tasks:
   - name: Install backup
     apt:
       name: mariadb-backup
 
+  - name: sudoers
+    lineinfile:
+      path: /etc/sudoers.d/011_mysql
+      create: yes
+      line: 'mysql ALL=(ALL) NOPASSWD: /usr/bin/mv, /usr/bin/mariabackup, /usr/bin/chmod 0644 /etc/mysql/debian.cnf, /usr/bin/chown mysql\:mysql /etc/mysql/debian.cnf, /usr/bin/chown mysql\:adm /var/log/mysql/mariabackup.log, /usr/bin/chmod 0664 /var/log/mysql/mariabackup.log, /usr/bin/touch /var/log/mysql/mariabackup.log'
+      
   - name: Copy script
     copy:
       src: executables/mysql_restore.sh
