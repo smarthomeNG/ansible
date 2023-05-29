@@ -2,6 +2,9 @@
 #
 # Simple cron script to create backup of SQL databases
 RUNBACKUPS=False
+if [[ $RUNBACKUPS == False ]]; then
+  exit 0
+fi
 
 adddate() {
     while IFS= read -r line; do
@@ -11,10 +14,6 @@ adddate() {
 
 export LC_ALL=C
 log_file="/var/log/mysql/mariabackup.log"
-
-if [[ $RUNBACKUPS == False ]]; then
-  exit 0
-fi
 
 if [[ $RUNBACKUPS == True ]] && (command -v /usr/bin/mariabackup > /dev/null 2>&1 && pgrep -x mariadbd > /dev/null 2>&1 && ! pgrep mariabackup  > /dev/null 2>&1); then
 	days_of_backups=5  # Must be less than 7
