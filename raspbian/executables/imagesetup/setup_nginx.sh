@@ -27,6 +27,14 @@ nginx_config () {
     if [ $pw ]; then
         sudo sed -i 's/'\<SECRETKEY' 'from' 'OPENSSL\>'/'$pw'/g' /etc/nginx/scripts/hass_access.lua 2>&1
     fi
+	
+    echo "The following two inputs are only relevant if you want to use Amazon Alexa."
+    read -p "Please enter Alexa username (Hit enter to skip): " alexa_user
+	read -p "Please enter Alexa password (Hit enter to skip): " alexa_pw
+    if [ $alexa_user ]; then
+        htpasswd -cb /etc/nginx/.alexa $alexa_user $alexa_pw 2>&1
+    fi	
+	
     IP=$(sudo ip addr list eth0 |grep 'inet ' |cut -d' ' -f6|cut -d/ -f1)
     echo ""
     echo ""
@@ -120,6 +128,7 @@ if [[ $NGINX_e == "enabled" ]]; then
     echo "http://<YOURIP>/monit -> If you enable monit (later) you can see the status of your services"
     echo "http://<YOURIP>/monitgraph -> If you enable monit (later) you can see graphs of your computer resources per service"
     echo "http://<YOURIP>/grafana -> If you enable influxdb and grafana (later) you can use time series databases"
+	echo "http://<YOURIP>/alexa -> If you want to use Amazon Alexa"
     echo "http://<YOURIP>/red -> If you enable node-red (later)"
     echo ""
     echo ""
