@@ -14,6 +14,10 @@ set httpd port 2812 and
 allow 10.0.0.0/8
 allow localhost
 
+check file mainlog with path /var/log/exim4/mainlog
+  restart program = "/usr/bin/sudo /usr/sbin/exim -bp | /usr/bin/sudo /usr/sbin/exiqgrep -i | xargs exim -Mrm && /usr/bin/sudo /usr/sbin/exim_tidydb -t 1d /var/spool/exim retry > /dev/null && /usr/bin/sudo rm -rf /var/spool/exim/db/retry*"
+  if match "Message is frozen" then restart
+  
 # Avahi daemon
  check process avahi with pidfile /run/avahi-daemon/pid
    group system
