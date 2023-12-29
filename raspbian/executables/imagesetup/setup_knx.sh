@@ -33,7 +33,7 @@ knxd_old() {
   sudo systemctl restart knxd
 }
 
-knxd_bullseye() {
+knxd_bookworm() {
   echo "Uninstalling knxd.."
   sudo systemctl stop knxd.socket
   sudo systemctl stop knxd.service
@@ -88,18 +88,18 @@ install_knxd() {
   echo ""
   KNXD_n=$(ls -l /etc/deb-files/knxd_* | sort -k9,9 -V --ignore-case | tail -n1 | awk -F'_armhf' '{print $1}'  | awk -F'knxd_' '{print $2}' | awk -F'-' '{print $1}' | awk -F':' '{print $1}') &> /dev/null
   KNXD_o=$(ls -l /etc/deb-files/knxd_* | sort -k9,9 -V --ignore-case | head -n1 | awk -F'_armhf' '{print $1}'  | awk -F'knxd_' '{print $2}' | awk -F'-' '{print $1}' | awk -F':' '{print $1}') &> /dev/null
-  KNXD_bullseye=$(apt-cache madison knxd | head -n1 | awk -F"|" '{print $2}'  | tr -d '[:space:]' | sed 's/-1//') &> /dev/null
+  KNXD_bookworm=$(apt-cache madison knxd | head -n1 | awk -F"|" '{print $2}'  | tr -d '[:space:]' | sed 's/-1//') &> /dev/null
   if [[ ! -e /usr/bin/knxd ]]; then
       echo "Uninstalling eibd.."
       sudo systemctl stop eibd
       sudo dpkg -r eibd
       sudo dpkg -r pthsem
       echo "Installing knxd.. Which version do you want to install?"
-      options=($KNXD_o $KNXD_n $KNXD_bullseye "Skip")
+      options=($KNXD_o $KNXD_n $KNXD_bookworm "Skip")
       select knxd_install in "${options[@]}"; do
           case $knxd_install in
               $KNXD_o ) echo "Installing old version $KNXD_o"; knxd_old; break;;
-			  $KNXD_bullseye) echo "Installing latest bullseye version $KNXD_bullseye"; knxd_bullseye; break;;
+			  $KNXD_bookworm) echo "Installing latest bookworm version $KNXD_bookworm"; knxd_bookworm; break;;
               $KNXD_n) echo "Installing new self-built version $KNXD_n"; knxd_new; break;;
               Skip ) echo "Skipping knxd install"; break;;
               *) echo "Skipping knxd install"; break;;
@@ -111,7 +111,7 @@ install_knxd() {
       echo "KNXD Service is $KNXD_e. Currently $KNXD_v is installed."
       first_v=${KNXD_v%%.*}; last_v=${KNXD_v##*.}; mid_v=${KNXD_v##$first_v.}; mid_v=${mid_v%%.$last_v}
 	  first_n=${KNXD_n%%.*}; last_n=${KNXD_n##*.}; mid_n=${KNXD_n##$first_n.}; mid_n=${mid_n%%.$last_n}
-      first_b=${KNXD_bullseye%%.*}; last_b=${KNXD_bullseye##*.}; mid_b=${KNXD_bullseye##$first_b.}; mid_b=${mid_b%%.$last_b}
+      first_b=${KNXD_bookworm%%.*}; last_b=${KNXD_bookworm##*.}; mid_b=${KNXD_bookworm##$first_b.}; mid_b=${mid_b%%.$last_b}
       update=False
 	  update_deb=False
       if [ "$first_b" -ge "$first_v" ]; then
@@ -129,11 +129,11 @@ install_knxd() {
           fi
       fi
       if [ $update = True ]; then
-          echo "There is a newer version of knxd available: $KNXD_bullseye (bullseye repo) or $KNXD_n (self-built). Do you want to upgrade?"
+          echo "There is a newer version of knxd available: $KNXD_bookworm (bookworm repo) or $KNXD_n (self-built). Do you want to upgrade?"
           echo "WARNING: Some IP routers/interfaces might have problems with the newer version!"
           select knxd_upgrade in "Upgrade from Repo" "Upgrade self-built version" "Keep" "Skip"; do
               case $knxd_upgrade in
-				  "Upgrade from Repo" ) echo "Installing repo version"; UPGRADED=true; knxd_bullseye; break;;
+				  "Upgrade from Repo" ) echo "Installing repo version"; UPGRADED=true; knxd_bookworm; break;;
 				  "Upgrade self-built version" ) echo "Installing self-built version"; UPGRADED=true; knxd_new; break;;
                   Keep) echo "Skipping knxd Upgrade"; break;;
                   Skip ) echo "Skipping knxd Upgrade"; break;;
@@ -153,11 +153,11 @@ install_knxd() {
           done
 	  fi
 	  if [[ $mid_v = 14 && $last_v -ge 40 && $UPGRADED = false ]]; then
-          echo "If you have problems with the current knxd version, you can downgrade to v0.12 or the official bullseye repo version. Do you want to downgrade or keep the current version?"
+          echo "If you have problems with the current knxd version, you can downgrade to v0.12 or the official bookworm repo version. Do you want to downgrade or keep the current version?"
           select knxd_upgrade in "Downgrade to 0.12" "Downgrade to 0.14 Repo" "Keep" "Skip"; do
               case $knxd_upgrade in
                   "Downgrade to 0.12" ) echo "Installing old version"; knxd_old; break;;
-				  "Downgrade to 0.14 Repo" ) echo "Installing repo version"; knxd_bullseye; break;;
+				  "Downgrade to 0.14 Repo" ) echo "Installing repo version"; knxd_bookworm; break;;
                   Keep) echo "Skipping knxd Downgrade"; break;;
                   Skip ) echo "Skipping knxd Downgrade"; break;;
                   *) echo "Skipping knxd Downgrade"; break;;
