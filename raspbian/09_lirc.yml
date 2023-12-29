@@ -6,7 +6,7 @@
   become: true
 
   vars:
-    ansible_python_interpreter: /usr/bin/python
+    ansible_python_interpreter: /usr/bin/python3
 
   tasks:
 
@@ -49,7 +49,10 @@
       create: yes
       block: |
         template(name="FileFormat_timestamp" type="string" string= "%TIMESTAMP% %HOSTNAME% %syslogtag% %pri-text%%msg:::sp-if-no-1st-sp%%msg:::drop-last-lf%\n")
-        if $programname startswith 'lircd' then {
+        if $programname startswith 'lircd-' then {
+          stop
+        }
+        if $programname startswith 'lircd' or $msg contains 'lircd' then {
           action(type="omfile" file="/var/log/lirc.log" template="FileFormat_timestamp" FileCreateMode="0644" FileGroup="adm" FileOwner="smarthome")
           stop
         }
