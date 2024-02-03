@@ -6,54 +6,20 @@
   become: true
 
   vars:
-    ansible_python_interpreter: /usr/bin/python
+    ansible_python_interpreter: /usr/bin/python3
     pythonremove:
       ["python3-keyring",
       "python3-pyasn1",
       "python3-keyrings.alt",
       "python3-wheel",
-      "python3-setuptools",
       "python-six",
       "enum34",
       "python-idna",
-      "python3-gpg"
-      ]
-
-    pythonremovemodules:
-      ["pyxdg",
-      "pycrypto",
-      "astral"
-      ]
-
-    pythoninstall:
-      ["pip",
-      "python-gnupg",
-      "RPi.GPIO",
-      "pgen",
-      "requests",
-      "pymodbus",
-      "pymysql",
-      "wheel",
-      "awake",
-      "setuptools",
-      "pycrypto",
-      "yolk3k",
-      "snmp",
-      "knxPython",
-      "python-miio",
-      "spur",
-      "pyopenssl"
+      "python3-gpg",
+      "python-is-python3"
       ]
 
   tasks:
-  - name: Link python
-    file:
-      dest: '/usr/local/bin/python3'
-      src: '/usr/bin/python'
-      state: link
-      owner: root
-      group: root
-
   - name: Create Group
     group:
       name: smarthome
@@ -121,32 +87,11 @@
       state: latest
       install_recommends: no
 
-  - name: Copy getpip
-    get_url:
-      url: https://bootstrap.pypa.io/get-pip.py
-      dest: /home/smarthome
-      mode: 0777
-      owner: smarthome
-      group: smarthome
-
   - name: Install pip3
-    command: 'python3 /home/smarthome/get-pip.py'
-
-  - name: Update root pip
-    pip:
-      name: pip
-      executable: pip3
+    apt:
+      name: python3-pip
       state: latest
-      extra_args: --upgrade
-    become: true
-    become_user: root
-
-  - name: remove modules
-    pip:
-      name: "{{ item }}"
-      state: absent
-      executable: pip3
-    with_items: "{{ pythonremovemodules }}"
+      install_recommends: no
 
   - name: check if rust exists
     stat:
@@ -198,68 +143,28 @@
       state: latest
       install_recommends: no
 
-  - name: Install modules
-    pip:
-      name: "{{ item }}"
-      executable: pip3
-      state: latest
-      extra_args: --user --upgrade
-    become: true
-    become_user: smarthome
-    environment:
-      PATH: "{{ ansible_env.PATH }}:/home/smarthome/.cargo/bin"
-    with_items: "{{ pythoninstall }}"
-
-  - name: Install psutil
-    pip:
-      name: psutil
-      executable: pip3
-      state: latest
-      extra_args: --user
-    become: true
-    become_user: root
-
-  - name: Install gpg for root
-    pip:
-      name: python-gnupg
-      executable: pip3
-      state: latest
-      extra_args: --user
-    become: true
-    become_user: root
-
-  - name: Install cherrypy for root
-    pip:
-      name: cherrypy
-      executable: pip3
-      state: latest
-      extra_args: --user
-    become: true
-    become_user: root
-
-  - name: Install iowait for root
-    pip:
-      name: iowait
-      executable: pip3
-      state: latest
-      extra_args: --user
-    become: true
-    become_user: root
-
-  - name: pygobjectfiles
-    find:
-      paths: /usr/lib/python3/dist-packages/
-      patterns: "PyGObject*"
-    register: pygobject_to_delete
-
-  - name: Remove pygobject
+  - name: Create deb-files directory
     file:
-      path: "{{ item.path }}"
-      state: absent
-    with_items: "{{ pygobject_to_delete.files }}"
+      path: /etc/deb-files/
+      state: directory
+      mode: 0755
     ignore_errors: yes
-    register: deleted
-  - debug: var=deleted
+
+  - name: Copy python 3.10
+    unarchive:
+      src: https://www.python.org/ftp/python/3.10.13/Python-3.10.13.tar.xz
+      dest: /usr/local/src
+      remote_src: yes
+
+  - name: Configure python 3.10
+    command: ./configure
+    args:
+      chdir: /usr/local/src/Python-3.10.13
+
+  - name: Install python 3.10
+    command: make install
+    args:
+      chdir: /usr/local/src/Python-3.10.13
 
   - name: Purge python cache
     command: pip3 cache purge
