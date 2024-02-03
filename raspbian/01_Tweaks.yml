@@ -6,7 +6,7 @@
   become: true
 
   vars:
-    ansible_python_interpreter: /usr/bin/python
+    ansible_python_interpreter: /usr/bin/python3
     packages:
       ["tcpdump",
       "screen",
@@ -16,6 +16,7 @@
       "unattended-upgrades",
       "apt-listchanges",
       "atop",
+      "iotop",
       "libbison-dev",
       "libfl-dev",
       "libgcrypt20-dev",
@@ -35,7 +36,8 @@
       "snmpd",
       "snmp-mibs-downloader",
       "snmp",
-      "netcat",
+      "rsyslog",
+      "netcat-openbsd",
       "fake-hwclock",
       "libudev-dev",
       "libkrb5-dev",
@@ -43,7 +45,8 @@
       "scdaemon", #GnuPG
       "libgirepository1.0-dev", # for python PygObject
       "libglib2.0-dev", # for python PygObject
-      "libcairo2-dev" # for python PygObject
+      "libcairo2-dev", # for python PygObject
+      "libsqlite3-dev" # for python sqlite3
       ]
 
 
@@ -130,20 +133,6 @@
       owner: root
       group: root
 
-  - name: crda
-    replace:
-      destfile: /etc/default/crda
-      regexp: 'REGDOMAIN='
-      replace: 'REGDOMAIN=DE'
-    ignore_errors: yes
-
-  - name: regdomain
-    replace:
-      destfile: /lib/crda/setregdomain
-      regexp: 'REGDOMAIN='
-      replace: 'REGDOMAIN=DE'
-    ignore_errors: yes
-
   - name: sap
     replace:
       destfile: /lib/systemd/system/bluetooth.service
@@ -212,6 +201,13 @@
       replace: "PermitRootLogin yes"
     ignore_errors: yes
 
+  - name: sshd deprecated env warning
+    replace:
+      destfile: /etc/pam.d/sshd
+      regexp: " user_readenv=1"
+      replace: ""
+    ignore_errors: yes
+
   - name: getty AMA
     systemd: masked=yes name=serial-getty@ttyAMA0.service
     ignore_errors: yes
@@ -219,6 +215,9 @@
   - name: getty S0
     systemd: masked=yes name=serial-getty@ttyS0.service
     ignore_errors: yes
+
+  - name: Enable rsyslog
+    systemd: enabled=yes name=rsyslog.service
 
   - name: Enable sshd
     systemd: enabled=yes name=ssh.service
@@ -237,16 +236,9 @@
 
   - name: cmdline tty
     replace:
-      destfile: /boot/cmdline.txt
+      destfile: /boot/firmware/cmdline.txt
       regexp: "console=serial0,115200 "
       replace: ""
-    ignore_errors: yes
-
-  - name: cmdline root
-    replace:
-      destfile: /boot/cmdline.txt
-      regexp: "root=PARTUUID=[0-9]*[-][0-9]* +"
-      replace: "root=/dev/mmcblk0p2 "
     ignore_errors: yes
 
   - name: triggerhappy
@@ -257,22 +249,22 @@
     ignore_errors: yes
 
   - name: Test for entry
-    command: 'grep "rootdelay=5 consoleblank=0 cgroup_memory=1 cgroup_enable=memory init=/usr/lib/raspi-config/init_resize.sh" /boot/cmdline.txt'
+    command: 'grep "rootdelay=5 consoleblank=0 cgroup_memory=1 cgroup_enable=memory" /boot/firmware/cmdline.txt'
     register: test_grep1
     ignore_errors: yes
 
   - name: cmdline add
     lineinfile:
-      path: /boot/cmdline.txt
+      path: /boot/firmware/cmdline.txt
       backrefs: True
       state: present
       regexp: '(.*)$'
-      line: '\1 rootdelay=5 consoleblank=0 cgroup_memory=1 cgroup_enable=memory init=/usr/lib/raspi-config/init_resize.sh'
+      line: '\1 rootdelay=5 consoleblank=0 cgroup_memory=1 cgroup_enable=memory'
     when: test_grep1.stdout == ""
 
   - name: edit config
     blockinfile:
-      path: /boot/config.txt
+      path: /boot/firmware/config.txt
       block: |
         #hdmi_safe=1
         disable_overscan=1
@@ -468,6 +460,13 @@
       block: |
         if $programname startswith "systemd" and ($msg contains "Starting Session" or $msg contains "Started Session" or $msg contains "session closed" or $msg contains "session opened" or $msg contains "Created slice" or $msg contains "Starting user-" or $msg contains "Starting User Slice of" or $msg contains "Startup" or $msg contains "Removed session" or $msg contains "New session" or $msg contains "Removed slice " or $msg contains "Stopping User Slice of" or $msg contains "dwc_otg_handle_mode_mismatch_intr") then stop
 
+  - name: disable vc4-drm log
+    blockinfile:
+      path: /etc/rsyslog.d/ignore-vc4-drm.conf
+      create: yes
+      block: |
+        if $programname startswith "kernel" and ($msg contains "vc4-drm gpu" or $msg contains "drm:drm_client_modeset_probe" or $msg contains "drm:drm_mode_prune_invalid" or $msg contains "drm:drm_helper_probe_single_connector_modes" or $msg contains "drm:update_display_info" or $msg contains "drm:_drm_edid_connector_update" or $msg contains "drm:drm_mode_debug_printmodeline" or $msg contains "drm:drm_atomic_normalize_zpos" or $msg contains "switching to colour frame buffer device") then stop
+
   - name: systemd-timesyncd
     systemd: enabled=yes name=systemd-timesyncd.service
 
@@ -574,8 +573,9 @@
         }
     ignore_errors: yes
 
-  - name: rsyslog
+  - name: rsyslog restart
     systemd: state=restarted name=rsyslog.service
+    ignore_errors: yes
 
   - name: Country Wifi
     shell: iw reg set DE
@@ -688,6 +688,13 @@
       src: configs/logrotate_upgrades
       dest: /etc/logrotate.d/unattended-upgrades
       mode: 0644
+
+  - name: avahi
+    replace:
+      destfile: /etc/avahi/avahi-daemon.conf
+      regexp: '#disallow-other-stacks=no'
+      replace: 'disallow-other-stacks=yes'
+    ignore_errors: yes
 
   - name: Swap
     replace:
