@@ -17,14 +17,26 @@
       "librrd-dev", #rrd, maybe not necessary
       "python3-dev" #necessary for psutil compilation
       ]
-    python_install:
-      [
+
+    pythoninstall:
+      ["python-gnupg",
+      "RPi.GPIO",
+      "pgen",
+      "requests",
+      "pymodbus",
+      "pymysql",
+      "wheel",
+      "awake",
+      "setuptools",
+      "pycrypto",
+      "yolk3k",
+      "snmp",
+      "python-miio",
+      "pymysql",
       "ruamel.yaml",
       "pytz",
-      "numpy",
-      "scipy==1.8.1",
-      "pymysql", #database
-      "yolk3k" #nice python module management
+      "spur",
+      "pyopenssl"
       ]
 
     log_file_to_check: /usr/local/smarthome/var/log/smarthome-warnings.log
