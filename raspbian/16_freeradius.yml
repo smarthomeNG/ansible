@@ -81,6 +81,13 @@
       owner: freerad
       group: freerad
 
+  - name: Memory limit
+    replace:
+      destfile: /lib/systemd/system/freeradius.service
+      regexp: "MemoryLimit=2G"
+      replace: "MemoryMax=1G"
+    ignore_errors: yes 
+ 
   - name: disable_ldap1
     replace:
       destfile: /etc/freeradius/3.0/sites-enabled/default
