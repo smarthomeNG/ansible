@@ -267,31 +267,22 @@
     command: /usr/sbin/dbconfig-generate-include /etc/dbconfig-common/phpmyadmin.conf /etc/phpmyadmin/config-db.php
     register: config
 
-  - name: Enable phpmyadmin
-    command: a2enconf phpmyadmin.conf
-    ignore_errors: yes
-    register: a2enconf
-
-  - name: chmod error log
+  - name: Make log dir
+    file:
+      path: /var/log/mysql/
+      state: directory
+      owner: mysql
+      group: adm
+      mode: 0755
+      
+  - name: create error.log
     file:
       path: /var/log/mysql/error.log
       state: touch
       owner: mysql
       group: adm
       mode: 0755
-
-  - name: chmod mysql log
-    file:
-      path: /var/log/mysql/mysql.log
-      state: touch
-      owner: mysql
-      group: adm
-      mode: 0755
-
-  - name: Restart apache
-    systemd: state=restarted name=apache2
-    ignore_errors: yes
-
+      
   - name: Restart nginx
     systemd: state=restarted name=nginx
     ignore_errors: yes
