@@ -1,0 +1,16 @@
+/var/log/influxdb.log {
+    daily
+    rotate 7
+    notifempty
+    missingok
+    dateext
+    dateformat .%Y-%m-%d.log
+
+    create 640 smarthome adm
+    prerotate
+      /bin/systemctl stop influxdb.service
+    endscript
+    postrotate
+      /bin/systemctl start influxdb.service 1>/dev/null
+    endscript
+}
