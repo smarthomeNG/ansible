@@ -81,40 +81,6 @@
       install_recommends: no
     with_items: "{{ packages }}"
 
-  - name: Download GeoIP
-    get_url:
-      url: https://mailfud.org/geoip-legacy/GeoIP.dat.gz
-      dest: /usr/share/GeoIP
-    ignore_errors: yes
-
-  - name: Download GeoIP6
-    get_url:
-      url: https://mailfud.org/geoip-legacy/GeoIPv6.dat.gz
-      dest: /usr/share/GeoIP
-    ignore_errors: yes
-
-  - name: Extract GeoIP
-    command: "gunzip -f GeoIP.dat.gz"
-    args:
-      chdir: /usr/share/GeoIP/
-    ignore_errors: yes
-
-  - name: Extract GeoIPv6
-    command: "gunzip -f GeoIPv6.dat.gz"
-    args:
-      chdir: /usr/share/GeoIP/
-    ignore_errors: yes
-
-  - name: Deletev4gz
-    file:
-      path: /usr/share/GeoIP/GeoIP.dat.gz
-      state: absent
-
-  - name: Deletev6gz
-    file:
-      path: /usr/share/GeoIP/GeoIPv6.dat.gz
-      state: absent
-
   - name: letsencrypt add
     blockinfile:
       path: /etc/nginx/snippets/letsencrypt.conf
@@ -137,6 +103,13 @@
     copy:
       dest: /etc/nginx/sites-available/default
       src: configs/nginx_availablesites.conf
+      owner: www-data
+      group: www-data
+
+  - name: copy_geoip2
+    copy:
+      dest: /etc/nginx/geolite2-country.mmdb
+      src: configs/geolite2-country.mmdb
       owner: www-data
       group: www-data
 
