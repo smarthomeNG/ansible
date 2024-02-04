@@ -6,21 +6,18 @@
   become: true
 
   vars:
-    ansible_python_interpreter: /usr/bin/python
+    ansible_python_interpreter: /usr/bin/python3
     packages:
       ["certbot",
       "gzip",
       "nginx-full",
-      "geoip-database",
-      "geoip-bin",
-      "libgeoip1",
       "php8.2-fpm",
-      "lua5.1",
+      "apache2-utils",
       "luarocks",
       "liblua5.1-dev",
       "git",
-      "apache2-utils",
-      "libnginx-mod-http-lua"
+      "libnginx-mod-http-lua",
+      "libssl-dev"
       ]
 
     build:
