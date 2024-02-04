@@ -5,7 +5,11 @@ KEY_FOLDER=/etc/ssl/ca/
 source /opt/setup/setup_certs.sh
 
 nginx_config () {
-    domain=$(grep "EASYRSA_REQ_CN" $RSA_FOLDER/vars | cut -d'"' -f 2)
+    domain=$(grep "DOMAIN" $RSA_FOLDER/domain_name | cut -d'"' -f 2)
+    if [[ $domain == "" ]]; then
+      echo "Domain can not be read from the file ${RSA_FOLDER}/domain_name."
+      read -p "Please provide domain name " domain
+    fi
     echo ""
     echo "Changing nginx config based on domain $domain"
     sudo sed -i 's/'DOMAIN_HERE'/'${domain}'/g' /etc/nginx/conf.d/https.conf 2>&1
@@ -69,7 +73,8 @@ nginx_config () {
         sudo mkdir -p /var/www/letsencrypt/.well-known/acme-challenge 2>&1
         echo ""
         echo "Please provide your mail address in the next step."
-        sudo certbot certonly --rsa-key-size 4096 --webroot -w /var/www/letsencrypt -d ${domain}
+        crt=$(sudo certbot certonly --rsa-key-size 4096 --webroot -w /var/www/letsencrypt -d ${domain})
+        echo "Done: ${crt}"
         echo ""
         echo "Now change the port forwarding from 80 to 443 on your router! Restarting nginx now."
 
