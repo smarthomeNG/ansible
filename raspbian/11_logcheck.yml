@@ -93,6 +93,14 @@
       group: logcheck
       mode: 0644
 
+  - name: Copy Logcheck influxdb
+    copy:
+      src: configs/logcheck.influxdb
+      dest: /etc/logcheck/ignore.d.server/local-influxdb
+      owner: root
+      group: logcheck
+      mode: 0644
+
   - name: Copy Logcheck exim4
     copy:
       src: configs/logcheck.exim4
@@ -105,14 +113,6 @@
     copy:
       src: configs/logcheck.radius
       dest: /etc/logcheck/ignore.d.server/local-radius
-      owner: root
-      group: logcheck
-      mode: 0644
-
-  - name: Copy Logcheck apache
-    copy:
-      src: configs/logcheck.exim4
-      dest: /etc/logcheck/ignore.d.server/local-apache2
       owner: root
       group: logcheck
       mode: 0644
