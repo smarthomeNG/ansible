@@ -73,43 +73,11 @@
       autoclean: yes
     with_items: "{{ apt_install }}"
 
-  - name: install modules
-    pip:
-      name: "{{ item }}"
-      state: latest
-      executable: pip3
-      extra_args: --user
-    become: true
-    become_user: smarthome
-    with_items: "{{ python_install }}"
+  - name: fix ownership smarthome git
+    shell: git config --global --add safe.directory /usr/local/smarthome
 
-  - name: install ruamel for root
-    pip:
-      name: "ruamel.yaml"
-      state: latest
-      executable: pip3
-      extra_args: --user
-    become: true
-    become_user: root
-
-  - name: Install libatlas-base-dev
-    apt:
-      name: libatlas-base-dev
-      state: latest
-      install_recommends: no
-
-#  - name: Copy scipy
-#    copy:
-#      src: packages/scipy-1.8.0-cp39-cp39-linux_armv7l.whl
-#      dest: /etc/deb-files/
-
-#  - name: Install scipy
-#    pip:
-#      name: /etc/deb-files/scipy-1.8.0-cp39-cp39-linux_armv7l.whl
-#      executable: pip3
-#      extra_args: --user
-#    become: true
-#    become_user: smarthome
+  - name: fix ownership smarthome plugins git
+    shell: git config --global --add safe.directory /usr/local/smarthome/plugins
 
   - name: Git SmarthomeNG
     git:
