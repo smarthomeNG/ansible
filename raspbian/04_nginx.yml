@@ -336,10 +336,6 @@
         $Template nginxemergency,"%TIMESTAMP% %HOSTNAME% %syslogtag%%msg:R,ERE,2,FIELD:(nginx\:\s+)(.*)--end:sp-if-no-1st-sp%%msg:R,ERE,2,FIELD:(nginx\:\s+)(.*)--end:drop-last-lf%\n"
         $Template nginxwarn,"%TIMESTAMP% %HOSTNAME% %syslogtag:R,ERE,1,BLANK:(.*)(\:)--end%[%msg:R,ERE,2,FIELD:([0-9]*#)([0-9]*)(.*)--end%]:%msg:R,ERE,3,BLANK:([0-9]{4}/[0-9]{2}/[0-9]{2}\s+[:0-9]{8}\s+\[warn\]\s+([0-9]*#[0-9]*\:\s)(.*))--end:sp-if-no-1st-sp%%msg:R,ERE,3,BLANK:([0-9]{4}/[0-9]{2}/[0-9]{2}\s+[:0-9]{8}\s+\[warn\]\s+([0-9]*#[0-9]*\:\s)(.*))--end:drop-last-lf%\n"
 
-        if $syslogfacility-text == 'local7' and $syslogseverity-text == 'info' and $programname == 'nginx' then {
-          action(type="omfile" file="/var/log/nginx/access.log" template="FileFormat_timestamp_nginx"  FileCreateMode="0644" FileGroup="adm" FileOwner="www-data")
-          stop
-        }
         if $syslogfacility-text == 'local7' and $syslogseverity-text == 'alert' and $programname == 'nginx' and $msg contains 'alert' then {
           action(type="omfile" file="/var/log/nginx/error.log" template="nginxalert"  FileCreateMode="0644" FileGroup="adm" FileOwner="www-data")
           stop
@@ -360,6 +356,10 @@
           action(type="omfile" file="/var/log/nginx/error.log" template="nginxemergency"  FileCreateMode="0644" FileGroup="adm" FileOwner="www-data")
           stop
         }
+        if $programname == 'nginx' then {
+          action(type="omfile" file="/var/log/nginx/access.log" template="FileFormat_timestamp_nginx"  FileCreateMode="0644" FileGroup="adm" FileOwner="www-data")
+          stop
+        }       
   - name: Copy logrotate
     copy:
       src: configs/logrotate_nginx
