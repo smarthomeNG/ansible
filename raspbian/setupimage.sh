@@ -1,7 +1,8 @@
-#!/bin/bash
+#!/bin/sh
+#rm /root/.ssh/known_hosts
 ansible-playbook 00_rootuser.yml
 ansible-playbook 01_Tweaks.yml
-ansible-playbook 02_Python_Packages.yml
+ansible-playbook 02_Python.yml
 ansible-playbook 03_knxd.yml
 ansible-playbook 04_nginx.yml
 ansible-playbook 05_Smartvisu.yml
@@ -24,4 +25,7 @@ ansible-playbook 21_setups.yml
 ansible-playbook 22_fail2ban.yml
 ansible-playbook 23_nodered.yml
 ansible-playbook 24_onewire.yml
-ansible-playbook 25_disable_sshroot.yml
+ansible-playbook 25_influxdb2.yml
+ansible-playbook 26_grafana.yml
+ansible-playbook 27_homebridge.yml
+ansible-playbook 28_disable_sshroot.yml
