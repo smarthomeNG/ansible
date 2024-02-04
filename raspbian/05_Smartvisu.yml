@@ -6,8 +6,7 @@
   become: true
 
   vars:
-    ansible_python_interpreter: /usr/bin/python
-    smartvisupath: /var/www/html/smartvisu2.8
+    ansible_python_interpreter: /usr/bin/python3
     smartvisupath2: /var/www/html/smartvisu
     htmlpath: /var/www/html
 
@@ -34,6 +33,9 @@
       groups: www-data, sudo, i2c, adm, audio, video, plugdev, input, netdev, spi, gpio, dialout
       append: yes
 
+  - name: safedirectory
+    command: git config --global --add safe.directory /var/www/html/smartvisu
+    
   - name: Git Smartvisu 3
     git:
       repo: 'https://github.com/Martin-Gleiss/smartvisu'
