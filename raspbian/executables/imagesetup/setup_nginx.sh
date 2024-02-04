@@ -31,14 +31,14 @@ nginx_config () {
     if [ $pw ]; then
         sudo sed -i 's/'\<SECRETKEY' 'from' 'OPENSSL\>'/'$pw'/g' /etc/nginx/scripts/hass_access.lua 2>&1
     fi
-	
+
     echo "The following two inputs are only relevant if you want to use Amazon Alexa."
     read -p "Please enter Alexa username (Hit enter to skip): " alexa_user
 	read -p "Please enter Alexa password (Hit enter to skip): " alexa_pw
     if [ $alexa_user ]; then
-        htpasswd -cb /etc/nginx/.alexa $alexa_user $alexa_pw 2>&1
-    fi	
-	
+        sudo htpasswd -cb /etc/nginx/.alexa $alexa_user $alexa_pw 2>&1
+    fi
+
     IP=$(sudo ip addr list eth0 |grep 'inet ' |cut -d' ' -f6|cut -d/ -f1)
     echo ""
     echo ""
