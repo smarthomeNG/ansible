@@ -1,8 +1,8 @@
-^\w{3}\s[ 0-9]{1,2}\s[.:0-9]{8,15}\s[._[:alnum:]-]+(.*)lircd:(.*)[Nn]otice
-^\w{3}\s[ 0-9]{1,2}\s[.:0-9]{8,15}\s[._[:alnum:]-]+(.*)lircd:(.*)[Ii]nfo:\sInitial device
-^\w{3}\s[ 0-9]{1,2}\s[.:0-9]{8,15}\s[._[:alnum:]-]+(.*)lircd:(.*)[Ii]nfo:\sCannot configure the rc device
-^\w{3}\s[ 0-9]{1,2}\s[.:0-9]{8,15}\s[._[:alnum:]-]+(.*)lircd:(.*)[Ii]nfo:(.*)Opening
-^\w{3}\s[ 0-9]{1,2}\s[.:0-9]{8,15}\s[._[:alnum:]-]+(.*)lircd:(.*)[Ii]nfo:(.*)Using
-^\w{3}\s[ 0-9]{1,2}\s[.:0-9]{8,15}\s[._[:alnum:]-]+(.*)lircd:(.*)[Ii]nfo:(.*)removed
-^\w{3}\s[ 0-9]{1,2}\s[.:0-9]{8,15}\s[._[:alnum:]-]+(.*)lircd:(.*)Warning:(.*)Log re-opened
-^\w{3}\s[ 0-9]{1,2}\s[.:0-9]{8,15}\s[._[:alnum:]-]+(.*)lircd-setup\[[0-9]+\]\:(.*)SafeConfigParser
+^\w{3}\s[ 0-9]{1,2}\s[.:0-9]{8,15}\s[._[:alnum:]-]+(.*)lircd(.*)[Nn]otice
+^\w{3}\s[ 0-9]{1,2}\s[.:0-9]{8,15}\s[._[:alnum:]-]+(.*)lircd(.*)[Ii]nfo:\sInitial device
+^\w{3}\s[ 0-9]{1,2}\s[.:0-9]{8,15}\s[._[:alnum:]-]+(.*)lircd(.*)[Ii]nfo:\sCannot configure the rc device
+^\w{3}\s[ 0-9]{1,2}\s[.:0-9]{8,15}\s[._[:alnum:]-]+(.*)lircd(.*)[Ii]nfo:(.*)Opening
+^\w{3}\s[ 0-9]{1,2}\s[.:0-9]{8,15}\s[._[:alnum:]-]+(.*)lircd(.*)[Ii]nfo:(.*)Using
+^\w{3}\s[ 0-9]{1,2}\s[.:0-9]{8,15}\s[._[:alnum:]-]+(.*)lircd(.*)[Ii]nfo:(.*)removed
+^\w{3}\s[ 0-9]{1,2}\s[.:0-9]{8,15}\s[._[:alnum:]-]+(.*)lircd(.*)Warning:(.*)Log re-opened
+^\w{3}\s[ 0-9]{1,2}\s[.:0-9]{8,15}\s[._[:alnum:]-]+(.*)lircd-setup\[[0-9]+\]\(.*)SafeConfigParser
