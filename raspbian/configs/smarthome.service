@@ -1,12 +1,14 @@
 [Unit]
 Description=SmartHomeNG daemon
-After=network.target knxd.service knxd.socket
+After=network.target
+After=knxd.service
+After=knxd.socket
 
 [Service]
 Type=forking
 WorkingDirectory=/usr/local/smarthome
 TimeoutStartSec=1900
-ExecStart=/usr/bin/python /usr/local/smarthome/bin/smarthome.py
+ExecStart=/usr/local/smarthome/venvs/py_310/bin/python3 /usr/local/smarthome/bin/smarthome.py
 User=smarthome
 PIDFile=/usr/local/smarthome/var/run/smarthome.pid
 Restart=on-failure
