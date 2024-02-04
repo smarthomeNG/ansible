@@ -31,17 +31,6 @@
       "cmake"]
 
   tasks:
-  - name: Add php key
-    ansible.builtin.apt_key:
-      url: https://packages.sury.org/php/apt.gpg
-      state: present
-
-  - name: Add php repository
-    ansible.builtin.apt_repository:
-      repo: deb https://packages.sury.org/php/ bullseye main
-      state: present
-      filename: /etc/apt/sources.list.d/php.list
-
   - name: Update release
     shell: apt-get update --allow-releaseinfo-change
 
