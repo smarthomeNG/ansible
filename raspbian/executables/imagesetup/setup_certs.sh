@@ -30,7 +30,7 @@ create_clientcerts() {
         sudo cp /home/smarthome/openvpn_client_example.conf /home/smarthome/openvpn_$client.conf
         echo ""
         echo "Creating and setting up openvpn configuration file for your client $client in /home/smarthome."
-        domain=$(sudo grep "Issuer: CN=" $RSA_FOLDER/pki/issued/server.crt | awk -F'Issuer: CN=' '{print $2}')
+        domain=$(grep "DOMAIN" $RSA_FOLDER/domain_name | cut -d'"' -f 2)
         sudo sed -i 's/'remote[[:space:]]*\<DOMAIN\>'/'remote' '${domain}'/g' /home/smarthome/openvpn_$client.conf 2>&1
         sudo sed -i 's/'pkcs12[[:space:]]*\<CLIENT\>'/'pkcs12' '${client}'/g' /home/smarthome/openvpn_$client.conf 2>&1
         create_clientcerts
@@ -66,7 +66,7 @@ create_clientcerts() {
     fi
 }
 
-create_servercerts () {
+create_servercerts() {
     cd $RSA_FOLDER
     mv pki pki_backup &>/dev/null
     echo "If you had a previous pki folder it got copied to pki_backup."
@@ -96,6 +96,7 @@ create_servercerts () {
     if [[ $rerun == "Change" ]]; then
         echo "Setting up variables for OpenVPN. Please provide the relevant information..."
         sudo cp $RSA_FOLDER/vars.example $RSA_FOLDER/vars
+		sudo chmod 0666 $RSA_FOLDER/domain_name
         sudo sed -i 's/#set_var EASYRSA_BATCH[[:space:]]*\".*\"/set_var EASYRSA_BATCH\t\t"yes"/g' $RSA_FOLDER/vars 2>&1
         unset country
         while ! [[ "$country" =~ ^[a-zA-Z]{2} ]]; do
@@ -121,8 +122,15 @@ create_servercerts () {
         while ! [[ "$domain" =~ $domain_regex ]]; do
             read -p "Please define your common=domain name (xxx.domain.tld): " domain
         done
-        sudo sed -i 's/'EASYRSA_REQ_CN[[:space:]]*\".*\"'/'EASYRSA_REQ_CN'\t\t'\"${domain}\"'/g' $RSA_FOLDER/vars 2>&1
-        sudo sed -i 's/#set_var EASYRSA_REQ_CN/set_var EASYRSA_REQ_CN/g' $RSA_FOLDER/vars 2>&1
+		if [[ ! -e $RSA_FOLDER/domain_name ]]; then 
+			sudo touch $RSA_FOLDER/domain_name
+		fi
+		
+		if ! grep -qF 'DOMAIN' $RSA_FOLDER/domain_name; then
+			sudo echo 'DOMAIN "'${domain}'"' >> $RSA_FOLDER/domain_name 2>&1
+		else
+			sudo sed -i 's/'DOMAIN[[:space:]]*\".*\"'/'DOMAIN'\t\t'\"${domain}\"'/g' $RSA_FOLDER/domain_name 2>&1
+		fi
         echo ""
         echo "You have setup the variables for key generation like this:"
         awk '/^#/ {f=0} /^if/ {f=1} !f;' $RSA_FOLDER/vars|grep -v -e '^$' | grep -v '#' | while IFS= read -r line ; do
@@ -190,7 +198,7 @@ create_servercerts () {
         echo "As the server key file will never leave your server it is easier to use the NoPass option."
         echo ""
         echo "If yes: Be aware that you have to put the password in mods-enabled/eap as private_key_password."
-        select clientpass in "Password" "NoPass"; do
+        select serverpass in "Password" "NoPass"; do
             case $serverpass in
                 "Password" ) password=''; echo "Setting a password for server certificates"; break;;
                 "NoPass" ) password='nopass'; echo "Not setting a password for certificates"; break;;
