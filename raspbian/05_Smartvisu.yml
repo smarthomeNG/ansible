@@ -6,8 +6,7 @@
   become: true
 
   vars:
-    ansible_python_interpreter: /usr/bin/python
-    smartvisupath: /var/www/html/smartvisu2.8
+    ansible_python_interpreter: /usr/bin/python3
     smartvisupath2: /var/www/html/smartvisu
     htmlpath: /var/www/html
 
@@ -34,6 +33,9 @@
       groups: www-data, sudo, i2c, adm, audio, video, plugdev, input, netdev, spi, gpio, dialout
       append: yes
 
+  - name: safedirectory
+    command: git config --global --add safe.directory /var/www/html/smartvisu
+    
   - name: Git Smartvisu 3
     git:
       repo: 'https://github.com/Martin-Gleiss/smartvisu'
@@ -46,29 +48,6 @@
     shell: git config pull.rebase false
     args:
       chdir: "{{ smartvisupath2 }}"
-
-  - name: Copy Smartvisu 2.8
-    unarchive:
-      remote_src: yes
-      src: https://github.com/Martin-Gleiss/smartvisu/releases/download/v2.8/smartvisu-v2.8_latest.zip
-      dest: /var/www/html
-
-  - name: Remove dir
-    file:
-      path: /var/www/html/smartvisu2.8
-      state: absent
-    ignore_errors: yes
-
-  - name: Rename sv2.8
-    command: mv /var/www/html/smartvisu-master /var/www/html/smartvisu2.8
-
-  - name: Change dir
-    file:
-      path: /var/www/html/smartvisu2.8
-      owner: smarthome
-      group: www-data
-      mode: 0775
-      state: directory
 
   - name: ignore perm2
     command: git config core.fileMode false chdir=/var/www/html/smartvisu

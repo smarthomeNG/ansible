@@ -1,0 +1,32 @@
+---
+- name: ssh_noroot
+  hosts: image
+  remote_user: root
+  become_user: root
+  become: true
+
+  vars:
+    ansible_python_interpreter: /usr/bin/python3
+
+  tasks:
+  - name: Clean apt
+    command: apt-get -y clean
+
+  - name: Autoclean apt
+    command: apt-get -y autoclean
+
+  - name: Purge python cache
+    command: pip3 cache purge
+    become: true
+    become_user: smarthome
+    ignore_errors: true
+
+  - name: Purge root python cache
+    command: pip3 cache purge
+    ignore_errors: true
+
+  - name: Change ssh
+    replace:
+      destfile: /etc/ssh/sshd_config
+      regexp: "PermitRootLogin yes"
+      replace: "#PermitRootLogin prohibit-password"

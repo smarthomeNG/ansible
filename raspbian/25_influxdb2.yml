@@ -1,0 +1,116 @@
+---
+- name: Install InfluxDB
+  hosts: image
+  remote_user: root
+  become_user: root
+  become: true
+
+  vars:
+    ansible_python_interpreter: /usr/bin/python3
+
+  tasks:
+  - name: key
+    apt_key:
+      url: https://repos.influxdata.com/influxdata-archive_compat.key
+      state: present
+      keyring: /etc/apt/trusted.gpg.d/influxdata.gpg
+      validate_certs: False
+
+  - name: repo
+    apt_repository:
+      repo: deb [signed-by=/etc/apt/trusted.gpg.d/influxdata.gpg] https://repos.influxdata.com/debian stable main
+      state: present
+      filename: influxdb
+
+  - name: Allow release-info to change for APT repositories
+    command: apt-get update -y --allow-releaseinfo-change
+
+  - name: Install
+    apt:
+      name: influxdb2
+      state: latest
+      update_cache: yes
+
+  - name: Restart influxdb
+    systemd: state=restarted name=influxdb.service
+
+  - name: Install influxdb_client
+    pip:
+      name: influxdb_client
+      virtualenv: /usr/local/smarthome/venvs/py_311
+      virtualenv_site_packages: yes
+      state: latest
+    become: true
+    become_user: smarthome
+ 
+  - name: Install pandas
+    pip:
+      name: pandas
+      virtualenv: /usr/local/smarthome/venvs/py_311
+      virtualenv_site_packages: yes
+      state: latest
+    become: true
+    become_user: smarthome
+  
+  - name: Install influxdb_client 3.10
+    pip:
+      name: influxdb_client
+      virtualenv: /usr/local/smarthome/venvs/py_310
+      virtualenv_site_packages: yes
+      state: latest
+    become: true
+    become_user: smarthome
+ 
+  - name: Install pandas 3.10
+    pip:
+      name: pandas
+      virtualenv: /usr/local/smarthome/venvs/py_310
+      virtualenv_site_packages: yes
+      state: latest
+    become: true
+    become_user: smarthome
+    
+  - name: logfile
+    blockinfile:
+      dest: "/etc/rsyslog.d/influxdb.conf"
+      create: yes
+      block: |
+        template(name="FileFormat_timestamp" type="string" string= "%TIMESTAMP% %HOSTNAME% %syslogtag% %pri-text%%msg:::sp-if-no-1st-sp%%msg:::drop-last-lf%\n")
+        if $programname startswith 'influxd' then {
+          action(type="omfile" file="/var/log/influxdb.log" template="FileFormat_timestamp" FileGroup="adm"  FileCreateMode="0644" FileOwner="smarthome")
+          stop
+        }
+    ignore_errors: yes
+
+  - name: logrotate
+    replace:
+      destfile: /etc/logrotate.d/influxdb
+      regexp: "/var/log/influxdb/influxd.log"
+      replace: "/var/log/influxdb.log"
+
+  - name: logrotate2
+    lineinfile:
+      path: /etc/logrotate.d/influxdb
+      regexp: 'compress'
+      state: absent
+
+  - name: Setup
+    shell: influx setup --org smarthomeng --bucket shng --username smarthome --password smarthome --force
+    async: 40
+    poll: 0
+
+#  - name: Create token
+#    shell: influx auth create --org smarthomeng --all-access
+#    async: 40
+#    poll: 0
+
+#  - name: List token
+#    shell: influx auth list| awk -F'\t' '/All Access/ { getline; print $4 }'
+#    async: 40
+#    poll: 0
+#    register: token
+
+#  - name: Config
+#    shell: influx config create --config-name smarthomeng --host-url http://localhost:8086 --org smarthomeng --token {{ token }} --active
+#    async: 40
+#    poll: 0

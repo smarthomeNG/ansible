@@ -5,6 +5,10 @@ KEY_FOLDER=/etc/ssl/ca
 source /opt/setup/setup_certs.sh
 
 openvpn_config () {
+	read -p "Please define your private key password. If you don't use any, still write something. Alternatively you can add it on your own to the file /etc/openvpn/auth.txt" privkey
+	sudo touch /etc/openvpn/auth.txt
+	sudo chmod 600 /etc/openvpn/auth.txt
+	sudo echo ${privkey} >> /etc/openvpn/auth.txt 2>&1
     if sudo [ -d "$RSA_FOLDER/pki" ]; then
       echo "There is already a keys directory in $RSA_FOLDER. Do you want to create new certificates nevertheless?"
       echo "Important information: You can use the same certficates for openvpn, nginx reverse proxy and freeradius!"

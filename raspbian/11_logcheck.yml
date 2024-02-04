@@ -6,18 +6,28 @@
   become: true
 
   vars:
-    ansible_python_interpreter: /usr/bin/python
+    ansible_python_interpreter: /usr/bin/python3
 
   tasks:
   - name: Install logcheck
     apt: name=logcheck force=no state=latest install_recommends=yes
 
   - name: Install python-magic
+    apt: name=python3-magic force=no state=latest install_recommends=no
+
+  - name: Install magic 310
     pip:
-      name: python-magic
-      executable: pip3
+      name: "python-magic"
+      virtualenv: /usr/local/smarthome/venvs/py_310
+      virtualenv_site_packages: yes
       state: latest
-      extra_args: --target=/usr/local/lib/python3.9/dist-packages --upgrade
+
+  - name: Install magic 311
+    pip:
+      name: "python-magic"
+      virtualenv: /usr/local/smarthome/venvs/py_311
+      virtualenv_site_packages: yes
+      state: latest
 
   - name: Copy syslogsummary
     copy:
@@ -93,6 +103,14 @@
       group: logcheck
       mode: 0644
 
+  - name: Copy Logcheck influxdb
+    copy:
+      src: configs/logcheck.influxdb
+      dest: /etc/logcheck/ignore.d.server/local-influxdb
+      owner: root
+      group: logcheck
+      mode: 0644
+
   - name: Copy Logcheck exim4
     copy:
       src: configs/logcheck.exim4
@@ -105,14 +123,6 @@
     copy:
       src: configs/logcheck.radius
       dest: /etc/logcheck/ignore.d.server/local-radius
-      owner: root
-      group: logcheck
-      mode: 0644
-
-  - name: Copy Logcheck apache
-    copy:
-      src: configs/logcheck.exim4
-      dest: /etc/logcheck/ignore.d.server/local-apache2
       owner: root
       group: logcheck
       mode: 0644

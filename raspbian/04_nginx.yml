@@ -6,21 +6,18 @@
   become: true
 
   vars:
-    ansible_python_interpreter: /usr/bin/python
+    ansible_python_interpreter: /usr/bin/python3
     packages:
       ["certbot",
       "gzip",
       "nginx-full",
-      "geoip-database",
-      "geoip-bin",
-      "libgeoip1",
       "php8.2-fpm",
-      "lua5.1",
+      "apache2-utils",
       "luarocks",
       "liblua5.1-dev",
       "git",
-      "apache2-utils",
-      "libnginx-mod-http-lua"
+      "libnginx-mod-http-lua",
+      "libssl-dev"
       ]
 
     build:
@@ -31,17 +28,6 @@
       "cmake"]
 
   tasks:
-  - name: Add php key
-    ansible.builtin.apt_key:
-      url: https://packages.sury.org/php/apt.gpg
-      state: present
-
-  - name: Add php repository
-    ansible.builtin.apt_repository:
-      repo: deb https://packages.sury.org/php/ bullseye main
-      state: present
-      filename: /etc/apt/sources.list.d/php.list
-
   - name: Update release
     shell: apt-get update --allow-releaseinfo-change
 
@@ -56,7 +42,7 @@
 
   - name: Copy easyrsa
     unarchive:
-      src: https://github.com/OpenVPN/easy-rsa/releases/download/v3.1.2/EasyRSA-3.1.2.tgz
+      src: https://github.com/OpenVPN/easy-rsa/releases/download/v3.1.7/EasyRSA-3.1.7.tgz
       dest: /etc/ssl/easy-rsa
       remote_src: yes
       validate_certs: False
@@ -70,9 +56,6 @@
       install_recommends: yes
     with_items: "{{ build }}"
 
-  - name: Apachestop
-    systemd: state=stopped name=apache2 enabled=no
-    ignore_errors: yes
 
   - name: install apt
     apt:
@@ -80,40 +63,6 @@
       state: latest
       install_recommends: no
     with_items: "{{ packages }}"
-
-  - name: Download GeoIP
-    get_url:
-      url: https://mailfud.org/geoip-legacy/GeoIP.dat.gz
-      dest: /usr/share/GeoIP
-    ignore_errors: yes
-
-  - name: Download GeoIP6
-    get_url:
-      url: https://mailfud.org/geoip-legacy/GeoIPv6.dat.gz
-      dest: /usr/share/GeoIP
-    ignore_errors: yes
-
-  - name: Extract GeoIP
-    command: "gunzip -f GeoIP.dat.gz"
-    args:
-      chdir: /usr/share/GeoIP/
-    ignore_errors: yes
-
-  - name: Extract GeoIPv6
-    command: "gunzip -f GeoIPv6.dat.gz"
-    args:
-      chdir: /usr/share/GeoIP/
-    ignore_errors: yes
-
-  - name: Deletev4gz
-    file:
-      path: /usr/share/GeoIP/GeoIP.dat.gz
-      state: absent
-
-  - name: Deletev6gz
-    file:
-      path: /usr/share/GeoIP/GeoIPv6.dat.gz
-      state: absent
 
   - name: letsencrypt add
     blockinfile:
@@ -137,6 +86,13 @@
     copy:
       dest: /etc/nginx/sites-available/default
       src: configs/nginx_availablesites.conf
+      owner: www-data
+      group: www-data
+
+  - name: copy_geoip2
+    copy:
+      dest: /etc/nginx/geolite2-country.mmdb
+      src: configs/geolite2-country.mmdb
       owner: www-data
       group: www-data
 
@@ -228,48 +184,10 @@
         }
     ignore_errors: yes
 
-  - name: Git crypto
-    get_url:
-      url: https://github.com/evanlabs/luacrypto/archive/refs/heads/master.zip
-      dest: /root/luacrypto.zip
-    register: git
-  - debug: var=git
 
-  - name: Unarchive luacrypto
-    ansible.builtin.unarchive:
-      src: /root/luacrypto.zip
-      dest: /root/
-      remote_src: yes
+  - name: Install lua-openssl
+    command: "luarocks install openssl"
 
-  - name: fix luacryptogit zip
-    replace:
-      destfile: /root/luacrypto-master/rockspecs/luacrypto-git-1.rockspec
-      regexp: 'git://github.com/evanlabs/luacrypto.git'
-      replace: 'https://github.com/evanlabs/luacrypto/archive/refs/heads/master.zip'
-
-  - name: fix luacryptogit folder
-    replace:
-      destfile: /root/luacrypto-master/rockspecs/luacrypto-git-1.rockspec
-      regexp: 'dir = "luacrypto"'
-      replace: 'dir = "luacrypto-master"'
-
-  - name: Install crypto
-    command: "luarocks install /root/luacrypto-master/rockspecs/luacrypto-git-1.rockspec"
-
-  - name: Create lua
-    file:
-      path: /usr/local/lib/lua/5.1/
-      state: directory
-      owner: www-data
-      group: www-data
-
-  - name: Link
-    file:
-      dest: '/usr/local/lib/lua/5.1/crypto.so'
-      src: '/usr/local/lib/lua/crypto.so'
-      state: link
-      owner: www-data
-      group: www-data
 
   - name: create phpinfo
     blockinfile:
@@ -336,10 +254,6 @@
         $Template nginxemergency,"%TIMESTAMP% %HOSTNAME% %syslogtag%%msg:R,ERE,2,FIELD:(nginx\:\s+)(.*)--end:sp-if-no-1st-sp%%msg:R,ERE,2,FIELD:(nginx\:\s+)(.*)--end:drop-last-lf%\n"
         $Template nginxwarn,"%TIMESTAMP% %HOSTNAME% %syslogtag:R,ERE,1,BLANK:(.*)(\:)--end%[%msg:R,ERE,2,FIELD:([0-9]*#)([0-9]*)(.*)--end%]:%msg:R,ERE,3,BLANK:([0-9]{4}/[0-9]{2}/[0-9]{2}\s+[:0-9]{8}\s+\[warn\]\s+([0-9]*#[0-9]*\:\s)(.*))--end:sp-if-no-1st-sp%%msg:R,ERE,3,BLANK:([0-9]{4}/[0-9]{2}/[0-9]{2}\s+[:0-9]{8}\s+\[warn\]\s+([0-9]*#[0-9]*\:\s)(.*))--end:drop-last-lf%\n"
 
-        if $syslogfacility-text == 'local7' and $syslogseverity-text == 'info' and $programname == 'nginx' then {
-          action(type="omfile" file="/var/log/nginx/access.log" template="FileFormat_timestamp_nginx"  FileCreateMode="0644" FileGroup="adm" FileOwner="www-data")
-          stop
-        }
         if $syslogfacility-text == 'local7' and $syslogseverity-text == 'alert' and $programname == 'nginx' and $msg contains 'alert' then {
           action(type="omfile" file="/var/log/nginx/error.log" template="nginxalert"  FileCreateMode="0644" FileGroup="adm" FileOwner="www-data")
           stop
@@ -360,6 +274,10 @@
           action(type="omfile" file="/var/log/nginx/error.log" template="nginxemergency"  FileCreateMode="0644" FileGroup="adm" FileOwner="www-data")
           stop
         }
+        if $programname == 'nginx' then {
+          action(type="omfile" file="/var/log/nginx/access.log" template="FileFormat_timestamp_nginx"  FileCreateMode="0644" FileGroup="adm" FileOwner="www-data")
+          stop
+        }       
   - name: Copy logrotate
     copy:
       src: configs/logrotate_nginx

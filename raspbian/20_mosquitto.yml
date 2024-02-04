@@ -6,7 +6,7 @@
   become: true
 
   vars:
-    ansible_python_interpreter: /usr/bin/python
+    ansible_python_interpreter: /usr/bin/python3
     
   tasks:
   - name: Create Group
@@ -34,12 +34,17 @@
   - name: Install paho-mqtt
     pip:
       name: paho-mqtt
-      executable: pip3
+      virtualenv: /usr/local/smarthome/venvs/py_311
+      virtualenv_site_packages: yes
       state: latest
-      extra_args: --user
-    become: true
-    become_user: smarthome
 
+  - name: Install paho-mqtt 3.10
+    pip:
+      name: paho-mqtt
+      virtualenv: /usr/local/smarthome/venvs/py_310
+      virtualenv_site_packages: yes
+      state: latest
+      
   - name: Create User
     user:
       name: mosquitto
@@ -110,6 +115,6 @@
 
   - name: rsyslog
     systemd: daemon_reload=yes state=restarted name=rsyslog.service
-
+    
   - name: restart
     systemd: daemon_reload=yes state=restarted name=mosquitto.service

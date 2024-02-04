@@ -1,5 +1,5 @@
 #!/bin/bash
-PATH=$PATH:/usr/lib/knxd:/opt/susvd:/opt/:/opt/setup:/home/smarthome/.local/bin:/home/smarthome/node_modules/.bin:/root/node_modules/.bin
+PATH=$PATH:/usr/lib/knxd:/opt/susvd:/opt/:/opt/setup:/home/smarthome/.local/bin:/home/smarthome/node_modules/.bin:/root/node_modules/.bin:/usr/local/smarthome/venvs/:/usr/local/smarthome/venvs/py_310/bin:/usr/local/smarthome/venvs/py_311/bin:/usr/local/smarthome/tools/
 export MAKEFLAGS="-j 4"
 
 # Color Tweaks
@@ -67,13 +67,15 @@ let hours=$((${upSeconds}/3600%24))
 let days=$((${upSeconds}/86400))
 UPTIME=`printf "%d days, %02dh%02dm%02ds" "$days" "$hours" "$mins" "$secs"`
 
+source /usr/local/smarthome/tools/act 310
+
 echo "$(tput setaf 2)
 SmartHome Raspi running for: ${UPTIME}
 $(tput sgr0)"
 FIRSTBOOT_e=$(systemctl is-enabled firstboot 2>&1 | tail -n 1) &> /dev/null
 
 if [ -e /var/log/firstboot.log ] && [[ $FIRSTBOOT_e == "disabled" ]] ; then
-  echo "$(tput setaf 2)Welcome to Smarthome Image 11.1.8 - At your first boot these changes were made:"
+  echo "$(tput setaf 2)Welcome to Smarthome Image 12.1.10 - At your first boot these changes were made:"
   echo "$(</var/log/firstboot.log)"
   echo "$(tput sgr0)"
   sudo mv /var/log/firstboot.log /var/log/firstboot_finished.log

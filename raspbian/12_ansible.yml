@@ -6,12 +6,7 @@
   become: true
 
   vars:
-    ansible_python_interpreter: /usr/bin/python
-    playbooks:
-      ["homebridge_Raspi3.yml",
-      "influxdb_Raspi3.yml",
-      "grafana_Raspi3.yml"
-      ]
+    ansible_python_interpreter: /usr/bin/python3
 
     configs:
       ["homebridge_config.json",
@@ -90,14 +85,6 @@
       mode: 0755
       owner: smarthome
       group: smarthome
-
-  - name: copy playbooks
-    copy:
-      dest: /etc/ansible/playbooks/
-      src: "additional_playbooks/{{ item }}"
-      owner: smarthome
-      group: smarthome
-    with_items: "{{ playbooks }}"
 
   - name: copy configs
     copy:

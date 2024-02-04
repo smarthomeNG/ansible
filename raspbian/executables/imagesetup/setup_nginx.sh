@@ -5,7 +5,11 @@ KEY_FOLDER=/etc/ssl/ca/
 source /opt/setup/setup_certs.sh
 
 nginx_config () {
-    domain=$(grep "EASYRSA_REQ_CN" $RSA_FOLDER/vars | cut -d'"' -f 2)
+    domain=$(grep "DOMAIN" $RSA_FOLDER/domain_name | cut -d'"' -f 2)
+    if [[ $domain == "" ]]; then
+      echo "Domain can not be read from the file ${RSA_FOLDER}/domain_name."
+      read -p "Please provide domain name " domain
+    fi
     echo ""
     echo "Changing nginx config based on domain $domain"
     sudo sed -i 's/'DOMAIN_HERE'/'${domain}'/g' /etc/nginx/conf.d/https.conf 2>&1
@@ -27,6 +31,14 @@ nginx_config () {
     if [ $pw ]; then
         sudo sed -i 's/'\<SECRETKEY' 'from' 'OPENSSL\>'/'$pw'/g' /etc/nginx/scripts/hass_access.lua 2>&1
     fi
+
+    echo "The following two inputs are only relevant if you want to use Amazon Alexa."
+    read -p "Please enter Alexa username (Hit enter to skip): " alexa_user
+	read -p "Please enter Alexa password (Hit enter to skip): " alexa_pw
+    if [ $alexa_user ]; then
+        sudo htpasswd -cb /etc/nginx/.alexa $alexa_user $alexa_pw 2>&1
+    fi
+
     IP=$(sudo ip addr list eth0 |grep 'inet ' |cut -d' ' -f6|cut -d/ -f1)
     echo ""
     echo ""
@@ -61,7 +73,8 @@ nginx_config () {
         sudo mkdir -p /var/www/letsencrypt/.well-known/acme-challenge 2>&1
         echo ""
         echo "Please provide your mail address in the next step."
-        sudo certbot certonly --rsa-key-size 4096 --webroot -w /var/www/letsencrypt -d ${domain}
+        crt=$(sudo certbot certonly --rsa-key-size 4096 --webroot -w /var/www/letsencrypt -d ${domain})
+        echo "Done: ${crt}"
         echo ""
         echo "Now change the port forwarding from 80 to 443 on your router! Restarting nginx now."
 
@@ -113,14 +126,14 @@ echo "nginx Service is $NGINX_e."
 if [[ $NGINX_e == "enabled" ]]; then
     echo " The server is setup the following way to easily access your websites:"
     echo "http://<YOURIP>/smartvisu -> most recent smartVISU"
-    echo "http://<YOURIP>/smartvisu2.8 -> smartVISU 2.8"
     echo "http://<YOURIP>/admin -> SmarthomeNG Admin IF"
     echo "http://<YOURIP>/phpmyadmin -> Admin Tool to manage SQL database. Login is root/smarthome"
     echo "http://<YOURIP>/shnet -> SmarthomeNG Network Plugin. Port is configured to 8888. Change in /etc/nginx/sites-available/default"
     echo "http://<YOURIP>/monit -> If you enable monit (later) you can see the status of your services"
     echo "http://<YOURIP>/monitgraph -> If you enable monit (later) you can see graphs of your computer resources per service"
     echo "http://<YOURIP>/grafana -> If you enable influxdb and grafana (later) you can use time series databases"
-    echo "http://<YOURIP>/red -> If you enable node-red (later)"
+	echo "http://<YOURIP>/alexa -> If you want to use Amazon Alexa"
+    echo "http://<YOURIP>/nodered -> If you enable node-red (later)"
     echo ""
     echo ""
     IP=$(sudo ip addr list eth0 |grep 'inet ' |cut -d' ' -f6|cut -d/ -f1)

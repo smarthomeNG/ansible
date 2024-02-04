@@ -105,7 +105,7 @@ case $raspi in
 esac
 if [[ $raspiversion -ge "3" ]]; then
   echo ""
-  echo "It looks like you have a Raspberry Pi Version 3 or higher. Installing InfluxDB"
+  echo "It looks like you have a Raspberry Pi Version 3 or higher. InfluxDB is installed."
   install_influxdb
 
 else

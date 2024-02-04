@@ -17,7 +17,7 @@ mail_alias () {
   if [[ $rerun == "Change" ]]; then
     mail_regex="^[a-z0-9!#\$%&'*+/=?^_\`{|}~-]+(\.[a-z0-9!#$%&'*+/=?^_\`{|}~-]+)*@([a-z0-9]([a-z0-9-]*[a-z0-9])?\.)+[a-z0-9]([a-z0-9-]*[a-z0-9])?\$"
     while ! [[ "$mail" =~ $mail_regex ]]; do
-        read -p "Please define your email where $1 summary should be sent to (name@domain.tld): " mail
+        read -p "Please define your email where e.g. logcheck or system summaries should be sent to (name@domain.tld): " mail
     done
     sudo sed -i 's/'$1:.*'/'$1:' '${mail}'/g' /etc/email-addresses 2>&1
     sudo sed -i 's/'root:.*'/'root:' '${mail}'/g' /etc/aliases 2>&1

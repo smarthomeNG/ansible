@@ -1,14 +1,15 @@
 local HMAC_SECRET = "<SECRETKEY from OPENSSL>"
-local crypto = require "crypto"
+digest = require('openssl').digest
+hmac = require('openssl').hmac
 
 function ComputeHmac(msg, expires)
-  return crypto.hmac.digest("sha256", string.format("%s%d", msg, expires), HMAC_SECRET)
+  return hmac.hmac("sha256", string.format("%s%d", msg, expires), HMAC_SECRET)
 end
 
 verify_status = ngx.var.ssl_client_verify
 
 if verify_status == "SUCCESS" then
-  client = crypto.digest("sha256", ngx.var.ssl_client_cert)
+  client = digest.digest("sha256", ngx.var.ssl_client_cert)
   expires = ngx.time() + 3600
 
   ngx.header["Set-Cookie"] = {

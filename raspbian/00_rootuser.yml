@@ -1,13 +1,13 @@
 ---
-- name: Tweaks
   hosts: image_start
+- name: rootuser
   remote_user: root
   become_user: root
   become: true
 
   vars:
-    ansible_python_interpreter: /usr/bin/python
-    
+    ansible_python_interpreter: /usr/bin/python3
+
   tasks:
   - name: Root Password to root
     user:

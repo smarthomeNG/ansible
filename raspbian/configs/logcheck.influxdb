@@ -1,0 +1,1 @@
+^\w{3}(.*)[0-9]{1,2}\s[:0-9]{8}\s[._[:alnum:]-]+\s+influxd-systemd-start.sh\[[0-9]+\]\:(.*)lvl=info

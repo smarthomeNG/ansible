@@ -6,12 +6,10 @@
   become: true
 
   vars:
-    ansible_python_interpreter: /usr/bin/python
+    ansible_python_interpreter: /usr/bin/python3
     apt_install:
       ["libgpgme-dev", #gpg
       "rlwrap", #easier telnet / cli usage
-      "gfortran", # scipy build
-      "libatlas-base-dev", #uzsu / scipy
       "libxslt1-dev", #lxml package
       "libxml2-dev", #lxml package
       "graphviz", #uzsu
@@ -19,14 +17,26 @@
       "librrd-dev", #rrd, maybe not necessary
       "python3-dev" #necessary for psutil compilation
       ]
-    python_install:
-      [
+
+    pythoninstall:
+      ["python-gnupg",
+      "RPi.GPIO",
+      "pgen",
+      "requests",
+      "pymodbus",
+      "pymysql",
+      "wheel",
+      "awake",
+      "setuptools",
+      "pycrypto",
+      "yolk3k",
+      "snmp",
+      "python-miio",
+      "pymysql",
       "ruamel.yaml",
       "pytz",
-      "numpy",
-      "scipy==1.8.1",
-      "pymysql", #database
-      "yolk3k" #nice python module management
+      "spur",
+      "pyopenssl"
       ]
 
     log_file_to_check: /usr/local/smarthome/var/log/smarthome-warnings.log
@@ -63,43 +73,11 @@
       autoclean: yes
     with_items: "{{ apt_install }}"
 
-  - name: install modules
-    pip:
-      name: "{{ item }}"
-      state: latest
-      executable: pip3
-      extra_args: --user
-    become: true
-    become_user: smarthome
-    with_items: "{{ python_install }}"
+  - name: fix ownership smarthome git
+    shell: git config --global --add safe.directory /usr/local/smarthome
 
-  - name: install ruamel for root
-    pip:
-      name: "ruamel.yaml"
-      state: latest
-      executable: pip3
-      extra_args: --user
-    become: true
-    become_user: root
-
-  - name: Install libatlas-base-dev
-    apt:
-      name: libatlas-base-dev
-      state: latest
-      install_recommends: no
-
-#  - name: Copy scipy
-#    copy:
-#      src: packages/scipy-1.8.0-cp39-cp39-linux_armv7l.whl
-#      dest: /etc/deb-files/
-
-#  - name: Install scipy
-#    pip:
-#      name: /etc/deb-files/scipy-1.8.0-cp39-cp39-linux_armv7l.whl
-#      executable: pip3
-#      extra_args: --user
-#    become: true
-#    become_user: smarthome
+  - name: fix ownership smarthome plugins git
+    shell: git config --global --add safe.directory /usr/local/smarthome/plugins
 
   - name: Git SmarthomeNG
     git:
@@ -134,6 +112,74 @@
   - name: sh ignore perm
     command: git config core.fileMode false chdir=/usr/local/smarthome/
 
+  - name: Make venv dir
+    file:
+      path: /usr/local/smarthome/venvs
+      state: directory
+      owner: smarthome
+      group: smarthome
+      mode: 0755
+
+  - name: Create Python 3.11 virtual environment
+    command:
+      cmd: python3.11 -m venv /usr/local/smarthome/venvs/py_311
+
+  - name: Create Python 3.10 virtual environment
+    command:
+      cmd: python3.10 -m venv /usr/local/smarthome/venvs/py_310
+
+  - name: Owner smarthome 3.11
+    file:
+        path: /usr/local/smarthome/venvs/py_311
+        owner: smarthome
+        group: smarthome
+        mode: 0755
+        state: directory
+        recurse: yes
+
+  - name: Owner smarthome 3.10
+    file:
+        path: /usr/local/smarthome/venvs/py_310
+        owner: smarthome
+        group: smarthome
+        mode: 0755
+        state: directory
+        recurse: yes
+
+  - name: upgrade pip3.11
+    pip:
+      name: pip
+      virtualenv: /usr/local/smarthome/venvs/py_311
+      virtualenv_site_packages: yes
+      state: latest
+
+  - name: upgrade pip3.10
+    pip:
+      name: pip
+      virtualenv: /usr/local/smarthome/venvs/py_310
+      virtualenv_site_packages: yes
+      state: latest
+      
+  - name: Install modules
+    pip:
+      name: "{{ item }}"
+      virtualenv: /usr/local/smarthome/venvs/py_310
+      virtualenv_site_packages: yes
+      state: latest
+    environment:
+      PATH: "{{ ansible_env.PATH }}:/home/smarthome/.cargo/bin"
+    with_items: "{{ pythoninstall }}"
+
+  - name: Install modules
+    pip:
+      name: "{{ item }}"
+      virtualenv: /usr/local/smarthome/venvs/py_311
+      virtualenv_site_packages: yes
+      state: latest
+    environment:
+      PATH: "{{ ansible_env.PATH }}:/home/smarthome/.cargo/bin"
+    with_items: "{{ pythoninstall }}"
+
   - name: chmod requirements
     file:
       path: /usr/local/smarthome/tools/build_requirements.py
@@ -149,16 +195,25 @@
       state: directory
 
   - name: Update requirements
-    command: /usr/local/smarthome/tools/build_requirements.py
+    command: /usr/local/smarthome/venvs/py_310/bin/python3 /usr/local/smarthome/tools/build_requirements.py
     become: true
     become_user: smarthome
 
-  - name: Install requirements
+  - name: Install requirements 3.11
     pip:
         requirements: /usr/local/smarthome/requirements/base.txt
-        executable: pip3
+        virtualenv: /usr/local/smarthome/venvs/py_311
+        virtualenv_site_packages: yes
         state: latest
-        extra_args: --user
+    become: true
+    become_user: smarthome
+
+  - name: Install requirements 3.10
+    pip:
+        requirements: /usr/local/smarthome/requirements/base.txt
+        virtualenv: /usr/local/smarthome/venvs/py_310
+        virtualenv_site_packages: yes
+        state: latest
     become: true
     become_user: smarthome
 
@@ -166,9 +221,6 @@
     copy:
       dest: /lib/systemd/system/smarthome.service
       src: configs/smarthome.service
-
-  - name: Remove astral
-    pip: name=astral executable=pip3 state=absent
 
   - name: enable_service
     systemd: enabled=yes name=smarthome.service
@@ -191,7 +243,7 @@
     replace:
       destfile: /usr/local/smarthome/etc/smarthome.yaml.default
       regexp: '#pip_command: "python3 -m pip"'
-      replace: 'pip_command: "python3 -m pip"'
+      replace: '#pip_command: "/usr/local/smarthome/venvs/py_310/bin/python3 -m pip"'
 
   - name: Init
     lineinfile:
@@ -218,18 +270,23 @@
       recurse: yes
       state: directory
 
-  - name: fix ownership smarthome git
-    shell: git config --global --add safe.directory /usr/local/smarthome
-
-  - name: fix ownership smarthome plugins git
-    shell: git config --global --add safe.directory /usr/local/smarthome/plugins
-
   - name: Reinstall pyopenssl
     pip:
       name: pyopenssl
-      executable: pip3
+      virtualenv: /usr/local/smarthome/venvs/py_311
+      virtualenv_site_packages: yes
       state: latest
-      extra_args: --user --upgrade
+    become: true
+    become_user: smarthome
+    environment:
+      PATH: "{{ ansible_env.PATH }}:/home/smarthome/.cargo/bin"
+
+  - name: Reinstall pyopenssl 3.10
+    pip:
+      name: pyopenssl
+      virtualenv: /usr/local/smarthome/venvs/py_310
+      virtualenv_site_packages: yes
+      state: latest
     become: true
     become_user: smarthome
     environment:
@@ -244,7 +301,7 @@
     register: restart_smarthome
 
   - name: start smarthome
-    shell: /usr/local/smarthome/bin/smarthome.py
+    shell: /usr/local/smarthome/venvs/py_310/bin/python3 /usr/local/smarthome/bin/smarthome.py
     async: 1000
     poll: 0
     become: true
@@ -264,14 +321,6 @@
     become_user: smarthome
     register: restart_smarthome
 
-  - name: List Modules
-    command: "/home/smarthome/.local/bin/yolk --list"
-    register: pip3
-    ignore_errors: yes
-    become: yes
-    become_user: smarthome
-    become_method: su
-  - debug: var=pip3
 
   - name: Stop smarthome
     ansible.builtin.service:

@@ -6,7 +6,7 @@
   become: true
 
   vars:
-    ansible_python_interpreter: /usr/bin/python
+    ansible_python_interpreter: /usr/bin/python3
 
   tasks:
   - name: Create User
@@ -24,6 +24,7 @@
       path: /etc/deb-files/
       state: directory
       mode: 0755
+    ignore_errors: yes
 
   - name: Copy knxd deb files 0.12
     copy:

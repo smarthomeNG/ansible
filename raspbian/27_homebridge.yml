@@ -1,0 +1,102 @@
+---
+- name: Install Homebdrige
+  hosts: image
+  remote_user: root
+  become_user: root
+  become: true
+
+  vars:
+    ansible_python_interpreter: /usr/bin/python3
+
+  tasks:
+  - name: Install Avahi
+    apt: name=libavahi-compat-libdnssd-dev force=no state=latest update_cache=yes
+
+  - name: Install Avahi-Utils
+    apt: name=avahi-utils force=no state=latest update_cache=yes
+
+  - name: Update npm
+    command: npm install npm@latest -g
+
+  - name: key
+    apt_key:
+      url: https://repo.homebridge.io/KEY.gpg
+      state: present
+      keyring: /usr/share/keyrings/homebridge.key
+      validate_certs: False
+
+  - name: repo
+    apt_repository:
+      repo: deb [signed-by=/usr/share/keyrings/homebridge.key] https://repo.homebridge.io stable main
+      state: present
+      filename: homebridge
+
+  - name: Install homebridge
+    apt: name=homebridge force=no state=latest update_cache=yes
+
+  - name: Rebuild npm
+    shell: npm rebuild
+    args:
+      chdir: /usr/lib/node_modules/homebridge
+    register: rebuildnpm
+    ignore_errors: true
+  - debug: var=rebuildnpm
+
+  - name: logfile
+    blockinfile:
+      dest: "/etc/rsyslog.d/homebridge.conf"
+      create: yes
+      block: |
+        template(name="FileFormat_timestamp" type="string" string= "%TIMESTAMP% %HOSTNAME% %syslogtag% %pri-text%%msg:::sp-if-no-1st-sp%%msg:::drop-last-lf%\n")
+        if $programname == 'homebridge' or $msg contains '[Hh]omebridge' then {
+          action(type="omfile" file="/var/lib/homebdridge/homebridge.log" template="FileFormat_timestamp" FileGroup="adm"  FileCreateMode="0644")
+          stop
+        }
+    ignore_errors: yes
+
+  - name: Install people
+    shell: npm install -g homebridge-people
+
+  - name: Install Forever
+    shell: npm install -g forever
+
+  - name: Install Plugin
+    shell: npm install -g homebridge-smarthomeng --unsafe-perm
+
+  - name: Copy config
+    copy:
+      src: configs/homebridge_config.json
+      dest: /var/lib/homebridge/config.json
+      owner: smarthome
+      group: smarthome
+      mode: 775
+
+  - name: Copy Logcheck
+    copy:
+      src: configs/logcheck.homebridge
+      dest: /etc/logcheck/ignore.d.server/homebridge
+      owner: root
+      group: logcheck
+      mode: 0644
+
+  - name: create systemd dir homebridge
+    file:
+      path: /etc/systemd/system/homebridge.service.d/
+      state: directory
+
+  - name: Copy service_conf homebridge
+    copy:
+      src: configs/service_homebridge_fix.conf
+      dest: /etc/systemd/system/homebridge.service.d/
+      owner: homebridge
+      group: adm
+      mode: 0644
+
+  - name: Restart Service
+    systemd: state=restarted name=homebridge.service
+    notify: enable_service
+
+
+  handlers:
+  - name: enable_service
+    systemd: enabled=yes name=homebridge.service

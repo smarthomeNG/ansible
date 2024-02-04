@@ -4,9 +4,10 @@
   remote_user: root
   become_user: root
   become: true
+  become_exe: sudo su
 
   vars:
-    ansible_python_interpreter: /usr/bin/python
+    ansible_python_interpreter: /usr/bin/python3
 
   tasks:
   - name: Create Group
@@ -44,7 +45,7 @@
     when: nodered_installed.stat.exists == False
 
   - name: install nodered
-    shell: "yes | /home/smarthome/update-nodejs-and-nodered"
+    shell: "/home/smarthome/update-nodejs-and-nodered --confirm-install --confirm-pi"
     become_user: smarthome
     become: true
     become_method: su

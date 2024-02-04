@@ -8,3 +8,4 @@
 /var/log/syslog
 /var/log/auth.log
 /var/log/unattended-upgrades.log
+/var/log/influxdb.log

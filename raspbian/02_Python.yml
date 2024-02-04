@@ -1,0 +1,175 @@
+---
+- name: Install Python Packages
+  hosts: image
+  remote_user: root
+  become_user: root
+  become: true
+
+  vars:
+    ansible_python_interpreter: /usr/bin/python3
+    pythonremove:
+      ["python3-keyring",
+      "python3-pyasn1",
+      "python3-keyrings.alt",
+      "python3-wheel",
+      "python-six",
+      "enum34",
+      "python-idna",
+      "python3-gpg",
+      "python-is-python3"
+      ]
+
+  tasks:
+  - name: Create Group
+    group:
+      name: smarthome
+      state: present
+
+  - name: Create User
+    user:
+      name: smarthome
+      shell: /bin/bash
+      groups: smarthome
+      append: no
+      update_password: always
+      password: ""
+      comment: 'SmarthomeNG User'
+
+  - name: Groups
+    user:
+      name: smarthome
+      shell: /bin/bash
+      groups: www-data, sudo, i2c, adm, audio, video, plugdev, input, netdev, spi, gpio, dialout
+      append: yes
+
+  - name: remove apt
+    apt:
+      name: "{{ item }}"
+      state: absent
+      autoremove: yes
+      autoclean: yes
+      purge: yes
+    with_items: "{{ pythonremove }}"
+    ignore_errors: yes
+
+  - name: Fix
+    command: 'apt-get -f -y install'
+
+  - name: Install libffi-dev
+    apt:
+      name: libffi-dev
+      state: latest
+      install_recommends: no
+
+  - name: Install libcap-dev
+    apt:
+      name: libcap-dev
+      state: latest
+      install_recommends: no
+
+  - name: Install swig4
+    apt:
+      name: swig4.0
+      state: latest
+      install_recommends: no
+
+  - name: swiglink
+    ansible.builtin.file:
+      src: /usr/bin/swig4.0
+      dest: /usr/bin/swig
+      owner: root
+      group: root
+      state: link
+
+  - name: Install libssl-dev
+    apt:
+      name: libssl-dev
+      state: latest
+      install_recommends: no
+
+  - name: Install pip3
+    apt:
+      name: python3-pip
+      state: latest
+      install_recommends: no
+
+  - name: check if rust exists
+    stat:
+      path: /home/smarthome/.cargo/bin/rustc
+    register: rust_installed
+
+  - name: download rust script
+    get_url:
+      url: https://sh.rustup.rs
+      dest: /home/smarthome
+      mode: 775
+    when: rust_installed.stat.exists == False
+
+  - name: Make tmp dir
+    file:
+      path: /home/smarthome/.ansible/tmp
+      state: directory
+      owner: smarthome
+      group: smarthome
+      mode: 0777
+
+  - name: install rust
+    shell: "/home/smarthome/rustup-init.sh -y"
+    async: 1000
+    poll: 0
+    become: true
+    become_user: smarthome
+    when: rust_installed.stat.exists == False
+    register: rust_installer
+
+  - name: wait
+    async_status: jid={{ rust_installer.ansible_job_id }}
+    register: job_result
+    until: job_result.finished
+    retries: 80
+    become: true
+    become_user: smarthome
+    when: rust_installed.stat.exists == False
+
+  - name: Install libgpgme-dev
+    apt:
+      name: libgpgme-dev
+      state: latest
+      install_recommends: no
+
+  - name: Install python3-dev
+    apt:
+      name: python3-dev
+      state: latest
+      install_recommends: no
+
+  - name: Create deb-files directory
+    file:
+      path: /etc/deb-files/
+      state: directory
+      mode: 0755
+    ignore_errors: yes
+
+  - name: Copy python 3.10
+    unarchive:
+      src: https://www.python.org/ftp/python/3.10.13/Python-3.10.13.tar.xz
+      dest: /usr/local/src
+      remote_src: yes
+
+  - name: Configure python 3.10
+    command: ./configure
+    args:
+      chdir: /usr/local/src/Python-3.10.13
+
+  - name: Install python 3.10
+    command: make install
+    args:
+      chdir: /usr/local/src/Python-3.10.13
+
+  - name: Purge python cache
+    command: pip3 cache purge
+    become: true
+    become_user: smarthome
+
+  - name: Purge root python cache
+    command: pip3 cache purge

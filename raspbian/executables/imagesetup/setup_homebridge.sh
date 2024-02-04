@@ -67,7 +67,7 @@ case $raspi in
 esac
 if [[ $raspiversion -ge "3" ]]; then
   echo ""
-  echo "It looks like you have a Raspberry Pi Version 3 or higher. Installing Homebridge"
+  echo "It looks like you have a Raspberry Pi Version 3 or higher. Homebridge is installed."
   install_homebridge
 
 else
