@@ -49,29 +49,6 @@
     args:
       chdir: "{{ smartvisupath2 }}"
 
-  - name: Copy Smartvisu 2.8
-    unarchive:
-      remote_src: yes
-      src: https://github.com/Martin-Gleiss/smartvisu/releases/download/v2.8/smartvisu-v2.8_latest.zip
-      dest: /var/www/html
-
-  - name: Remove dir
-    file:
-      path: /var/www/html/smartvisu2.8
-      state: absent
-    ignore_errors: yes
-
-  - name: Rename sv2.8
-    command: mv /var/www/html/smartvisu-master /var/www/html/smartvisu2.8
-
-  - name: Change dir
-    file:
-      path: /var/www/html/smartvisu2.8
-      owner: smarthome
-      group: www-data
-      mode: 0775
-      state: directory
-
   - name: ignore perm2
     command: git config core.fileMode false chdir=/var/www/html/smartvisu
 
