@@ -56,9 +56,6 @@
       install_recommends: yes
     with_items: "{{ build }}"
 
-  - name: Apachestop
-    systemd: state=stopped name=apache2 enabled=no
-    ignore_errors: yes
 
   - name: install apt
     apt:
