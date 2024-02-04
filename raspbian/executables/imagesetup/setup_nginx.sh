@@ -121,7 +121,6 @@ echo "nginx Service is $NGINX_e."
 if [[ $NGINX_e == "enabled" ]]; then
     echo " The server is setup the following way to easily access your websites:"
     echo "http://<YOURIP>/smartvisu -> most recent smartVISU"
-    echo "http://<YOURIP>/smartvisu2.8 -> smartVISU 2.8"
     echo "http://<YOURIP>/admin -> SmarthomeNG Admin IF"
     echo "http://<YOURIP>/phpmyadmin -> Admin Tool to manage SQL database. Login is root/smarthome"
     echo "http://<YOURIP>/shnet -> SmarthomeNG Network Plugin. Port is configured to 8888. Change in /etc/nginx/sites-available/default"
@@ -129,7 +128,7 @@ if [[ $NGINX_e == "enabled" ]]; then
     echo "http://<YOURIP>/monitgraph -> If you enable monit (later) you can see graphs of your computer resources per service"
     echo "http://<YOURIP>/grafana -> If you enable influxdb and grafana (later) you can use time series databases"
 	echo "http://<YOURIP>/alexa -> If you want to use Amazon Alexa"
-    echo "http://<YOURIP>/red -> If you enable node-red (later)"
+    echo "http://<YOURIP>/nodered -> If you enable node-red (later)"
     echo ""
     echo ""
     IP=$(sudo ip addr list eth0 |grep 'inet ' |cut -d' ' -f6|cut -d/ -f1)
