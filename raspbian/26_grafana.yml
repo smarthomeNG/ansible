@@ -85,7 +85,7 @@
     lineinfile:
       dest: /etc/grafana/grafana.ini
       insertafter: '^;root_url ='
-      line: 'root_url = %(protocol)s://%(domain)s/grafana/'  
+      line: 'root_url = %(protocol)s://%(domain)s/grafana/'
 
   - name: download loki
     unarchive:
@@ -190,7 +190,7 @@
 
   - name: Restart nginx
     systemd: state=restarted name=nginx.service
-    
+
   - name: Restart Grafana
     systemd: state=restarted name=grafana-server.service
 
@@ -210,7 +210,7 @@
       is_admin: true
       state: present
     ignore_errors: yes
-      
+
   - name: datasource1
     uri:
       url: http://{{ hostvars[inventory_hostname]['ansible_default_ipv4']['address'] }}/grafana/api/datasources/name/smarthome
@@ -243,7 +243,7 @@
     when: "grafana_influxdb.status == 404"
     ignore_errors: yes
 
-  
+
   - name: getid
     uri:
       url: http://{{ hostvars[inventory_hostname]['ansible_default_ipv4']['address'] }}/grafana/api/users/lookup?loginOrEmail=smarthome
@@ -381,3 +381,6 @@
       force_basic_auth: yes
       body_format: json
     ignore_errors: yes
+
+  - name: disable
+    systemd: enabled=no name=grafana-server.service

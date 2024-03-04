@@ -277,7 +277,7 @@
         if $programname == 'nginx' then {
           action(type="omfile" file="/var/log/nginx/access.log" template="FileFormat_timestamp_nginx"  FileCreateMode="0644" FileGroup="adm" FileOwner="www-data")
           stop
-        }       
+        }
   - name: Copy logrotate
     copy:
       src: configs/logrotate_nginx
@@ -295,6 +295,19 @@
       path: /etc/logrotate.d/php8.2-fpm
       regexp: 'compress'
       state: absent
+
+  - name: create systemd dir
+    file:
+      path: /etc/systemd/system/php8.2-fpm.service.d/
+      state: directory
+
+  - name: Copy service_conf homebridge
+    copy:
+      src: configs/service_php_fix.conf
+      dest: /etc/systemd/system/php8.2-fpm.service.d/
+      owner: smarthome
+      group: adm
+      mode: 0644
 
   - name: Restart php
     systemd: daemon_reload=yes state=restarted name=php8.2-fpm.service

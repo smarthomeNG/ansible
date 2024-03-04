@@ -42,7 +42,7 @@
       state: latest
     become: true
     become_user: smarthome
- 
+
   - name: Install pandas
     pip:
       name: pandas
@@ -51,7 +51,7 @@
       state: latest
     become: true
     become_user: smarthome
-  
+
   - name: Install influxdb_client 3.10
     pip:
       name: influxdb_client
@@ -60,7 +60,7 @@
       state: latest
     become: true
     become_user: smarthome
- 
+
   - name: Install pandas 3.10
     pip:
       name: pandas
@@ -69,7 +69,7 @@
       state: latest
     become: true
     become_user: smarthome
-    
+
   - name: logfile
     blockinfile:
       dest: "/etc/rsyslog.d/influxdb.conf"
@@ -98,6 +98,9 @@
     shell: influx setup --org smarthomeng --bucket shng --username smarthome --password smarthome --force
     async: 40
     poll: 0
+
+  - name: disable
+    systemd: enabled=no name=influxdb.service
 
 #  - name: Create token
 #    shell: influx auth create --org smarthomeng --all-access

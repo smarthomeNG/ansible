@@ -48,8 +48,8 @@
       create: yes
       block: |
         template(name="FileFormat_timestamp" type="string" string= "%TIMESTAMP% %HOSTNAME% %syslogtag% %pri-text%%msg:::sp-if-no-1st-sp%%msg:::drop-last-lf%\n")
-        if $programname == 'homebridge' or $msg contains '[Hh]omebridge' then {
-          action(type="omfile" file="/var/lib/homebdridge/homebridge.log" template="FileFormat_timestamp" FileGroup="adm"  FileCreateMode="0644")
+        if $programname == 'homebridge' or $msg contains 'Homebridge'  or $msg contains 'homebridge' then {
+          action(type="omfile" file="/var/lib/homebridge/homebridge.log" template="FileFormat_timestamp" FileGroup="adm"  FileCreateMode="0644")
           stop
         }
     ignore_errors: yes
@@ -98,5 +98,5 @@
 
 
   handlers:
-  - name: enable_service
-    systemd: enabled=yes name=homebridge.service
+  - name: disable
+    systemd: enabled=no name=homebridge.service

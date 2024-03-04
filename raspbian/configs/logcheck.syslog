@@ -62,3 +62,11 @@
 ^\w{3}(.*)[0-9]{1,2}\s[:0-9]{8}\s[._[:alnum:]-]+\s(.*)\[[ .0-9]*\]:\sDaemon PID
 ^\w{3}(.*)[0-9]{1,2}\s[:0-9]{8}\s[._[:alnum:]-]+\sfind\[[ .0-9]*\]:(.*)wurde entfernt
 ^\w{3}(.*)[0-9]{1,2}\s[:0-9]{8}\sINFO Time for journalctl was real [0-6],[0-9]{2}
+^\w{3}(.*)[0-9]{1,2}\s[:0-9]{8}\s[._[:alnum:]-]+\s+systemd\[[ .0-9]*\]\:\s+Reexecuting.
+^\w{3}(.*)[0-9]{1,2}\s[:0-9]{8}\s[._[:alnum:]-]+\s+systemd\-networkd\[[ .0-9]*\]\:\s+(.*)Link UP
+^\w{3}(.*)[0-9]{1,2}\s[:0-9]{8}\s[._[:alnum:]-]+\s+systemd\-networkd\[[ .0-9]*\]\:\s+(.*)completed
+^\w{3}(.*)[0-9]{1,2}\s[:0-9]{8}\s[._[:alnum:]-]+\ssystemd-timesyncd\[[ .0-9]*\]\:\s+Initial clock synchronization to
+^\w{3}(.*)[0-9]{1,2}\s[:0-9]{8}\s[._[:alnum:]-]+\ssystemd-timesyncd\[[ .0-9]*\]\:\s+Contacted time server
+^\w{3}(.*)[0-9]{1,2}\s[:0-9]{8}\s[._[:alnum:]-]+\sudevd\[[ .0-9]*\]\:\s+Using default interface naming scheme
+^\w{3}(.*)[0-9]{1,2}\s[:0-9]{8}\s[._[:alnum:]-]+\spolkitd\[[ .0-9]*\]\:\s+Loading rules from directory
+^\w{3}(.*)[0-9]{1,2}\s[:0-9]{8}\s[._[:alnum:]-]+\spolkitd\[[ .0-9]*\]\:\s+Finished loading

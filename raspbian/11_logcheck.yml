@@ -228,6 +228,11 @@
       state: present
     ignore_errors: yes
 
+  - name: remove journal
+    file:
+      path: /etc/logcheck/logcheck.logfiles.d/journal.logfiles
+      state: absent
+      
   - name: disable logcheck1
     lineinfile:
       dest: /etc/cron.d/logcheck
