@@ -244,7 +244,7 @@
     replace:
       destfile: /usr/local/smarthome/etc/smarthome.yaml.default
       regexp: '#pip_command: "python3 -m pip"'
-      replace: '#pip_command: "/usr/local/smarthome/venvs/py_310/bin/python3 -m pip"'
+      replace: 'pip_command: "/usr/local/smarthome/venvs/py_310/bin/python3 -m pip"'
 
   - name: Init
     lineinfile:
