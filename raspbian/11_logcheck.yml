@@ -15,11 +15,6 @@
   - name: Install python-magic
     apt: name=python3-magic force=no state=latest install_recommends=no
 
-  - name: Install magic
-    pip:
-      name: "python-magic"
-      state: latest
-
   - name: Copy syslogsummary
     copy:
       src: executables/syslog-summary.py
