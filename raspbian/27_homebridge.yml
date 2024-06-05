@@ -94,9 +94,9 @@
 
   - name: Restart Service
     systemd: state=restarted name=homebridge.service
-    notify: enable_service
+    notify: disable_homebridge
 
-
-  handlers:
-  - name: disable
+handlers:
+  - name: disable homebridge
     systemd: enabled=no name=homebridge.service
+    register: disable_homebridge
