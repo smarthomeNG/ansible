@@ -10,7 +10,6 @@
 
     configs:
       ["homebridge_config.json",
-      "homebridge.service",
       "influxdb.json",
       "logcheck.homebridge",
       "loki.service",
@@ -19,10 +18,6 @@
       "smarthome.json",
       "config-promtail.yaml",
       "config-loki.yaml"
-      ]
-
-    packages:
-      [
       ]
 
   tasks:
@@ -48,7 +43,7 @@
       groups: www-data, sudo, i2c, adm, audio, video, plugdev, input, netdev, spi, gpio, dialout
       append: yes
 
-  - name: ansible
+  - name: install ansible
     apt: name=ansible force=no state=latest
 
   - name: sshpass
@@ -93,14 +88,6 @@
       owner: smarthome
       group: smarthome
     with_items: "{{ configs }}"
-
-  - name: copy packages
-    copy:
-      dest: /etc/ansible/packages/
-      src: "packages/{{ item }}"
-      owner: smarthome
-      group: smarthome
-    with_items: "{{ packages }}"
 
   - name: copy hosts
     copy:
