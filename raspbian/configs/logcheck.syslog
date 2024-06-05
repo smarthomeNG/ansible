@@ -70,3 +70,4 @@
 ^\w{3}(.*)[0-9]{1,2}\s[:0-9]{8}\s[._[:alnum:]-]+\sudevd\[[ .0-9]*\]\:\s+Using default interface naming scheme
 ^\w{3}(.*)[0-9]{1,2}\s[:0-9]{8}\s[._[:alnum:]-]+\spolkitd\[[ .0-9]*\]\:\s+Loading rules from directory
 ^\w{3}(.*)[0-9]{1,2}\s[:0-9]{8}\s[._[:alnum:]-]+\spolkitd\[[ .0-9]*\]\:\s+Finished loading
+^\w{3}(.*)[0-9]{1,2}\s[:0-9]{8}\s[._[:alnum:]-]+\sNetworkManager\[[ .0-9]*\]\:\s+<info>

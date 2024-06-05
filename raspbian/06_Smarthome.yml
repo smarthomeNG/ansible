@@ -36,7 +36,8 @@
       "ruamel.yaml",
       "pytz",
       "spur",
-      "pyopenssl"
+      "pyopenssl",
+      "gnureadline"
       ]
 
     log_file_to_check: /usr/local/smarthome/var/log/smarthome-warnings.log
@@ -159,7 +160,7 @@
       virtualenv: /usr/local/smarthome/venvs/py_310
       virtualenv_site_packages: yes
       state: latest
-      
+
   - name: Install modules
     pip:
       name: "{{ item }}"
@@ -243,7 +244,7 @@
     replace:
       destfile: /usr/local/smarthome/etc/smarthome.yaml.default
       regexp: '#pip_command: "python3 -m pip"'
-      replace: '#pip_command: "/usr/local/smarthome/venvs/py_310/bin/python3 -m pip"'
+      replace: 'pip_command: "/usr/local/smarthome/venvs/py_310/bin/python3 -m pip"'
 
   - name: Init
     lineinfile:

@@ -15,20 +15,6 @@
   - name: Install python-magic
     apt: name=python3-magic force=no state=latest install_recommends=no
 
-  - name: Install magic 310
-    pip:
-      name: "python-magic"
-      virtualenv: /usr/local/smarthome/venvs/py_310
-      virtualenv_site_packages: yes
-      state: latest
-
-  - name: Install magic 311
-    pip:
-      name: "python-magic"
-      virtualenv: /usr/local/smarthome/venvs/py_311
-      virtualenv_site_packages: yes
-      state: latest
-
   - name: Copy syslogsummary
     copy:
       src: executables/syslog-summary.py
@@ -232,7 +218,7 @@
     file:
       path: /etc/logcheck/logcheck.logfiles.d/journal.logfiles
       state: absent
-      
+
   - name: disable logcheck1
     lineinfile:
       dest: /etc/cron.d/logcheck
