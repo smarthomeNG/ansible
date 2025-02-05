@@ -79,7 +79,10 @@
     register: sysctl
 
   - name: Install iptables
-    apt: name=iptables-persistent force=no state=latest
+    apt: name=iptables-persistent force=no state=latest install_recommends=true
+
+  - name: Install netfilter
+    apt: name=netfilter-persistent force=no state=latest
 
   - name: iptables script
     blockinfile:

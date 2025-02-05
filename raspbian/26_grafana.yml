@@ -138,7 +138,7 @@
   - name: promtail service
     copy:
       src: /etc/ansible/configs/promtail.service
-      dest: /lib/systemd/system/promtail.service
+      dest: /etc/systemd/system/promtail.service
       remote_src: true
 
   - name: enable_loki
