@@ -7,7 +7,7 @@
 
   vars:
     ansible_python_interpreter: /usr/bin/python3
-    
+
   tasks:
   - name: Create Group
     group:
@@ -44,7 +44,7 @@
       virtualenv: /usr/local/smarthome/venvs/py_310
       virtualenv_site_packages: yes
       state: latest
-      
+
   - name: Create User
     user:
       name: mosquitto
@@ -70,6 +70,12 @@
       owner: mosquitto
       group: adm
       mode: 0644
+
+  - name: logrotate
+    lineinfile:
+      path: /etc/logrotate.d/rsyslog
+      insertbefore: BOF
+      line: /var/log/mosquitto.log
 
   - name: logfile
     blockinfile:
@@ -115,6 +121,6 @@
 
   - name: rsyslog
     systemd: daemon_reload=yes state=restarted name=rsyslog.service
-    
+
   - name: restart
     systemd: daemon_reload=yes state=restarted name=mosquitto.service

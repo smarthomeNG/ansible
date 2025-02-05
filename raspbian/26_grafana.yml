@@ -60,6 +60,12 @@
       state: latest
       update_cache: yes
 
+  - name: logrotate
+    lineinfile:
+      path: /etc/logrotate.d/rsyslog
+      insertbefore: BOF
+      line: /var/log/grafana.log
+
   - name: logfile
     blockinfile:
       path: "/etc/rsyslog.d/grafana.conf"

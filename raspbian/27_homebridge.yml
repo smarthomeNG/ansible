@@ -42,6 +42,12 @@
     ignore_errors: true
   - debug: var=rebuildnpm
 
+  - name: logrotate
+    lineinfile:
+      path: /etc/logrotate.d/rsyslog
+      insertbefore: BOF
+      line: /var/lib/homebridge/homebridge.log
+
   - name: logfile
     blockinfile:
       dest: "/etc/rsyslog.d/homebridge.conf"
