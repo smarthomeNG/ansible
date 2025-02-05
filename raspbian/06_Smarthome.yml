@@ -220,7 +220,7 @@
 
   - name: Copy Service
     copy:
-      dest: /lib/systemd/system/smarthome.service
+      dest: /etc/systemd/system/smarthome.service
       src: configs/smarthome.service
 
   - name: enable_service

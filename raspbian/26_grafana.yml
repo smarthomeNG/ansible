@@ -60,6 +60,12 @@
       state: latest
       update_cache: yes
 
+  - name: logrotate
+    lineinfile:
+      path: /etc/logrotate.d/rsyslog
+      insertbefore: BOF
+      line: /var/log/grafana.log
+
   - name: logfile
     blockinfile:
       path: "/etc/rsyslog.d/grafana.conf"
@@ -132,7 +138,7 @@
   - name: promtail service
     copy:
       src: /etc/ansible/configs/promtail.service
-      dest: /lib/systemd/system/promtail.service
+      dest: /etc/systemd/system/promtail.service
       remote_src: true
 
   - name: enable_loki

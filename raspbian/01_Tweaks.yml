@@ -12,7 +12,6 @@
       "screen",
       "dos2unix",
       "telnet",
-      "ufw",
       "unattended-upgrades",
       "apt-listchanges",
       "atop",
@@ -467,6 +466,12 @@
       block: |
         if $programname startswith "kernel" and ($msg contains "vc4-drm gpu" or $msg contains "drm:drm_client_modeset_probe" or $msg contains "drm:drm_mode_prune_invalid" or $msg contains "drm:drm_helper_probe_single_connector_modes" or $msg contains "drm:update_display_info" or $msg contains "drm:_drm_edid_connector_update" or $msg contains "drm:drm_mode_debug_printmodeline" or $msg contains "drm:drm_atomic_normalize_zpos" or $msg contains "switching to colour frame buffer device") then stop
 
+  - name: logrotate
+    lineinfile:
+      path: /etc/logrotate.d/rsyslog
+      insertbefore: BOF
+      line: /var/log/dpkg.log
+
   - name: systemd-timesyncd
     systemd: enabled=yes name=systemd-timesyncd.service
 
@@ -486,18 +491,6 @@
 
   - name: enable_fake-hwclock
     systemd: enabled=yes name=fake-hwclock.service
-
-  - name: ufw logfile
-    blockinfile:
-      path: "/etc/rsyslog.d/ufw.conf"
-      create: yes
-      block: |
-        template(name="FileFormat_timestamp" type="string" string= "%TIMESTAMP% %HOSTNAME% %syslogtag% %pri-text%%msg:::sp-if-no-1st-sp%%msg:::drop-last-lf%\n")
-        if $programname == 'ufw' or $msg contains 'UFW' then {
-          action(type="omfile" file="/var/log/ufw.log" template="FileFormat_timestamp")
-          stop
-        }
-    ignore_errors: yes
 
   - name: rngd logfile
     blockinfile:
@@ -682,6 +675,12 @@
       destfile: /etc/logrotate.d/btmp
       regexp: 'utmp'
       replace: adm
+
+  - name: logrotate daily
+    replace:
+      destfile: /etc/logrotate.d/rsyslog
+      regexp: 'weekly'
+      replace: daily
 
   - name: logrotate_unattended
     copy:

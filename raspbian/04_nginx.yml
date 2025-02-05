@@ -242,6 +242,18 @@
       group: smarthome
       mode: 0777
 
+  - name: nginx errorlog
+    lineinfile:
+      path: /etc/logrotate.d/rsyslog
+      insertbefore: BOF
+      line: /var/log/nginx/error.log
+
+  - name: nginx accesslog
+    lineinfile:
+      path: /etc/logrotate.d/rsyslog
+      insertbefore: BOF
+      line: /var/log/nginx/access.log
+
   - name: logfile
     blockinfile:
       path: "/etc/rsyslog.d/nginx.conf"

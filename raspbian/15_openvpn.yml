@@ -79,7 +79,10 @@
     register: sysctl
 
   - name: Install iptables
-    apt: name=iptables-persistent force=no state=latest
+    apt: name=iptables-persistent force=no state=latest install_recommends=true
+
+  - name: Install netfilter
+    apt: name=netfilter-persistent force=no state=latest
 
   - name: iptables script
     blockinfile:
@@ -122,6 +125,12 @@
       src: configs/logrotate_openvpn
       dest: /etc/logrotate.d/openvpn
       mode: 0644
+
+  - name: logrotate
+    lineinfile:
+      path: /etc/logrotate.d/rsyslog
+      insertbefore: BOF
+      line: /var/log/openvpn.log
 
   - name: logfile
     blockinfile:

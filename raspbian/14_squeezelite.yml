@@ -48,7 +48,7 @@
 
   - name: Safe apt upgrade
     apt: upgrade=safe
-    
+
   - name: Install Packages
     apt:
       name: "{{ item }}"
@@ -66,4 +66,4 @@
   - name: Copy squeezelite service
     copy:
       src: configs/squeezelite.service
-      dest: /lib/systemd/system/
+      dest: /etc/systemd/system/

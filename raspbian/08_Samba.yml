@@ -66,6 +66,12 @@
       regexp: "PIDFile=/var/run/samba/nmbd.pid"
       replace: "PIDFile=/run/samba/nmbd.pid"
 
+  - name: samba log
+    lineinfile:
+      path: /etc/logrotate.d/rsyslog
+      insertbefore: BOF
+      line: /var/log/samba.log
+
   - name: logfile
     blockinfile:
       path: "/etc/rsyslog.d/samba.conf"

@@ -126,7 +126,7 @@
     async_status: jid={{ rust_installer.ansible_job_id }}
     register: job_result
     until: job_result.finished
-    retries: 80
+    retries: 180
     become: true
     become_user: smarthome
     when: rust_installed.stat.exists == False
