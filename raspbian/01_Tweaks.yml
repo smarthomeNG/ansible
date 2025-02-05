@@ -12,7 +12,6 @@
       "screen",
       "dos2unix",
       "telnet",
-      "ufw",
       "unattended-upgrades",
       "apt-listchanges",
       "atop",
@@ -492,18 +491,6 @@
 
   - name: enable_fake-hwclock
     systemd: enabled=yes name=fake-hwclock.service
-
-  - name: ufw logfile
-    blockinfile:
-      path: "/etc/rsyslog.d/ufw.conf"
-      create: yes
-      block: |
-        template(name="FileFormat_timestamp" type="string" string= "%TIMESTAMP% %HOSTNAME% %syslogtag% %pri-text%%msg:::sp-if-no-1st-sp%%msg:::drop-last-lf%\n")
-        if $programname == 'ufw' or $msg contains 'UFW' then {
-          action(type="omfile" file="/var/log/ufw.log" template="FileFormat_timestamp")
-          stop
-        }
-    ignore_errors: yes
 
   - name: rngd logfile
     blockinfile:
