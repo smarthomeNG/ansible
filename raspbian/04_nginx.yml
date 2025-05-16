@@ -177,7 +177,7 @@
       create: yes
       block: |
         $umask 0000
-        template(name="FileFormat_timestamp" type="string" string= "%TIMESTAMP% %HOSTNAME% %syslogtag% %pri-text%%msg:::sp-if-no-1st-sp%%msg:::drop-last-lf%\n")
+        $Template FileFormat_timestamp,"%TIMESTAMP% %HOSTNAME% %syslogtag% %pri-text%%msg:::sp-if-no-1st-sp%%msg:::drop-last-lf%\n"
         if ($programname startswith 'php' or $msg contains ' php ') then {
           action(type="omfile" file="/var/log/php8.2-fpm.log" template="FileFormat_timestamp" FileCreateMode="0644" FileGroup="adm" FileOwner="www-data")
           stop
@@ -259,7 +259,7 @@
       path: "/etc/rsyslog.d/nginx.conf"
       create: yes
       block: |
-        template(name="FileFormat_timestamp_nginx" type="string" string= "%TIMESTAMP% %HOSTNAME% %syslogtag%%msg:::sp-if-no-1st-sp%%msg:::drop-last-lf%\n")
+        $Template FileFormat_timestamp,"%TIMESTAMP% %HOSTNAME% %syslogtag% %pri-text%%msg:::sp-if-no-1st-sp%%msg:::drop-last-lf%\n"
         $Template nginxerror,"%TIMESTAMP% %HOSTNAME% %syslogtag:R,ERE,1,BLANK:(.*)(\:)--end%[%msg:R,ERE,2,FIELD:([0-9]*#)([0-9]*)(.*)--end%]:%msg:R,ERE,3,BLANK:([0-9]{4}/[0-9]{2}/[0-9]{2}\s+[:0-9]{8}\s+\[error\]\s+([0-9]*#[0-9]*\:\s)(.*))--end:sp-if-no-1st-sp%%msg:R,ERE,3,BLANK:([0-9]{4}/[0-9]{2}/[0-9]{2}\s+[:0-9]{8}\s+\[error\]\s+([0-9]*#[0-9]*\:\s)(.*))--end:drop-last-lf%\n"
         $Template nginxalert,"%TIMESTAMP% %HOSTNAME% %syslogtag:R,ERE,1,BLANK:(.*)(\:)--end%[%msg:R,ERE,2,FIELD:([0-9]*#)([0-9]*)(.*)--end%]:%msg:R,ERE,3,BLANK:([0-9]{4}/[0-9]{2}/[0-9]{2}\s+[:0-9]{8}\s+\[alert\]\s+([0-9]*#[0-9]*\:\s)(.*))--end:sp-if-no-1st-sp%%msg:R,ERE,3,BLANK:([0-9]{4}/[0-9]{2}/[0-9]{2}\s+[:0-9]{8}\s+\[alert\]\s+([0-9]*#[0-9]*\:\s)(.*))--end:drop-last-lf%\n"
         $Template nginxcritical,"%TIMESTAMP% %HOSTNAME% %syslogtag:R,ERE,1,BLANK:(.*)(\:)--end%[%msg:R,ERE,2,FIELD:([0-9]*#)([0-9]*)(.*)--end%]:%msg:R,ERE,3,BLANK:([0-9]{4}/[0-9]{2}/[0-9]{2}\s+[:0-9]{8}\s+\[crit\]\s+([0-9]*#[0-9]*\:\s)(.*))--end:sp-if-no-1st-sp%%msg:R,ERE,3,BLANK:([0-9]{4}/[0-9]{2}/[0-9]{2}\s+[:0-9]{8}\s+\[crit\]\s+([0-9]*#[0-9]*\:\s)(.*))--end:drop-last-lf%\n"
@@ -287,7 +287,7 @@
           stop
         }
         if $programname == 'nginx' then {
-          action(type="omfile" file="/var/log/nginx/access.log" template="FileFormat_timestamp_nginx"  FileCreateMode="0644" FileGroup="adm" FileOwner="www-data")
+          action(type="omfile" file="/var/log/nginx/access.log" template="FileFormat_timestamp"  FileCreateMode="0644" FileGroup="adm" FileOwner="www-data")
           stop
         }
   - name: Copy logrotate

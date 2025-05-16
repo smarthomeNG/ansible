@@ -137,7 +137,7 @@
       path: "/etc/rsyslog.d/openvpn.conf"
       create: yes
       block: |
-        template(name="FileFormat_timestamp" type="string" string= "%TIMESTAMP% %HOSTNAME% %syslogtag% %pri-text%%msg:::sp-if-no-1st-sp%%msg:::drop-last-lf%\n")
+        $Template FileFormat_timestamp,"%TIMESTAMP% %HOSTNAME% %syslogtag% %pri-text%%msg:::sp-if-no-1st-sp%%msg:::drop-last-lf%\n"
         if $programname == 'ovpn-server' or $msg contains 'openvpn' then {
           action(type="omfile" file="/var/log/openvpn.log" template="FileFormat_timestamp" FileCreateMode="0644" FileGroup="adm")
           stop
