@@ -312,7 +312,7 @@
     wait_for:
       path: "{{ log_file_to_check }}"
       search_regex: "{{ last_line_of_the_log_file }}\r(.*\r)*.*{{ wanted_pattern }}"
-      timeout: 900
+      timeout: 1900
 
   - name: Restart smarthome service
     systemd: state=restarted name=smarthome.service

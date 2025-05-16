@@ -12,9 +12,6 @@
   - name: Install logcheck
     apt: name=logcheck force=no state=latest install_recommends=yes
 
-  - name: Install python-magic
-    apt: name=python3-magic force=no state=latest install_recommends=no
-
   - name: Copy syslogsummary
     copy:
       src: executables/syslog-summary.py
@@ -218,6 +215,13 @@
     file:
       path: /etc/logcheck/logcheck.logfiles.d/journal.logfiles
       state: absent
+
+  - name: Install python-magic
+    pip:
+      name: python-magic
+      state: latest
+    become: true
+    become_user: root
 
   - name: disable logcheck1
     lineinfile:

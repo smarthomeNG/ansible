@@ -59,13 +59,13 @@
         log_file_path = syslog
         syslog_timestamp = false
         syslog_duplication = false
-    ignore_errors: yes
+    ignore_errors: no
 
   - name: logrotate
     lineinfile:
       path: /etc/logrotate.d/rsyslog
       insertbefore: BOF
-      line: /var/log/exim4/mainlog  
+      line: /var/log/exim4/mainlog
 
   - name: logfile
     blockinfile:

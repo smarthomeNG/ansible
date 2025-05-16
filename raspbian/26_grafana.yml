@@ -202,7 +202,7 @@
 
   - name: pause
     pause:
-      seconds: 20
+      seconds: 30
 
   - name: Create smarthome user
     community.grafana.grafana_user:
