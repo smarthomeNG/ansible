@@ -1,0 +1,14 @@
+[Unit]
+Description=Homebridge
+After=network.target
+
+[Service]
+Type=simple
+User=homebridge
+Environment=UIX_CAN_SHUTDOWN_RESTART_HOST=1
+ExecStart=/usr/bin/homebridge -I
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

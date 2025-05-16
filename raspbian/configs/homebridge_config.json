@@ -10,7 +10,7 @@
         {
             "platform": "homebridge-smarthomeng.SmartHomeNG",
             "name": "SmartHomeNG",
-            "host": "smarthome.iot.wagener.family",
+            "host": "localhost",
             "port": 2425,
             "tls": true,
             "accessories": [
@@ -50,7 +50,7 @@
                     "Brightness": "EG.Buero.Deckenspots.dimmen",
                     "BrightnessMin": 0,
                     "BrightnessMax": 255
-                }
+                },
                 {
                     "type": "Lightbulb",
                     "name": "RGB Leiste Stube",
@@ -80,7 +80,6 @@
                     "type": "Thermostat",
                     "name": "Temperatur Büro",
                     "CurrentTemperature": "EG.Buero.Temperatur",
-                    "TargetTemperature": "EG.Buero.Temperatur.Sollwert",
                     "CurrentHeatingCoolingState": "EG.Buero.Temperatur.Modus"
                 },
                 {

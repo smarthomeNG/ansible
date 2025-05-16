@@ -18,30 +18,6 @@
   - name: Update npm
     command: npm install npm@latest -g
 
-  - name: key
-    apt_key:
-      url: https://repo.homebridge.io/KEY.gpg
-      state: present
-      keyring: /usr/share/keyrings/homebridge.key
-      validate_certs: False
-
-  - name: repo
-    apt_repository:
-      repo: deb [signed-by=/usr/share/keyrings/homebridge.key] https://repo.homebridge.io stable main
-      state: present
-      filename: homebridge
-
-  - name: Install homebridge
-    apt: name=homebridge force=no state=latest update_cache=yes
-
-  - name: Rebuild npm
-    shell: npm rebuild
-    args:
-      chdir: /usr/lib/node_modules/homebridge
-    register: rebuildnpm
-    ignore_errors: true
-  - debug: var=rebuildnpm
-
   - name: logrotate
     lineinfile:
       path: /etc/logrotate.d/rsyslog
@@ -53,12 +29,15 @@
       dest: "/etc/rsyslog.d/homebridge.conf"
       create: yes
       block: |
-        template(name="FileFormat_timestamp" type="string" string= "%TIMESTAMP% %HOSTNAME% %syslogtag% %pri-text%%msg:::sp-if-no-1st-sp%%msg:::drop-last-lf%\n")
+        $Template FileFormat_timestamp,"%TIMESTAMP% %HOSTNAME% %syslogtag% %pri-text%%msg:::sp-if-no-1st-sp%%msg:::drop-last-lf%\n"
         if $programname == 'homebridge' or $msg contains 'Homebridge'  or $msg contains 'homebridge' then {
-          action(type="omfile" file="/var/lib/homebridge/homebridge.log" template="FileFormat_timestamp" FileGroup="adm"  FileCreateMode="0644")
+          action(type="omfile" file="/var/log/homebridge.log" template="FileFormat_timestamp" FileGroup="adm"  FileCreateMode="0644")
           stop
         }
     ignore_errors: yes
+
+  - name: Install Homebridge
+    shell: npm install -g homebridge homebridge-config-ui-x
 
   - name: Install people
     shell: npm install -g homebridge-people
@@ -67,13 +46,36 @@
     shell: npm install -g forever
 
   - name: Install Plugin
-    shell: npm install -g homebridge-smarthomeng --unsafe-perm
+    shell: npm install -g homebridge-smarthomeng
+
+  - name: Create Group
+    group:
+      name: smarthome
+      state: present
+
+  - name: Create User
+    user:
+      name: homebridge
+      shell: /bin/bash
+      groups: smarthome
+      append: no
+      update_password: always
+      password: ""
+      comment: 'Homebridge User'
+
+  - name: create dir
+    file:
+      path: /home/homebridge/.homebridge
+      state: directory
+      owner: homebridge
+      group: smarthome
+      mode: 0755
 
   - name: Copy config
     copy:
       src: configs/homebridge_config.json
-      dest: /var/lib/homebridge/config.json
-      owner: smarthome
+      dest: /home/homebridge/.homebridge/config.json
+      owner: homebridge
       group: smarthome
       mode: 775
 
@@ -85,24 +87,25 @@
       group: logcheck
       mode: 0644
 
-  - name: create systemd dir homebridge
-    file:
-      path: /etc/systemd/system/homebridge.service.d/
-      state: directory
-
-  - name: Copy service_conf homebridge
+  - name: Copy service
     copy:
-      src: configs/service_homebridge_fix.conf
-      dest: /etc/systemd/system/homebridge.service.d/
+      src: configs/homebridge.service
+      dest: /etc/systemd/system/
       owner: homebridge
       group: adm
       mode: 0644
 
+  - name: Stop avahi service
+    systemd: state=stopped name=avahi-daemon.service
+
+  - name: disable avahi
+    systemd: enabled=no name=avahi-daemon.service
+
   - name: Restart Service
     systemd: state=restarted name=homebridge.service
-    notify: disable_homebridge
 
-handlers:
   - name: disable homebridge
     systemd: enabled=no name=homebridge.service
-    register: disable_homebridge
+
+  - name: Stop homebridge service
+    systemd: state=stopped name=homebridge.service
