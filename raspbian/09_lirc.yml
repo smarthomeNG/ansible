@@ -43,18 +43,12 @@
       src: configs/logrotate_lircd
       dest: /etc/logrotate.d/lircd
 
-  - name: lirc log
-    lineinfile:
-      path: /etc/logrotate.d/rsyslog
-      insertbefore: BOF
-      line: /var/log/lirc.log
-
   - name: logfile
     blockinfile:
       path: "/etc/rsyslog.d/lirc.conf"
       create: yes
       block: |
-        template(name="FileFormat_timestamp" type="string" string= "%TIMESTAMP% %HOSTNAME% %syslogtag% %pri-text%%msg:::sp-if-no-1st-sp%%msg:::drop-last-lf%\n")
+        $Template FileFormat_timestamp,"%TIMESTAMP% %HOSTNAME% %syslogtag% %pri-text%%msg:::sp-if-no-1st-sp%%msg:::drop-last-lf%\n"
         if $programname startswith 'lircd-' then {
           stop
         }

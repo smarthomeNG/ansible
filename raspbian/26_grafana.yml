@@ -71,8 +71,8 @@
       path: "/etc/rsyslog.d/grafana.conf"
       create: yes
       block: |
-        template(name="grafana" type="string" string= "%TIMESTAMP% %HOSTNAME% %syslogtag% %pri-text:R,ERE,1,FIELD:local7.(.*)--end%%msg:R,ERE,2,FIELD:(.*)msg=(.*)--end:sp-if-no-1st-sp%%msg:R,ERE,2,FIELD:(.*)msg=(.*)--end:drop-last-lf%\n")
-        template(name="promtail" type="string" string= "%TIMESTAMP% %HOSTNAME% %syslogtag% %msg:R,ERE,1,FIELD:level=(debug|info|warn|error)--end%%msg:R,ERE,2,FIELD:(.*)msg=(.*)--end:sp-if-no-1st-sp%%msg:R,ERE,2,FIELD:(.*)msg=(.*)--end:drop-last-lf%\n")
+        $Template grafana,"%TIMESTAMP% %HOSTNAME% %syslogtag% %pri-text:R,ERE,1,FIELD:local7.(.*)--end%%msg:R,ERE,2,FIELD:(.*)msg=(.*)--end:sp-if-no-1st-sp%%msg:R,ERE,2,FIELD:(.*)msg=(.*)--end:drop-last-lf%\n"
+        $Template promtail,"%TIMESTAMP% %HOSTNAME% %syslogtag% %msg:R,ERE,1,FIELD:level=(debug|info|warn|error)--end%%msg:R,ERE,2,FIELD:(.*)msg=(.*)--end:sp-if-no-1st-sp%%msg:R,ERE,2,FIELD:(.*)msg=(.*)--end:drop-last-lf%\n"
         if $syslogfacility-text == 'local7' and ($programname == 'grafana-server' or $programname == 'grafana') then {
           action(type="omfile" file="/var/log/grafana.log" template="grafana" FileGroup="adm"  FileCreateMode="0644")
           stop
@@ -93,9 +93,20 @@
       insertafter: '^;root_url ='
       line: 'root_url = %(protocol)s://%(domain)s/grafana/'
 
+  - name: Enable reporting_enabled = false in [analytics] section
+    ansible.builtin.replace:
+      path: /etc/grafana/grafana.ini
+      regexp: '^(\s*;?\s*reporting_enabled\s*=).*'
+      replace: 'reporting_enabled = false'
+
+  - name: Remove conflicting Grafana table-new plugin
+    ansible.builtin.file:
+      path: /usr/share/grafana/public/app/plugins/panel/table/table-new
+      state: absent
+
   - name: download loki
     unarchive:
-      src: https://github.com/grafana/loki/releases/latest/download/loki-linux-arm.zip
+      src: https://github.com/grafana/loki/releases/latest/download/loki-linux-arm64.zip
       dest: /usr/local/bin
       remote_src: true
       mode: 0775
@@ -104,7 +115,7 @@
 
   - name: download promtail
     unarchive:
-      src: https://github.com/grafana/loki/releases/latest/download/promtail-linux-arm.zip
+      src: https://github.com/grafana/loki/releases/latest/download/promtail-linux-arm64.zip
       dest: /usr/local/bin
       remote_src: true
       mode: 0775
@@ -132,7 +143,7 @@
   - name: loki service
     copy:
       src: /etc/ansible/configs/loki.service
-      dest: /lib/systemd/system/loki.service
+      dest: /etc/systemd/system/loki.service
       remote_src: true
 
   - name: promtail service
@@ -151,7 +162,7 @@
     file:
       path: /var/lib/grafana/plugins
       state: directory
-      owner: smarthome
+      owner: grafana
       group: grafana
       mode: 0744
 
@@ -202,7 +213,7 @@
 
   - name: pause
     pause:
-      seconds: 20
+      seconds: 30
 
   - name: Create smarthome user
     community.grafana.grafana_user:

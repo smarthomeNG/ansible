@@ -59,20 +59,14 @@
         log_file_path = syslog
         syslog_timestamp = false
         syslog_duplication = false
-    ignore_errors: yes
-
-  - name: logrotate
-    lineinfile:
-      path: /etc/logrotate.d/rsyslog
-      insertbefore: BOF
-      line: /var/log/exim4/mainlog  
+    ignore_errors: no
 
   - name: logfile
     blockinfile:
       path: "/etc/rsyslog.d/exim4.conf"
       create: yes
       block: |
-        template(name="FileFormat_timestamp" type="string" string= "%TIMESTAMP% %HOSTNAME% %syslogtag% %pri-text%%msg:::sp-if-no-1st-sp%%msg:::drop-last-lf%\n")
+        $Template FileFormat_timestamp,"%TIMESTAMP% %HOSTNAME% %syslogtag% %pri-text%%msg:::sp-if-no-1st-sp%%msg:::drop-last-lf%\n"
         if $programname startswith 'exim' and $syslogseverity-text == 'info' then {
           action(type="omfile" file="/var/log/exim4/mainlog" template="FileFormat_timestamp" FileCreateMode="0644" FileGroup="adm" FileOwner="Debian-exim")
           stop

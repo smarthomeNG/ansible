@@ -72,20 +72,14 @@
       regexp: "logtarget = (.*)"
       replace: 'logtarget = sysout[format="%%(levelname)-7s %%(message)s"]'
 
-  - name: logrotate
-    lineinfile:
-      path: /etc/logrotate.d/rsyslog
-      insertbefore: BOF
-      line: /var/log/fail2ban.log
-
   - name: logfile
     blockinfile:
       path: "/etc/rsyslog.d/fail2ban.conf"
       create: yes
       block: |
-        template(name="fail2ban_timestamp" type="string" string= "%TIMESTAMP% %HOSTNAME% %syslogtag%%msg:::sp-if-no-1st-sp%%msg:::drop-last-lf%\n")
+        $Template FileFormat_timestamp,"%TIMESTAMP% %HOSTNAME% %syslogtag% %pri-text%%msg:::sp-if-no-1st-sp%%msg:::drop-last-lf%\n"
         if $programname startswith 'fail2ban' then {
-          action(type="omfile" file="/var/log/fail2ban.log" template="fail2ban_timestamp" FileCreateMode="0644" FileGroup="adm")
+          action(type="omfile" file="/var/log/fail2ban.log" template="FileFormat_timestamp" FileCreateMode="0644" FileGroup="adm")
           stop
         }
     ignore_errors: yes

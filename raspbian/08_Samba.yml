@@ -66,18 +66,12 @@
       regexp: "PIDFile=/var/run/samba/nmbd.pid"
       replace: "PIDFile=/run/samba/nmbd.pid"
 
-  - name: samba log
-    lineinfile:
-      path: /etc/logrotate.d/rsyslog
-      insertbefore: BOF
-      line: /var/log/samba.log
-
   - name: logfile
     blockinfile:
       path: "/etc/rsyslog.d/samba.conf"
       create: yes
       block: |
-        template(name="samba_format" type="string" string= "%TIMESTAMP% %HOSTNAME% %syslogtag% %pri-text:R,ERE,1,FIELD:daemon.(.*)--end%%msg:R,ERE,1,FIELD:^[ \t]*(.*)$--end:sp-if-no-1st-sp%%msg:R,ERE,1,FIELD:^[ \t]*(.*)$--end:drop-last-lf%\n")
+        $Template samba_format,"%TIMESTAMP% %HOSTNAME% %syslogtag% %pri-text:R,ERE,1,FIELD:daemon.(.*)--end%%msg:R,ERE,1,FIELD:^[ \t]*(.*)$--end:sp-if-no-1st-sp%%msg:R,ERE,1,FIELD:^[ \t]*(.*)$--end:drop-last-lf%\n"
         if ($programname == 'nmbd' or $programname startswith 'smbd') and ($msg contains '../lib/' or $msg contains '../source' or $msg contains '../librpc' or $msg contains '../libcli/') then {
           stop
         }

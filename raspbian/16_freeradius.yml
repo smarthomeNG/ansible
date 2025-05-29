@@ -86,8 +86,8 @@
       destfile: /lib/systemd/system/freeradius.service
       regexp: "MemoryLimit=2G"
       replace: "MemoryMax=1G"
-    ignore_errors: yes 
- 
+    ignore_errors: yes
+
   - name: disable_ldap1
     replace:
       destfile: /etc/freeradius/3.0/sites-enabled/default
@@ -163,12 +163,6 @@
       name: logcheck
       groups: freerad
       append: yes
-
-  - name: logrotate
-    lineinfile:
-      path: /etc/logrotate.d/rsyslog
-      insertbefore: BOF
-      line: /var/log/freeradius.log
 
   - name: logfile
     blockinfile:

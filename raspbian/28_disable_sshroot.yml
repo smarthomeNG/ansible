@@ -30,3 +30,11 @@
       destfile: /etc/ssh/sshd_config
       regexp: "PermitRootLogin yes"
       replace: "#PermitRootLogin prohibit-password"
+
+  - name: enable_socket
+    systemd: enabled=yes name=knxd.socket
+    register: enable_knxd_socket
+
+  - name: enable_service
+    systemd: enabled=yes name=knxd.service
+    register: enable_knxd_service

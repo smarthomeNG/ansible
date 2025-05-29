@@ -7,7 +7,7 @@ Type=simple
 User=grafana
 ExecStartPre=+/usr/bin/touch /tmp/positions.yaml
 ExecStartPre=+/usr/bin/chown grafana:adm /tmp/positions.yaml
-ExecStart=/usr/local/bin/promtail-linux-arm -config.file /etc/grafana/config-promtail.yaml
+ExecStart=/usr/local/bin/promtail-linux-arm64 -config.file /etc/grafana/config-promtail.yaml
 
 [Install]
 WantedBy=multi-user.target

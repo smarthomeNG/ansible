@@ -89,6 +89,7 @@ sudo cp /etc/ssh/ssh_host_rsa_key /home/smarthome/smarthomeng.private
 sudo chown smarthome:smarthome /home/smarthome/smarthomeng.private
 RES='Created new SSH host keys. Copy /etc/ssh/ssh_host_rsa_key to your client and connect as smarthome or root!'
 sudo echo ${RES} >> /var/log/firstboot.log
-RES='To expand SD disk to full capacity use raspi-config.'
+sudo raspi-config --expand-rootfs
+RES='Disk size should be automatically expanded. If not, use raspi-config. Make sure to reboot.'
 sudo echo ${RES}
 sudo echo ${RES} >> /var/log/firstboot.log

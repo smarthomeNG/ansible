@@ -170,14 +170,6 @@
       create: yes
       line: 'ACTION=="add", SUBSYSTEM=="tty", ATTRS{id}=="00241011", KERNELS=="3f201000.uart", SYMLINK+="ttyKNX1", OWNER="knxd"'
 
-  - name: enable_socket
-    systemd: enabled=yes name=knxd.socket
-    register: enable_knxd_socket
-
-  - name: enable_service
-    systemd: enabled=yes name=knxd.service
-    register: enable_knxd_service
-
   - name: Stop knxd socket
     systemd: state=stopped name=knxd.socket
 
