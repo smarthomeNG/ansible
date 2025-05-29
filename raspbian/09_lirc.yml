@@ -43,12 +43,6 @@
       src: configs/logrotate_lircd
       dest: /etc/logrotate.d/lircd
 
-  - name: lirc log
-    lineinfile:
-      path: /etc/logrotate.d/rsyslog
-      insertbefore: BOF
-      line: /var/log/lirc.log
-
   - name: logfile
     blockinfile:
       path: "/etc/rsyslog.d/lirc.conf"

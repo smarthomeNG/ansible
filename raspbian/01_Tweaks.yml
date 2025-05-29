@@ -466,12 +466,6 @@
       block: |
         if $programname startswith "kernel" and ($msg contains "vc4-drm gpu" or $msg contains "drm:drm_client_modeset_probe" or $msg contains "drm:drm_mode_prune_invalid" or $msg contains "drm:drm_helper_probe_single_connector_modes" or $msg contains "drm:update_display_info" or $msg contains "drm:_drm_edid_connector_update" or $msg contains "drm:drm_mode_debug_printmodeline" or $msg contains "drm:drm_atomic_normalize_zpos" or $msg contains "switching to colour frame buffer device") then stop
 
-  - name: logrotate
-    lineinfile:
-      path: /etc/logrotate.d/rsyslog
-      insertbefore: BOF
-      line: /var/log/dpkg.log
-
   - name: systemd-timesyncd
     systemd: enabled=yes name=systemd-timesyncd.service
 

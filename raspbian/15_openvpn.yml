@@ -126,12 +126,6 @@
       dest: /etc/logrotate.d/openvpn
       mode: 0644
 
-  - name: logrotate
-    lineinfile:
-      path: /etc/logrotate.d/rsyslog
-      insertbefore: BOF
-      line: /var/log/openvpn.log
-
   - name: logfile
     blockinfile:
       path: "/etc/rsyslog.d/openvpn.conf"

@@ -70,12 +70,6 @@
     become: true
     become_user: smarthome
 
-  - name: logrotate
-    lineinfile:
-      path: /etc/logrotate.d/rsyslog
-      insertbefore: BOF
-      line: /var/log/influxdb.log
-
   - name: logfile
     blockinfile:
       dest: "/etc/rsyslog.d/influxdb.conf"

@@ -125,12 +125,6 @@
       group: www-data
       mode: 0755
 
-  - name: logrotate
-    lineinfile:
-      path: /etc/logrotate.d/rsyslog
-      insertbefore: BOF
-      line: /var/log/monit.log
-
   - name: logfile
     blockinfile:
       path: "/etc/rsyslog.d/monit.conf"

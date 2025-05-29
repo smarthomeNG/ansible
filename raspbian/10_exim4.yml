@@ -61,12 +61,6 @@
         syslog_duplication = false
     ignore_errors: no
 
-  - name: logrotate
-    lineinfile:
-      path: /etc/logrotate.d/rsyslog
-      insertbefore: BOF
-      line: /var/log/exim4/mainlog
-
   - name: logfile
     blockinfile:
       path: "/etc/rsyslog.d/exim4.conf"

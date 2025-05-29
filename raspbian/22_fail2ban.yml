@@ -72,12 +72,6 @@
       regexp: "logtarget = (.*)"
       replace: 'logtarget = sysout[format="%%(levelname)-7s %%(message)s"]'
 
-  - name: logrotate
-    lineinfile:
-      path: /etc/logrotate.d/rsyslog
-      insertbefore: BOF
-      line: /var/log/fail2ban.log
-
   - name: logfile
     blockinfile:
       path: "/etc/rsyslog.d/fail2ban.conf"
