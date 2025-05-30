@@ -1,3 +1,3 @@
 ^[-0-9]{10}\s[:,0-9]{8,12}\sgrafana(.*)\[[0-9]+\]\:\s+(local7.)?info
 ^\w{3}(.*)[0-9]{1,2}\s[:0-9]{8}\s[._[:alnum:]-]+\sgrafana(.*)\[[0-9]+\]\:\s+(local7.)?info
-^\w{3}(.*)[0-9]{1,2}\s[:0-9]{8}\s[._[:alnum:]-]+\s(loki-linux-arm|promtail-linux-arm)\[[0-9]+\]\:\s+(daemon.|user.)?(info|debug)
+^\w{3}(.*)[0-9]{1,2}\s[:0-9]{8}\s[._[:alnum:]-]+\s(loki-linux-arm64|promtail-linux-arm64)\[[0-9]+\]\:\s+(daemon.|user.)?(info|debug)
