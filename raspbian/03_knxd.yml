@@ -122,19 +122,50 @@
       owner: smarthome
       group: smarthome
 
-  - name: change prio
-    blockinfile:
-      path: /lib/systemd/system/knxd.service
-      block: |
-        Nice=-20
-        IOSchedulingClass=realtime
-        IOSchedulingPriority=0
-        CPUSchedulingPolicy=rr
-        CPUSchedulingPriority=98
-        IOAccounting=True
-        IOWeight=5000
-      insertafter: "Type=notify"
-    ignore_errors: yes
+  - name: create systemd dir knxd
+    file:
+      path: /etc/systemd/system/knxd.service.d/
+      state: directory
+
+  - name: Change prio
+    copy:
+      src: configs/service_knxd_fix.conf
+      dest: /etc/systemd/system/knxd.service.d/
+      owner: root
+      group: adm
+      mode: 0644
+
+  - name: Ensure override directory exists for knxd.socket
+    file:
+      path: /etc/systemd/system/knxd.socket.d
+      state: directory
+      mode: '0755'
+
+  - name: Override ListenStream path for knxd.socket
+    copy:
+      dest: /etc/systemd/system/knxd.socket.d/override.conf
+      content: |
+        [Socket]
+        ListenStream=/run/knx
+      owner: root
+      group: root
+      mode: '0644'
+
+  - name: Ensure override directory exists for knxd-net.socket
+    file:
+      path: /etc/systemd/system/knxd-net.socket.d
+      state: directory
+      mode: '0755'
+
+  - name: Override ListenStream path for knxd-net.socket
+    copy:
+      dest: /etc/systemd/system/knxd-net.socket.d/override.conf
+      content: |
+        [Socket]
+        ListenStream=/run/knxnet
+      owner: root
+      group: root
+      mode: '0644'
 
   - name: Stop knxd socket
     systemd: state=stopped name=knxd.socket

@@ -69,17 +69,9 @@
 
   - name: Install swig4
     apt:
-      name: swig4.0
+      name: swig
       state: latest
       install_recommends: no
-
-  - name: swiglink
-    ansible.builtin.file:
-      src: /usr/bin/swig4.0
-      dest: /usr/bin/swig
-      owner: root
-      group: root
-      state: link
 
   - name: Install libssl-dev
     apt:
@@ -149,22 +141,6 @@
       state: directory
       mode: 0755
     ignore_errors: yes
-
-  - name: Copy python 3.10
-    unarchive:
-      src: https://www.python.org/ftp/python/3.10.13/Python-3.10.13.tar.xz
-      dest: /usr/local/src
-      remote_src: yes
-
-  - name: Configure python 3.10
-    command: ./configure
-    args:
-      chdir: /usr/local/src/Python-3.10.13
-
-  - name: Install python 3.10
-    command: make install
-    args:
-      chdir: /usr/local/src/Python-3.10.13
 
   - name: Purge python cache
     command: pip3 cache purge

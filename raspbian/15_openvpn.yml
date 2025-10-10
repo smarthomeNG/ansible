@@ -60,23 +60,19 @@
       dest: /home/smarthome/openvpn_client_example.conf
       mode: 0644
 
-  - name: ip4
-    replace:
-      destfile: /etc/sysctl.conf
-      regexp: "^#net.ipv4.ip_forward=1"
-      replace: "net.ipv4.ip_forward=1"
-    ignore_errors: yes
+  - name: Enable IPv4 and IPv6 forwarding persistently
+    copy:
+      dest: /etc/sysctl.d/99-forwarding.conf
+      content: |
+        net.ipv4.ip_forward=1
+        net.ipv6.conf.all.forwarding=1
+      owner: root
+      group: root
+      mode: '0644'
 
-  - name: ip6
-    replace:
-      destfile: /etc/sysctl.conf
-      regexp: "^#net.ipv6.conf.all.forwarding=1"
-      replace: "net.ipv6.conf.all.forwarding=1"
-    ignore_errors: yes
-
-  - name: store sysctl
-    shell: "sysctl -p"
-    register: sysctl
+  - name: Apply sysctl settings immediately
+    shell: sysctl --system
+    changed_when: false
 
   - name: Install iptables
     apt: name=iptables-persistent force=no state=latest install_recommends=true
