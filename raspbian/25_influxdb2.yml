@@ -9,18 +9,20 @@
     ansible_python_interpreter: /usr/bin/python3
 
   tasks:
-  - name: key
-    apt_key:
+  - name: Download InfluxData GPG key
+    become: true
+    ansible.builtin.get_url:
       url: https://repos.influxdata.com/influxdata-archive_compat.key
-      state: present
-      keyring: /etc/apt/trusted.gpg.d/influxdata.gpg
-      validate_certs: False
+      dest: /usr/share/keyrings/influxdata-archive_compat.gpg
+      mode: '0644'
+      validate_certs: false
 
-  - name: repo
-    apt_repository:
-      repo: deb [signed-by=/etc/apt/trusted.gpg.d/influxdata.gpg] https://repos.influxdata.com/debian stable main
+  - name: Add InfluxData repository
+    become: true
+    ansible.builtin.apt_repository:
+      repo: "deb [signed-by=/usr/share/keyrings/influxdata-archive_compat.gpg] https://repos.influxdata.com/debian stable main"
       state: present
-      filename: influxdb
+      filename: influxdata
 
   - name: Allow release-info to change for APT repositories
     command: apt-get update -y --allow-releaseinfo-change
@@ -37,7 +39,7 @@
   - name: Install influxdb_client
     pip:
       name: influxdb_client
-      virtualenv: /usr/local/smarthome/venvs/py_311
+      virtualenv: /usr/local/smarthome/venvs/py_313
       virtualenv_site_packages: yes
       state: latest
     become: true
@@ -46,25 +48,7 @@
   - name: Install pandas
     pip:
       name: pandas
-      virtualenv: /usr/local/smarthome/venvs/py_311
-      virtualenv_site_packages: yes
-      state: latest
-    become: true
-    become_user: smarthome
-
-  - name: Install influxdb_client 3.10
-    pip:
-      name: influxdb_client
-      virtualenv: /usr/local/smarthome/venvs/py_310
-      virtualenv_site_packages: yes
-      state: latest
-    become: true
-    become_user: smarthome
-
-  - name: Install pandas 3.10
-    pip:
-      name: pandas
-      virtualenv: /usr/local/smarthome/venvs/py_310
+      virtualenv: /usr/local/smarthome/venvs/py_313
       virtualenv_site_packages: yes
       state: latest
     become: true

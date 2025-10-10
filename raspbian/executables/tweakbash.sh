@@ -1,5 +1,5 @@
 #!/bin/bash
-PATH=$PATH:/usr/lib/knxd:/opt/susvd:/opt/:/opt/setup:/home/smarthome/.local/bin:/home/smarthome/node_modules/.bin:/root/node_modules/.bin:/usr/local/smarthome/venvs/:/usr/local/smarthome/venvs/py_310/bin:/usr/local/smarthome/venvs/py_311/bin:/usr/local/smarthome/tools/
+PATH=$PATH:/usr/lib/knxd:/opt/susvd:/opt/:/opt/setup:/home/smarthome/.local/bin:/home/smarthome/node_modules/.bin:/root/node_modules/.bin:/usr/local/smarthome/venvs/:/usr/local/smarthome/venvs/py_313/bin:/usr/local/smarthome/tools/
 export MAKEFLAGS="-j 4"
 
 # Color Tweaks
@@ -67,7 +67,7 @@ let hours=$((${upSeconds}/3600%24))
 let days=$((${upSeconds}/86400))
 UPTIME=`printf "%d days, %02dh%02dm%02ds" "$days" "$hours" "$mins" "$secs"`
 
-source /usr/local/smarthome/tools/act 310
+source /usr/local/smarthome/tools/act 313
 
 echo "$(tput setaf 2)
 SmartHome Raspi running for: ${UPTIME}

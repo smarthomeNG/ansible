@@ -34,14 +34,7 @@
   - name: Install paho-mqtt
     pip:
       name: paho-mqtt
-      virtualenv: /usr/local/smarthome/venvs/py_311
-      virtualenv_site_packages: yes
-      state: latest
-
-  - name: Install paho-mqtt 3.10
-    pip:
-      name: paho-mqtt
-      virtualenv: /usr/local/smarthome/venvs/py_310
+      virtualenv: /usr/local/smarthome/venvs/py_313
       virtualenv_site_packages: yes
       state: latest
 

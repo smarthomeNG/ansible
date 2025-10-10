@@ -121,60 +121,30 @@
       group: smarthome
       mode: 0755
 
-  - name: Create Python 3.11 virtual environment
+  - name: Create Python virtual environment
     command:
-      cmd: python3.11 -m venv /usr/local/smarthome/venvs/py_311
+      cmd: python3 -m venv /usr/local/smarthome/venvs/py_313
 
-  - name: Create Python 3.10 virtual environment
-    command:
-      cmd: python3.10 -m venv /usr/local/smarthome/venvs/py_310
-
-  - name: Owner smarthome 3.11
+  - name: Owner smarthome
     file:
-        path: /usr/local/smarthome/venvs/py_311
+        path: /usr/local/smarthome/venvs/py_313
         owner: smarthome
         group: smarthome
         mode: 0755
         state: directory
         recurse: yes
 
-  - name: Owner smarthome 3.10
-    file:
-        path: /usr/local/smarthome/venvs/py_310
-        owner: smarthome
-        group: smarthome
-        mode: 0755
-        state: directory
-        recurse: yes
-
-  - name: upgrade pip3.11
+  - name: upgrade pip
     pip:
       name: pip
-      virtualenv: /usr/local/smarthome/venvs/py_311
-      virtualenv_site_packages: yes
-      state: latest
-
-  - name: upgrade pip3.10
-    pip:
-      name: pip
-      virtualenv: /usr/local/smarthome/venvs/py_310
+      virtualenv: /usr/local/smarthome/venvs/py_313
       virtualenv_site_packages: yes
       state: latest
 
   - name: Install modules
     pip:
       name: "{{ item }}"
-      virtualenv: /usr/local/smarthome/venvs/py_310
-      virtualenv_site_packages: yes
-      state: latest
-    environment:
-      PATH: "{{ ansible_env.PATH }}:/home/smarthome/.cargo/bin"
-    with_items: "{{ pythoninstall }}"
-
-  - name: Install modules
-    pip:
-      name: "{{ item }}"
-      virtualenv: /usr/local/smarthome/venvs/py_311
+      virtualenv: /usr/local/smarthome/venvs/py_313
       virtualenv_site_packages: yes
       state: latest
     environment:
@@ -196,23 +166,14 @@
       state: directory
 
   - name: Update requirements
-    command: /usr/local/smarthome/venvs/py_310/bin/python3 /usr/local/smarthome/tools/build_requirements.py
+    command: /usr/local/smarthome/venvs/py_313/bin/python3 /usr/local/smarthome/tools/build_requirements.py
     become: true
     become_user: smarthome
 
-  - name: Install requirements 3.11
+  - name: Install requirements
     pip:
         requirements: /usr/local/smarthome/requirements/base.txt
-        virtualenv: /usr/local/smarthome/venvs/py_311
-        virtualenv_site_packages: yes
-        state: latest
-    become: true
-    become_user: smarthome
-
-  - name: Install requirements 3.10
-    pip:
-        requirements: /usr/local/smarthome/requirements/base.txt
-        virtualenv: /usr/local/smarthome/venvs/py_310
+        virtualenv: /usr/local/smarthome/venvs/py_313
         virtualenv_site_packages: yes
         state: latest
     become: true
@@ -244,7 +205,7 @@
     replace:
       destfile: /usr/local/smarthome/etc/smarthome.yaml.default
       regexp: '#pip_command: "python3 -m pip"'
-      replace: 'pip_command: "/usr/local/smarthome/venvs/py_310/bin/python3 -m pip"'
+      replace: 'pip_command: "/usr/local/smarthome/venvs/py_313/bin/python3 -m pip"'
 
   - name: Init
     lineinfile:
@@ -274,18 +235,7 @@
   - name: Reinstall pyopenssl
     pip:
       name: pyopenssl
-      virtualenv: /usr/local/smarthome/venvs/py_311
-      virtualenv_site_packages: yes
-      state: latest
-    become: true
-    become_user: smarthome
-    environment:
-      PATH: "{{ ansible_env.PATH }}:/home/smarthome/.cargo/bin"
-
-  - name: Reinstall pyopenssl 3.10
-    pip:
-      name: pyopenssl
-      virtualenv: /usr/local/smarthome/venvs/py_310
+      virtualenv: /usr/local/smarthome/venvs/py_313
       virtualenv_site_packages: yes
       state: latest
     become: true
@@ -302,7 +252,7 @@
     register: restart_smarthome
 
   - name: start smarthome
-    shell: /usr/local/smarthome/venvs/py_310/bin/python3 /usr/local/smarthome/bin/smarthome.py
+    shell: /usr/local/smarthome/venvs/py_313/bin/python3 /usr/local/smarthome/bin/smarthome.py
     async: 1000
     poll: 0
     become: true

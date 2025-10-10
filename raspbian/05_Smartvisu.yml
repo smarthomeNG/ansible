@@ -35,7 +35,7 @@
 
   - name: safedirectory
     command: git config --global --add safe.directory /var/www/html/smartvisu
-    
+
   - name: Git Smartvisu 3
     git:
       repo: 'https://github.com/Martin-Gleiss/smartvisu'
@@ -62,13 +62,13 @@
       state: directory
 
   - name: mbstring
-    apt: name=php8.2-mbstring force=no state=latest
+    apt: name=php8.4-mbstring force=no state=latest
 
   - name: xml
-    apt: name=php8.2-xml force=no state=latest
+    apt: name=php8.4-xml force=no state=latest
 
   - name: Restart php
-    systemd: state=restarted name=php8.2-fpm.service
+    systemd: state=restarted name=php8.4-fpm.service
 
   - name: Restart nginx
     systemd: state=restarted name=nginx

@@ -64,7 +64,7 @@
       state: touch
 
   - name: Install curl
-    apt: name=php8.2-curl force=no state=latest install_recommends=yes
+    apt: name=php8.4-curl force=no state=latest install_recommends=yes
 
   - name: make dirs 0755
     command: find "{{ monitgraphpath }}" -type d ! -perm 0755 -exec chmod 0755 {} \;
