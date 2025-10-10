@@ -4,8 +4,7 @@ target: all
 
 server:
   http_listen_port: 3100
-  log_level: warn
-  
+
 ingester:
   lifecycler:
     address: 127.0.0.1

@@ -121,10 +121,10 @@ if [ $py = "Update" ]; then
   echo "Updating all modules except zwave and those required by shng (will be updated in a separate step)"
   echo "Change to user smarthome"
 
-  sudo runuser -l smarthome -c "pip3 install --user --upgrade pip"
-  sudo runuser -l smarthome -c "pip3 freeze --local" | grep -v -f <(cat /usr/local/smarthome/requirements/base.txt /usr/local/smarthome/requirements/conf_all.txt | grep -Eo '^[^#=><]+' | sort -u) | sed '/zwave.*/d' | sed -rn 's/^([^=# \t\\][^ \t=]*)=.*/echo; echo Processing \1 ...; sudo runuser -l smarthome -c \"pip3 install --user -U \1\"/p' | sh
+  sudo runuser -l smarthome -c "pip3 install --upgrade pip"
+  sudo runuser -l smarthome -c "pip3 freeze --local" | grep -v -f <(cat /usr/local/smarthome/requirements/base.txt /usr/local/smarthome/requirements/conf_all.txt | grep -Eo '^[^#=><]+' | sort -u) | sed '/zwave.*/d' | sed -rn 's/^([^=# \t\\][^ \t=]*)=.*/echo; echo Processing \1 ...; sudo runuser -l smarthome -c \"pip3 install -U \1\"/p' | sh
   echo "Updating modules for SmarthomeNG requirements"
-  sudo runuser -l smarthome -c "pip3 install --user --upgrade -r /usr/local/smarthome/requirements/base.txt"
-  sudo runuser -l smarthome -c "pip3 install --user --upgrade -r /usr/local/smarthome/requirements/conf_all.txt"
+  sudo runuser -l smarthome -c "pip3 install --upgrade -r /usr/local/smarthome/requirements/base.txt"
+  sudo runuser -l smarthome -c "pip3 install --upgrade -r /usr/local/smarthome/requirements/conf_all.txt"
 fi
 echo "Finished Updating"

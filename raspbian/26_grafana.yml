@@ -28,26 +28,23 @@
       state: latest
       update_cache: yes
 
-  - name: common
-    apt:
-      name: software-properties-common
-      state: latest
-
   - name: wget
     apt:
       name: wget
       state: latest
 
-  - name: key
-    apt_key:
+  - name: Add Grafana GPG key
+    become: true
+    ansible.builtin.get_url:
       url: https://apt.grafana.com/gpg.key
-      state: present
-      keyring: /usr/share/keyrings/grafana.key
-      validate_certs: False
+      dest: /usr/share/keyrings/grafana.gpg
+      mode: '0644'
+      validate_certs: true
 
-  - name: repo
-    apt_repository:
-      repo: deb [signed-by=/usr/share/keyrings/grafana.key] https://apt.grafana.com stable main
+  - name: Add Grafana APT repository
+    become: true
+    ansible.builtin.apt_repository:
+      repo: "deb [signed-by=/usr/share/keyrings/grafana.gpg] https://apt.grafana.com stable main"
       state: present
       filename: grafana
 
@@ -213,7 +210,7 @@
 
   - name: pause
     pause:
-      seconds: 30
+      seconds: 40
 
   - name: Create smarthome user
     community.grafana.grafana_user:
@@ -361,7 +358,7 @@
           }
         ]
     register: loki
-    no_log: true
+    no_log: false
     ignore_errors: yes
   - debug: msg="Dashboard ID is {{ loki['results'][0]['json']['id'] }}"
     ignore_errors: yes
@@ -391,7 +388,7 @@
 
   - name: star
     uri:
-      url: http://{{ hostvars[inventory_hostname]['ansible_default_ipv4']['address'] }}/grafana/api/user/stars/dashboard/{{ db['results'][0]['json']['id'] }}
+      url: http://{{ hostvars[inventory_hostname]['ansible_default_ipv4']['address'] }}/grafana/api/user/stars/dashboard/uid/{{ db['results'][0]['json']['uid'] }}
       method: POST
       user: "smarthome"
       password: "smarthome"

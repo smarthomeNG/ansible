@@ -217,9 +217,7 @@
       state: absent
 
   - name: Install python-magic
-    pip:
-      name: python-magic
-      state: latest
+    apt: name=python3-magic force=no state=latest install_recommends=yes
     become: true
     become_user: root
 

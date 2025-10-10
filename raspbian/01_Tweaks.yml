@@ -31,13 +31,12 @@
       "libsystemd-dev",
       "libev-dev",
       "cmake",
-      "mlocate",
+      "plocate",
       "snmpd",
       "snmp-mibs-downloader",
       "snmp",
       "rsyslog",
       "netcat-openbsd",
-      "fake-hwclock",
       "libudev-dev",
       "libkrb5-dev",
       "powermgmt-base", # for automatic updates (wants to check if battery mode is active)
@@ -344,9 +343,6 @@
       path: /etc/profile.d/sshpwd.sh
       state: absent
 
-  - name: restart fakehwclock
-    systemd: state=restarted name=fake-hwclock.service
-
   - name: rsyslog
     copy:
       src: configs/rsyslog.conf
@@ -483,9 +479,6 @@
       mode: 0644
       owner: root
 
-  - name: enable_fake-hwclock
-    systemd: enabled=yes name=fake-hwclock.service
-
   - name: rngd logfile
     blockinfile:
       path: "/etc/rsyslog.d/rngd.conf"
@@ -507,6 +500,19 @@
     copy:
       src: configs/service_bluetooth_fix.conf
       dest: /etc/systemd/system/bluetooth.service.d/
+      owner: root
+      group: adm
+      mode: 0644
+
+  - name: create systemd dir rsyslog
+    file:
+      path: /etc/systemd/system/rsyslog.service.d/
+      state: directory
+
+  - name: Copy service_conf rsyslog
+    copy:
+      src: configs/service_rsyslog_fix.conf
+      dest: /etc/systemd/system/rsyslog.service.d/
       owner: root
       group: adm
       mode: 0644
@@ -689,23 +695,8 @@
       replace: 'disallow-other-stacks=yes'
     ignore_errors: yes
 
-  - name: Swap
-    replace:
-      destfile: /etc/dphys-swapfile
-      regexp: "^CONF_SWAPSIZE="
-      replace: "CONF_SWAPSIZE="
-    ignore_errors: yes
-
-#  - name: Restartswap
-#    systemd: state=restarted name=dphys-swapfile
-
-  - name: Swapoff
-    command: 'dphys-swapfile swapoff'
-
-  - name: Swapdisable
-    systemd: enabled=no name=dphys-swapfile
-
   - name: delete swap
     file:
       path: /var/swap
       state: absent
+    ignore_errors: yes
