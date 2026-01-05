@@ -66,25 +66,29 @@ fi
 recommended=$(($(free -m|awk '$1=="Speicher:"{print $2}')*2))
 echo ""
 echo "Do you want to change the Swap file on your Raspberry Pi?"
-SWAP_e=$(systemctl is-enabled dphys-swapfile 2>&1 | tail -n 1) &> /dev/null
+SWAP_e=$(swapon --show 2>&1 | tail -n 1) &> /dev/null
+SWAP_d=$(swapon --show 2>&1 | tail -n 1 | awk '{print $1}' | sed 's|^/dev/||') &> /dev/null
 echo "Swap File is currently $SWAP_e."
-echo "It is recommended to deactivate (set to 0) the Swapping in general"
-echo "If you still want to use it (e.g. for compiling) you might want to set the swap to $recommended MB."
+echo "You might want to set the swap to $recommended MB."
 echo "That is around double the size of the phsyical RAM of your Pi."
 read -p "Please define the size of your swap file in MB (0 or any non-number to deactivate): " swapsize
+
 if [[ -n ${swapsize//[0-9]/} || $swapsize == 0 ]]; then
     echo "Swapping is disabled."
-    sudo dphys-swapfile swapoff
-    sudo systemctl disable dphys-swapfile
-	sudo rm /var/swap
+    sudo systemctl stop systemd-zram-setup@$SWAP_d.service
+    sudo systemctl disable systemd-zram-setup@$SWAP_d.service
+    sudo rm /dev/$SWAP_d
 else
-    sudo systemctl stop dphys-swapfile
-	sudo /sbin/dphys-swapfile setup
-    sudo sed -i 's/'CONF_SWAPSIZE=[[:space:]]*[[:digit:]]*'/'CONF_SWAPSIZE=''${swapsize}'/g' /etc/dphys-swapfile 2>&1
-    sleep 3
-    sudo dphys-swapfile swapon
-    sudo systemctl start dphys-swapfile
-    sudo systemctl enable dphys-swapfile
+    sudo systemctl stop systemd-zram-setup@$SWAP_d.service
+    if [[ -f /etc/systemd/zram-generator.conf ]]; then
+        sudo sed -i "s/max-zram-size[[:space:]]*=[[:space:]]*[0-9]\+/max-zram-size = ${swapsize}/g" /etc/systemd/zram-generator.conf 2>&1
+    else
+      sudo tee /etc/systemd/zram-generator.conf > /dev/null <<EOF
+[zram0]
+  zram-fraction = 1.0
+  max-zram-size = ${swapsize}
+  compression-algorithm = zstd
+EOF
+    fi
 fi
-SWAP_e=$(systemctl is-enabled dphys-swapfile 2>&1 | tail -n 1)&> /dev/null
-echo "Swap File is $SWAP_e."
+echo "Need to reboot for correct swapfile update"
