@@ -3,7 +3,7 @@ RSA_FOLDER=etc/ssl/easy-rsa
 KEY_FOLDER=etc/ssl/ca/
 
 backupfolder='home/smarthome/backup'
-
+mkdir -p /$backupfolder
 addate() {
     while IFS= read -r line; do
         echo "$(date +'%B %02d %X') $line"

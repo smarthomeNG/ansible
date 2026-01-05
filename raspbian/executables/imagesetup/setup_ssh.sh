@@ -1,12 +1,12 @@
 #!/bin/bash
 create_keys () {
 
-    echo "Deleting existing SSH host keys and creating new ones."
+    echo "Creating new ssh keys."
     sudo rm /etc/ssh/ssh_host_*
-    sudo /usr/bin/ssh-keygen -t dsa -N "" -f /etc/ssh/ssh_host_dsa_key
-    sudo /usr/bin/ssh-keygen -t rsa -N "" -f /etc/ssh/ssh_host_rsa_key
-    sudo /usr/bin/ssh-keygen -t ecdsa -N "" -f /etc/ssh/ssh_host_ecdsa_key
-    sudo /usr/bin/ssh-keygen -t ed25519 -N "" -f /etc/ssh/ssh_host_ed25519_key
+    sudo /usr/bin/ssh-keygen -t dsa -N "" -f /etc/ssh/ssh_host_dsa_key 2>&1
+    sudo /usr/bin/ssh-keygen -t rsa -N "" -f /etc/ssh/ssh_host_rsa_key 2>&1
+    sudo /usr/bin/ssh-keygen -t ecdsa -N "" -f /etc/ssh/ssh_host_ecdsa_key 2>&1
+    sudo /usr/bin/ssh-keygen -t ed25519 -N "" -f /etc/ssh/ssh_host_ed25519_key 2>&1
     sudo cp /etc/ssh/ssh_host_rsa_key.pub /root/.ssh/authorized_keys 2>&1
     sudo cp /etc/ssh/ssh_host_rsa_key.pub /home/smarthome/.ssh/authorized_keys 2>&1
     sudo chown smarthome:users /home/smarthome/.ssh/ -R
@@ -23,7 +23,7 @@ create_keys () {
 }
 
 certs () {
-    if [ -f /etc/ssh/ssh_host_dsa_key ]; then
+    if [ -f /etc/ssh/ssh_host_rsa_key ]; then
         echo ""
         echo "SSH Keys were already generated on first boot. Do you want to create new ones anyhow?"
         select sshd in "Create" "Keep" "Skip"; do
@@ -38,6 +38,8 @@ certs () {
                 *) echo "Skipping"; break;;
             esac
         done
+    else
+      create_keys;
     fi
     sudo systemctl restart ssh
     echo ""
@@ -55,8 +57,8 @@ certs () {
                 sudo sed -i 's/#PasswordAuthentication yes/PasswordAuthentication no/g' /etc/ssh/sshd_config 2>&1;
                 sudo sed -i 's/PermitEmptyPasswords yes/PermitEmptyPasswords no/g' /etc/ssh/sshd_config 2>&1;
                 break;;
-            Skip ) echo "Skipping";;
-            *) echo "Skipping";;
+            Skip ) echo "Skipping"; break;;
+            *) echo "Skipping"; break;;
         esac
     done
     echo "Password Login is set to $pwd."

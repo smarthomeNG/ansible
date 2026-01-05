@@ -12,13 +12,18 @@ nginx_config () {
     fi
     echo ""
     echo "Changing nginx config based on domain $domain"
-    sudo sed -i 's/'DOMAIN_HERE'/'${domain}'/g' /etc/nginx/conf.d/https.conf 2>&1
-    sudo sed -i 's/'DOMAIN_HERE'/'${domain}'/g' /etc/nginx/sites-available/default 2>&1
+    # Entfernt führendes # nur bei server_name und ersetzt den Domain-Teil
+    sudo sed -i -e "s|^\([[:space:]]*\)#server_name|\1server_name|" \
+            -e "s|\(server_name\s\)\(.*\)\(\s\$hostname;\)|\1${domain}\3|" /etc/nginx/conf.d/https.conf 2>&1
+    sudo sed -i -e "s|^\([[:space:]]*\)#server_name|\1server_name|" \
+            -e "s|\(server_name\s\)\(.*\)\(\s\$hostname;\)|\1${domain}\3|" /etc/nginx/sites-available/default 2>&1
     sudo sed -i 's/#listen/listen/g' /etc/nginx/conf.d/https.conf 2>&1
-    sudo sed -i 's/#server_name/server_name/g' /etc/nginx/conf.d/https.conf 2>&1
-    sudo sed -i 's/#ssl_certificate/ssl_certificate/g' /etc/nginx/conf.d/https.conf 2>&1
-    sudo sed -i 's/#ssl_certificate_key/ssl_certificate_key/g' /etc/nginx/conf.d/https.conf 2>&1
-    sudo sed -i 's/#ssl_trusted_certificate/ssl_trusted_certificate/g' /etc/nginx/conf.d/https.conf 2>&1
+    sudo sed -i -e "s|^\([[:space:]]*\)#ssl_certificate|\1ssl_certificate|" \
+            -e "s|ssl_certificate\s\+/etc/letsencrypt/live/[^/]\+/fullchain\.pem;|ssl_certificate /etc/letsencrypt/live/${domain}/fullchain.pem;|" /etc/nginx/conf.d/https.conf 2>&1
+    sudo sed -i -e "s|^\([[:space:]]*\)#ssl_certificate_key|\1ssl_certificate_key|" \
+            -e "s|ssl_certificate_key\s\+/etc/letsencrypt/live/[^/]\+/privkey\.pem;|ssl_certificate_key /etc/letsencrypt/live/${domain}/privkey.pem;|" /etc/nginx/conf.d/https.conf 2>&1
+    sudo sed -i -e "s|^\([[:space:]]*\)#ssl_trusted_certificate|\1ssl_trusted_certificate|" \
+            -e "s|ssl_trusted_certificate\s\+/etc/letsencrypt/live/[^/]\+/fullchain\.pem;|ssl_trusted_certificate /etc/letsencrypt/live/${domain}/fullchain.pem;|" /etc/nginx/conf.d/https.conf 2>&1
     sudo sed -i 's/#ssl_client_certificate/ssl_client_certificate/g' /etc/nginx/conf.d/https.conf 2>&1
     sudo sed -i 's/#ssl_crl/ssl_crl/g' /etc/nginx/conf.d/https.conf 2>&1
     sudo sed -i 's/#ssl_verify_client/ssl_verify_client/g' /etc/nginx/conf.d/https.conf 2>&1
@@ -71,9 +76,12 @@ nginx_config () {
             esac
         done
         sudo mkdir -p /var/www/letsencrypt/.well-known/acme-challenge 2>&1
-        echo ""
-        echo "Please provide your mail address in the next step."
-        crt=$(sudo certbot certonly --rsa-key-size 4096 --webroot -w /var/www/letsencrypt -d ${domain})
+        unset mail
+        mail_regex='^[a-z0-9$%&'"'"'*+/=?^_`{|}~-]+(\.[a-z0-9$%&'"'"'*+/=?^_`{|}~-]+)*@([a-z0-9]([a-z0-9-]*[a-z0-9])?\.)+[a-z0-9]([a-z0-9-]*[a-z0-9])?$'
+        while ! [[ "$mail" =~ $mail_regex ]]; do
+            read -p "Please define your email (name@domain.tld): " mail
+        done
+        crt=$(sudo certbot certonly --non-interactive --agree-tos --email ${mail} --rsa-key-size 4096 --webroot -w /var/www/letsencrypt -d ${domain})
         echo "Done: ${crt}"
         echo ""
         echo "Now change the port forwarding from 80 to 443 on your router! Restarting nginx now."
