@@ -94,9 +94,9 @@ create_servercerts() {
         rerun="Change"
     fi
     if [[ $rerun == "Change" ]]; then
-        echo "Setting up variables for OpenVPN. Please provide the relevant information..."
+        echo "Setting up variables for certificates. Please provide the relevant information..."
         sudo cp $RSA_FOLDER/vars.example $RSA_FOLDER/vars
-		sudo chmod 0666 $RSA_FOLDER/domain_name
+		    sudo chmod 0666 $RSA_FOLDER/domain_name 2>/dev/null
         sudo sed -i 's/#set_var EASYRSA_BATCH[[:space:]]*\".*\"/set_var EASYRSA_BATCH\t\t"yes"/g' $RSA_FOLDER/vars 2>&1
         unset country
         while ! [[ "$country" =~ ^[a-zA-Z]{2} ]]; do
@@ -111,7 +111,7 @@ create_servercerts() {
         sudo sed -i 's/'EASYRSA_REQ_CITY[[:space:]]*\".*\"'/'EASYRSA_REQ_CITY'\t'\"${city^}\"'/g' $RSA_FOLDER/vars 2>&1
         sudo sed -i 's/#set_var EASYRSA_REQ_CITY/set_var EASYRSA_REQ_CITY/g' $RSA_FOLDER/vars 2>&1
         unset mail
-        mail_regex="^[a-z0-9!#\$%&'*+/=?^_\`{|}~-]+(\.[a-z0-9!#$%&'*+/=?^_\`{|}~-]+)*@([a-z0-9]([a-z0-9-]*[a-z0-9])?\.)+[a-z0-9]([a-z0-9-]*[a-z0-9])?\$"
+        mail_regex='^[a-z0-9$%&'"'"'*+/=?^_`{|}~-]+(\.[a-z0-9$%&'"'"'*+/=?^_`{|}~-]+)*@([a-z0-9]([a-z0-9-]*[a-z0-9])?\.)+[a-z0-9]([a-z0-9-]*[a-z0-9])?$'
         while ! [[ "$mail" =~ $mail_regex ]]; do
             read -p "Please define your email (name@domain.tld): " mail
         done
@@ -122,10 +122,11 @@ create_servercerts() {
         while ! [[ "$domain" =~ $domain_regex ]]; do
             read -p "Please define your common=domain name (xxx.domain.tld): " domain
         done
-		if [[ ! -e $RSA_FOLDER/domain_name ]]; then 
+		if [[ ! -e $RSA_FOLDER/domain_name ]]; then
 			sudo touch $RSA_FOLDER/domain_name
 		fi
-		
+    sudo chown smarthome:smarthome $RSA_FOLDER/domain_name
+
 		if ! grep -qF 'DOMAIN' $RSA_FOLDER/domain_name; then
 			sudo echo 'DOMAIN "'${domain}'"' >> $RSA_FOLDER/domain_name 2>&1
 		else
@@ -137,6 +138,7 @@ create_servercerts() {
             echo "$line"
         done
         unset rerun
+        cat $RSA_FOLDER/domain_name
         echo ""
         echo "Do you want to re-run the configuration?"
         select rerun in "Re-Run" "Move-on"; do
@@ -148,6 +150,7 @@ create_servercerts() {
         done
     fi
     createnew=True
+    sudo touch $RSA_FOLDER/pki/safessl-easyrsa.cnf
     if sudo [ -f $RSA_FOLDER/pki/issued/server.crt ]; then
         unset new
         echo ""
@@ -215,6 +218,7 @@ create_servercerts() {
         sudo /usr/sbin/openvpn --genkey secret pki/ta.key
         echo "Creating a random file (for freeradius)."
         sudo openssl rand -out $RSA_FOLDER/pki/random 128
+        sudo chmod 0600 /etc/ssl/ca/private/server.key
         echo ""
         echo "Now you have to create a certificate for each client."
     fi
