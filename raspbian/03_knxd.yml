@@ -179,7 +179,7 @@
 
   - name: Restart knxd service
     systemd: state=restarted name=knxd.service daemon-reload=yes
-    when: knxd_socket
+    when: knxd_socket.changed
 
   - name: chmod conf
     file:

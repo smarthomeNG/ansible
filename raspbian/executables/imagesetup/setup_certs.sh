@@ -49,6 +49,7 @@ create_clientcerts() {
         sudo cp $RSA_FOLDER/pki/ta.key $KEY_FOLDER/ &> /dev/null
         sudo chmod 0740 $KEY_FOLDER -R &> /dev/null
         sudo chmod 0755 $KEY_FOLDER/private/ca.crl &> /dev/null
+        sudo chmod 0600 /etc/ssl/ca/private/server.key &> /dev/null
 
         echo "Folder content of $KEY_FOLDER"
         sudo sh -c "ls $KEY_FOLDER*"
@@ -58,10 +59,10 @@ create_clientcerts() {
         echo "If you need seperate crt and key files have a look at the folder $RSA_FOLDER/pki"
         sudo cp $RSA_FOLDER/pki/ca.crt /home/smarthome
         sudo cp $RSA_FOLDER/pki/ta.key /home/smarthome
-        sudo chown smarthome:smarthome /home/smarthome/* -R
+        sudo chown smarthome:smarthome /home/smarthome -R
         echo ""
         echo "Folder content of /home/smarthome: "
-        ls /home/smarthome
+        sudo ls /home/smarthome
         echo ""
     fi
 }
@@ -80,6 +81,7 @@ create_servercerts() {
         awk '/^#/ {f=0} /^if/ {f=1} !f;' $RSA_FOLDER/vars|grep -v -e '^$' | grep -v '#' | while IFS= read -r line ; do
             echo "$line"
         done
+        cat $RSA_FOLDER/domain_name
         unset rerun
         echo ""
         echo "Do you want to change the configuration?"
@@ -128,7 +130,7 @@ create_servercerts() {
     sudo chown smarthome:smarthome $RSA_FOLDER/domain_name
 
 		if ! grep -qF 'DOMAIN' $RSA_FOLDER/domain_name; then
-			sudo echo 'DOMAIN "'${domain}'"' >> $RSA_FOLDER/domain_name 2>&1
+      echo 'DOMAIN "'${domain}'"' | sudo tee -a $RSA_FOLDER/domain_name > /dev/null
 		else
 			sudo sed -i 's/'DOMAIN[[:space:]]*\".*\"'/'DOMAIN'\t\t'\"${domain}\"'/g' $RSA_FOLDER/domain_name 2>&1
 		fi
@@ -150,7 +152,6 @@ create_servercerts() {
         done
     fi
     createnew=True
-    sudo touch $RSA_FOLDER/pki/safessl-easyrsa.cnf
     if sudo [ -f $RSA_FOLDER/pki/issued/server.crt ]; then
         unset new
         echo ""
@@ -182,8 +183,13 @@ create_servercerts() {
             dh="Create"
         fi
         sudo ./easyrsa init-pki
-        sudo touch $RSA_FOLDER/pki/index.txt.attr
-        sudo sed -i 's/RANDFILE[[:space:]]\+= \/etc\/ssl\/easy-rsa\/pki\/.rnd//g' $RSA_FOLDER/pki/safessl-easyrsa.cnf 2>&1
+        if [[ ! -e $RSA_FOLDER/pki/openssl-easyrsa.cnf ]]; then
+          sudo cp $RSA_FOLDER/openssl-easyrsa.cnf $RSA_FOLDER/pki/openssl-easyrsa.cnf
+    		fi
+        if [[ ! -e $RSA_FOLDER/pki/index.txt.attr ]]; then
+          sudo touch $RSA_FOLDER/pki/index.txt.attr
+        fi
+        sudo sed -i 's/RANDFILE[[:space:]]\+= \/etc\/ssl\/easy-rsa\/pki\/.rnd//g' $RSA_FOLDER/pki/openssl-easyrsa.cnf 2>&1
         if [[ $dh == "Create" ]]; then
             sudo ./easyrsa gen-dh
             echo ""
@@ -218,7 +224,6 @@ create_servercerts() {
         sudo /usr/sbin/openvpn --genkey secret pki/ta.key
         echo "Creating a random file (for freeradius)."
         sudo openssl rand -out $RSA_FOLDER/pki/random 128
-        sudo chmod 0600 /etc/ssl/ca/private/server.key
         echo ""
         echo "Now you have to create a certificate for each client."
     fi

@@ -5,10 +5,11 @@ After=knxd.service
 After=knxd.socket
 
 [Service]
-Type=forking
+Type=simple
 WorkingDirectory=/usr/local/smarthome
 TimeoutStartSec=1900
 ExecStart=/usr/local/smarthome/venvs/py_313/bin/python3 /usr/local/smarthome/bin/smarthome.py
+ExecStop=/usr/local/smarthome/venvs/py_313/bin/python3 /usr/local/smarthome/bin/smarthome.py -s
 User=smarthome
 PIDFile=/usr/local/smarthome/var/run/smarthome.pid
 Restart=on-failure

@@ -214,7 +214,7 @@
 
   - name: Create smarthome user
     community.grafana.grafana_user:
-      url: http://{{ hostvars[inventory_hostname]['ansible_default_ipv4']['address'] }}/grafana
+      url: http://{{ hostvars[inventory_hostname]['ansible_default_ipv4']['address'] }}:3000
       url_username: admin
       url_password: admin
       name: "Smarthome"
@@ -227,7 +227,7 @@
 
   - name: datasource1
     uri:
-      url: http://{{ hostvars[inventory_hostname]['ansible_default_ipv4']['address'] }}/grafana/api/datasources/name/smarthome
+      url: http://{{ hostvars[inventory_hostname]['ansible_default_ipv4']['address'] }}:3000/api/datasources/name/smarthome
       user: admin
       password: admin
       force_basic_auth: yes
@@ -238,7 +238,7 @@
 
   - name: datasource2
     uri:
-      url: http://{{ hostvars[inventory_hostname]['ansible_default_ipv4']['address'] }}/grafana/api/datasources
+      url: http://{{ hostvars[inventory_hostname]['ansible_default_ipv4']['address'] }}:3000/api/datasources
       method: POST
       user: admin
       password: admin
@@ -260,7 +260,7 @@
 
   - name: getid
     uri:
-      url: http://{{ hostvars[inventory_hostname]['ansible_default_ipv4']['address'] }}/grafana/api/users/lookup?loginOrEmail=smarthome
+      url: http://{{ hostvars[inventory_hostname]['ansible_default_ipv4']['address'] }}:3000/api/users/lookup?loginOrEmail=smarthome
       user: "admin"
       password: "admin"
       method: GET
@@ -270,7 +270,7 @@
 
   - name: permission
     uri:
-      url: http://{{ hostvars[inventory_hostname]['ansible_default_ipv4']['address'] }}/grafana/api/admin/users/{{ user_id['json']['id'] }}/permissions
+      url: http://{{ hostvars[inventory_hostname]['ansible_default_ipv4']['address'] }}:3000/api/admin/users/{{ user_id['json']['id'] }}/permissions
       user: "admin"
       password: "admin"
       method: PUT
@@ -283,7 +283,7 @@
 
   - name: role
     uri:
-      url: http://{{ hostvars[inventory_hostname]['ansible_default_ipv4']['address'] }}/grafana/api/org/users/{{ user_id['json']['id'] }}
+      url: http://{{ hostvars[inventory_hostname]['ansible_default_ipv4']['address'] }}:3000/api/org/users/{{ user_id['json']['id'] }}
       user: "admin"
       password: "admin"
       method: PATCH
@@ -296,7 +296,7 @@
 
   - name: dashboard
     uri:
-      url: http://{{ hostvars[inventory_hostname]['ansible_default_ipv4']['address'] }}/grafana/api/dashboards/db
+      url: http://{{ hostvars[inventory_hostname]['ansible_default_ipv4']['address'] }}:3000/api/dashboards/db
       method: POST
       user: "smarthome"
       password: "smarthome"
@@ -311,7 +311,7 @@
 
   - name: datasource1_loki
     uri:
-      url: http://{{ hostvars[inventory_hostname]['ansible_default_ipv4']['address'] }}/grafana/api/datasources/name/Loki
+      url: http://{{ hostvars[inventory_hostname]['ansible_default_ipv4']['address'] }}:3000/api/datasources/name/Loki
       user: admin
       password: admin
       force_basic_auth: yes
@@ -323,7 +323,7 @@
 
   - name: datasource2_loki
     uri:
-      url: http://{{ hostvars[inventory_hostname]['ansible_default_ipv4']['address'] }}/grafana/api/datasources
+      url: http://{{ hostvars[inventory_hostname]['ansible_default_ipv4']['address'] }}:3000/api/datasources
       method: POST
       user: admin
       password: admin
@@ -342,7 +342,7 @@
 
   - name: dashboard_nginxloki
     uri:
-      url: http://{{ hostvars[inventory_hostname]['ansible_default_ipv4']['address'] }}/grafana/api/dashboards/db
+      url: http://{{ hostvars[inventory_hostname]['ansible_default_ipv4']['address'] }}:3000/api/dashboards/db
       method: POST
       user: "smarthome"
       password: "smarthome"
@@ -365,7 +365,7 @@
 
   - name: dashboard_shngloki
     uri:
-      url: http://{{ hostvars[inventory_hostname]['ansible_default_ipv4']['address'] }}/grafana/api/dashboards/db
+      url: http://{{ hostvars[inventory_hostname]['ansible_default_ipv4']['address'] }}:3000/api/dashboards/db
       method: POST
       user: "smarthome"
       password: "smarthome"
@@ -388,7 +388,7 @@
 
   - name: star
     uri:
-      url: http://{{ hostvars[inventory_hostname]['ansible_default_ipv4']['address'] }}/grafana/api/user/stars/dashboard/uid/{{ db['results'][0]['json']['uid'] }}
+      url: http://{{ hostvars[inventory_hostname]['ansible_default_ipv4']['address'] }}:3000/api/user/stars/dashboard/uid/{{ db['results'][0]['json']['uid'] }}
       method: POST
       user: "smarthome"
       password: "smarthome"

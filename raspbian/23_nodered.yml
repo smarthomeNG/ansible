@@ -45,10 +45,7 @@
     when: nodered_installed.stat.exists == False
 
   - name: install nodered
-    shell: "/home/smarthome/update-nodejs-and-nodered --confirm-install --confirm-pi"
-    become_user: smarthome
-    become: true
-    become_method: su
+    shell: "sudo -u smarthome /home/smarthome/update-nodejs-and-nodered --confirm-install --confirm-pi"
     async: 2500
     poll: 0
     when: nodered_installed.stat.exists == False
@@ -59,9 +56,6 @@
     register: job_result
     until: job_result.finished
     retries: 280
-    become_user: smarthome
-    become: true
-    become_method: su
     when: nodered_installed.stat.exists == False
 
   - name: Copy service
