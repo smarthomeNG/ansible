@@ -9,14 +9,16 @@
 
     create 640 smarthome adm
     prerotate
+      /usr/bin/monit status lircd >/dev/null 2>&1 && /usr/bin/monit unmonitor lircd || true
       pid_file="/run/lirc/lircd.pid"
-      if test -e "${pid_file}"; then touch "${pid_file}.ACTIVE"; fi
+      if [ -e "$pid_file" ]; then touch "${pid_file}.ACTIVE"; fi
       /bin/systemctl stop lircd.socket
       /bin/systemctl stop lircd.service
     endscript
     postrotate
+      /bin/systemctl try-restart lircd.service 1>/dev/null 2>&1 || true
       pid_file="/run/lirc/lircd.pid.ACTIVE"
-      if test -e "${pid_file}"; then /bin/systemctl start lircd.socket 1>/dev/null; /bin/systemctl start lircd.service 1>/dev/null; fi
-      if test -e "${pid_file}"; then /usr/bin/rm "${pid_file}" 1>/dev/null; fi
+      if [ -e "$pid_file" ]; then /usr/bin/rm "${pid_file}" 1>/dev/null; fi
+      /usr/bin/monit status lircd >/dev/null 2>&1 && /usr/bin/monit monitor lircd || true
     endscript
 }

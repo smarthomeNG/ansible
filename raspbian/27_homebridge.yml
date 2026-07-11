@@ -71,6 +71,14 @@
       group: smarthome
       mode: 0755
 
+  - name: create people dir
+    file:
+      path: /usr/lib/node_modules/homebridge-people/node_modules/node-persist/storage
+      state: directory
+      owner: homebridge
+      group: smarthome
+      mode: 0755
+
   - name: Copy config
     copy:
       src: configs/homebridge_config.json
@@ -95,13 +103,21 @@
       group: adm
       mode: 0644
 
-  - name: Stop avahi service
-    systemd: state=stopped name=avahi-daemon.service
+  - name: Disable avahi service
+    become: true
+    ansible.builtin.systemd:
+      name: avahi-daemon.service
+      enabled: false
+      state: stopped
 
-  - name: disable avahi
-    systemd: enabled=no name=avahi-daemon.service
+  - name: Disable avahi socket
+    become: true
+    ansible.builtin.systemd:
+      name: avahi-daemon.socket
+      enabled: false
+      state: stopped
 
-  - name: Restart Service
+  - name: Restart Homebridge Service
     systemd: state=restarted name=homebridge.service
 
   - name: disable homebridge

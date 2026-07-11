@@ -9,20 +9,34 @@
     ansible_python_interpreter: /usr/bin/python3
 
   tasks:
-  - name: Download InfluxData GPG key
+  - name: Download InfluxDB GPG key
     become: true
     ansible.builtin.get_url:
-      url: https://repos.influxdata.com/influxdata-archive_compat.key
-      dest: /usr/share/keyrings/influxdata-archive_compat.gpg
+      url: https://repos.influxdata.com/influxdata-archive.key
+      dest: /tmp/influxdata-archive.key
       mode: '0644'
-      validate_certs: false
+
+  - name: Dearmor key
+    become: true
+    ansible.builtin.command:
+      cmd: >
+        gpg --dearmor
+        --output /etc/apt/keyrings/influxdata-archive.gpg
+        /tmp/influxdata-archive.key
+      creates: /etc/apt/keyrings/influxdata-archive.gpg
 
   - name: Add InfluxData repository
     become: true
-    ansible.builtin.apt_repository:
-      repo: "deb [signed-by=/usr/share/keyrings/influxdata-archive_compat.gpg] https://repos.influxdata.com/debian stable main"
+    ansible.builtin.deb822_repository:
+      name: influxdata
+      types: deb
+      uris: https://repos.influxdata.com/debian
+      suites: stable
+      components:
+        - main
+      signed_by: /etc/apt/keyrings/influxdata-archive.gpg
       state: present
-      filename: influxdata
+      install_python_debian: true
 
   - name: Allow release-info to change for APT repositories
     command: apt-get update -y --allow-releaseinfo-change

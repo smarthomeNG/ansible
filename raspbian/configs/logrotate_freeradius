@@ -8,6 +8,7 @@
         dateext
         dateformat .%Y-%m-%d.log
         prerotate
+            /usr/bin/monit unmonitor freeradius
             pid_file="/run/freeradius/freeradius.pid"
             if test -e "${pid_file}"; then touch "/run/freeradius.ACTIVE"; fi
             /bin/systemctl stop freeradius
@@ -16,6 +17,7 @@
             pid_file="/run/freeradius.ACTIVE"
             if test -e "${pid_file}"; then /bin/systemctl start freeradius.service 1>/dev/null; fi
             if test -e "${pid_file}"; then /usr/bin/rm "${pid_file}" 1>/dev/null; fi
+            /usr/bin/monit monitor freeradius
         endscript
 }
 

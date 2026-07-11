@@ -135,37 +135,35 @@
       group: adm
       mode: 0644
 
-  - name: Ensure override directory exists for knxd.socket
+  - name: create systemd dir socket
     file:
-      path: /etc/systemd/system/knxd.socket.d
+      path: /etc/systemd/system/knxd.socket.d/
       state: directory
-      mode: '0755'
 
-  - name: Override ListenStream path for knxd.socket
+  - name: Change socket
     copy:
-      dest: /etc/systemd/system/knxd.socket.d/override.conf
-      content: |
-        [Socket]
-        ListenStream=/run/knx
+      src: configs/socket_knxd_fix.conf
+      dest: /etc/systemd/system/knxd.socket.d/
       owner: root
-      group: root
-      mode: '0644'
+      group: adm
+      mode: 0644
 
-  - name: Ensure override directory exists for knxd-net.socket
+  - name: create systemd dir socket-net
     file:
-      path: /etc/systemd/system/knxd-net.socket.d
+      path: /etc/systemd/system/knxd-net.socket.d/
       state: directory
-      mode: '0755'
 
-  - name: Override ListenStream path for knxd-net.socket
+  - name: Change socket-net
     copy:
-      dest: /etc/systemd/system/knxd-net.socket.d/override.conf
-      content: |
-        [Socket]
-        ListenStream=/run/knxnet
+      src: configs/socket_knxd-net_fix.conf
+      dest: /etc/systemd/system/knxd-net.socket.d/
       owner: root
-      group: root
-      mode: '0644'
+      group: adm
+      mode: 0644
+
+  - name: Systemd neu laden
+    ansible.builtin.systemd:
+      daemon_reload: true
 
   - name: Stop knxd socket
     systemd: state=stopped name=knxd.socket

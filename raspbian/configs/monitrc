@@ -8,15 +8,16 @@ set mailserver
     with timeout 15 seconds
 
 set mail-format {      from: Monit SmarthomeNG <monit@localhost> }
+set idfile /var/lib/monit/id
+set statefile /var/lib/monit/state
 
 set alert monit@localhost only on { timeout }
 set httpd port 2812 and
 allow 10.0.0.0/8
 allow localhost
 
-check file mainlog with path /var/log/exim4/mainlog
-  restart program = "/usr/bin/sudo /usr/sbin/exim -bp | /usr/bin/sudo /usr/sbin/exiqgrep -i | xargs exim -Mrm && /usr/bin/sudo /usr/sbin/exim_tidydb -t 1d /var/spool/exim retry > /dev/null && /usr/bin/sudo rm -rf /var/spool/exim/db/retry*"
-  if match "Message is frozen" then restart
+check file exim_frozen_cleanup_status with path /run/exim_frozen_cleanup.status
+    if timestamp > 15 minutes then alert
 
 # Avahi daemon
  check process avahi with pidfile /run/avahi-daemon/pid
@@ -82,12 +83,12 @@ check process nginx with pidfile /run/nginx.pid
  if 15 restarts within 25 cycles then unmonitor
 
 #PHP
-check process php-fpm with pidfile /run/php/php8.2-fpm.pid
-  start program = "/bin/systemctl start php8.2-fpm"
-  stop program = "/bin/systemctl stop php8.2-fpm"
-  restart program = "/bin/systemctl restart php8.2-fpm"
-  if failed unixsocket /run/php/php8.2-fpm.sock then restart
-  if 15 restarts within 25 cycles then unmonitor
+check process php-fpm with pidfile /run/php/php8.4-fpm.pid
+ start program = "/bin/systemctl start php8.4-fpm"
+ stop program = "/bin/systemctl stop php8.4-fpm"
+ restart program = "/bin/systemctl restart php8.4-fpm"
+ if failed unixsocket /run/php/php8.4-fpm.sock then restart
+ if 15 restarts within 25 cycles then timeout
 
 #SMARTHOME
 check process smarthome with pidfile /usr/local/smarthome/var/run/smarthome.pid

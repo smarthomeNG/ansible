@@ -20,6 +20,51 @@
       group: root
       mode: 0644
 
+  - name: Copy script
+    copy:
+      src: executables/exim_frozen_cleanup.sh
+      dest: /opt/exim_frozen_cleanup.sh
+      owner: Debian-exim
+      group: Debian-exim
+      mode: 0744
+
+  - name: create frozen logfile
+    file:
+      path: /var/log/exim4/remove_frozen.log
+      state: touch
+      owner: root
+      group: root
+      mode: 0644
+
+  - name: exim4 cleanup service
+    blockinfile:
+      path: "/etc/systemd/system/exim-frozen-cleanup.service"
+      create: yes
+      block: |
+        [Unit]
+        Description=Exim Frozen Mail Cleanup
+
+        [Service]
+        Type=oneshot
+        ExecStart=/opt/exim_frozen_cleanup.sh
+    ignore_errors: yes
+
+  - name: exim4 timer
+    blockinfile:
+      path: "/etc/systemd/system/exim-frozen-cleanup.timer"
+      create: yes
+      block: |
+        [Unit]
+        Description=Run Exim Frozen Cleanup every 10 minutes
+
+        [Timer]
+        OnBootSec=5min
+        OnUnitActiveSec=10min
+
+        [Install]
+        WantedBy=timers.target
+    ignore_errors: yes
+
   - name: edit mailadresses
     blockinfile:
       path: /etc/email-addresses
@@ -55,6 +100,7 @@
     blockinfile:
       path: /etc/exim4/exim4.conf.localmacros
       create: yes
+      marker: "# {mark} ANSIBLE EXIM SYSLOG"
       block: |
         log_file_path = syslog
         syslog_timestamp = false

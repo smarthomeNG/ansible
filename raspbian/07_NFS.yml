@@ -43,7 +43,7 @@
 
   - name: Set IP
     set_fact:
-      IP: "{{ ansible_default_ipv4.address }}"
+      IP: "{{ ansible_facts.default_ipv4.address }}"
 
   - name: Update IP range
     set_fact:

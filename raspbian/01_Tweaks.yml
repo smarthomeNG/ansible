@@ -99,6 +99,16 @@
   - name: apt autoremove
     apt: autoremove=yes
 
+  - name: Disable systemd tmpfiles legacy.conf (override)
+    ansible.builtin.copy:
+      dest: /etc/tmpfiles.d/legacy.conf
+      owner: root
+      group: root
+      mode: "0644"
+      content: |
+        # legacy.conf disabled intentionally
+        # Prevent duplicate /run/lock tmpfiles rule
+
   - name: set timezone to Central Europe
     timezone:
       name: Europe/Vienna
@@ -344,6 +354,29 @@
       owner: smarthome
       group: smarthome
 
+  - name: Ensure cloud-init does not overwrite hostname
+    ansible.builtin.lineinfile:
+      path: /etc/cloud/cloud.cfg
+      regexp: '^preserve_hostname:'
+      line: 'preserve_hostname: true'
+      create: yes
+
+  - name: Ensure cloud-init does not manage /etc/hosts
+    ansible.builtin.lineinfile:
+      path: /etc/cloud/cloud.cfg
+      regexp: '^manage_etc_hosts:'
+      line: 'manage_etc_hosts: false'
+      create: yes
+
+  - name: Reset cloud-init state
+    ansible.builtin.command: cloud-init clean
+    changed_when: true
+
+  - name: Disable cloud-init permanently
+    ansible.builtin.file:
+      path: /etc/cloud/cloud-init.disabled
+      state: touch
+
   - name: hostname public
     command: 'hostnamectl set-hostname SmartHomeNG'
     ignore_errors: yes
@@ -496,6 +529,11 @@
       owner: root
       group: adm
       mode: 0644
+
+  - name: Set permissions on /etc/bluetooth
+    file:
+      path: /etc/bluetooth
+      mode: '0555'
 
   - name: create systemd dir rsyslog
     file:

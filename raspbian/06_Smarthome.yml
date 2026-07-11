@@ -15,7 +15,7 @@
       "graphviz", #uzsu
       "rrdtool", #rrd
       "librrd-dev", #rrd, maybe not necessary
-      "python3-dev" #necessary for psutil compilation
+      "python3-dev", #necessary for psutil compilation
       ]
 
     pythoninstall:
@@ -142,14 +142,14 @@
       state: latest
 
   - name: Install modules
-    pip:
+    ansible.builtin.pip:
       name: "{{ item }}"
       virtualenv: /usr/local/smarthome/venvs/py_313
       virtualenv_site_packages: yes
       state: latest
     environment:
-      PATH: "{{ ansible_env.PATH }}:/home/smarthome/.cargo/bin"
-    with_items: "{{ pythoninstall }}"
+      PATH: "{{ lookup('env', 'PATH') }}:/home/smarthome/.cargo/bin"
+    loop: "{{ pythoninstall }}"
 
   - name: chmod requirements
     file:
@@ -201,12 +201,6 @@
       state: absent
     ignore_errors: yes
 
-  - name: pipcommand
-    replace:
-      destfile: /usr/local/smarthome/etc/smarthome.yaml.default
-      regexp: '#pip_command: "python3 -m pip"'
-      replace: 'pip_command: "/usr/local/smarthome/venvs/py_313/bin/python3 -m pip"'
-
   - name: Init
     lineinfile:
       path: "{{ log_file_to_check }}"
@@ -233,15 +227,14 @@
       state: directory
 
   - name: Reinstall pyopenssl
-    pip:
-      name: pyopenssl
-      virtualenv: /usr/local/smarthome/venvs/py_313
-      virtualenv_site_packages: yes
-      state: latest
     become: true
     become_user: smarthome
+    ansible.builtin.pip:
+      name: pyopenssl
+      state: forcereinstall
+      virtualenv: /usr/local/smarthome/venvs/py_313
     environment:
-      PATH: "{{ ansible_env.PATH }}:/home/smarthome/.cargo/bin"
+      PATH: "/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/home/smarthome/.cargo/bin"
 
   - name: Stop smarthome service
     systemd: state=stopped name=smarthome.service

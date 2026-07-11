@@ -38,10 +38,26 @@
       state: latest
       update_cache: yes
 
+  - name: create dir
+    file:
+      path: /var/lib/monit
+      state: directory
+      owner: root
+      group: adm
+      mode: 0744
+
   - name: Copy monitrc
     copy:
       src: configs/monitrc
       dest: /etc/monit/
+
+  - name: Copy service_conf
+    copy:
+      src: configs/service_monit_fix.conf
+      dest: /etc/systemd/system/monit-server.service.d/
+      owner: smarthome
+      group: adm
+      mode: 0644
 
   - name: Restart monit service
     systemd: state=restarted name=monit.service
